@@ -11,15 +11,24 @@ var setter = require('property-expr').setter;
 
 var schema = yup.object({
       personal:  yup.object({
-        name:      yup.string().required('please provide a name').default(''),
-        birthday:  yup.date().required('please provide a date of birth'),
+        name:     yup
+          .string()
+          .required('please provide a name')
+          .default(''),
+        birthday: yup
+          .date()
+          .required('please provide a date of birth')
+          .nullable()
+          .default(null)
       }),
 
       trivia: yup.object({
 
-        favNumber: yup.number()
-                      .required().default(0)
-                      .min(0, 'your favorite number cannot be negative')
+        favNumber: yup
+          .number()
+          .required()
+          .default(0)
+          .min(0, 'your favorite number cannot be negative')
       }),
 
     }).strict();
@@ -57,6 +66,7 @@ var App = React.createClass({
     
     return (
       <div style={{ width: 400 }}>
+        <input type='text' defaultValue='hi'/>
         <Form value={model} onChange={this._change} schema={schema} className='form-horizontal'>
           <fieldset>
             <legend>Personal</legend>

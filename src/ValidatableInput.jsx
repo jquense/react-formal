@@ -14,8 +14,9 @@ var ValidatableInput = React.createClass({
   },
 
   contextTypes: {
-    schema: React.PropTypes.func,
-    onChange: React.PropTypes.func
+    schema:   React.PropTypes.func,
+    onChange: React.PropTypes.func,
+    value:    React.PropTypes.func
   },
 
   getDefaultProps: function() {
@@ -30,10 +31,11 @@ var ValidatableInput = React.createClass({
       , group
       , ...props } = this.props
       , Widget = this._getInputForSchema()
+      , value  = this.context.value(props.for)
       
     return (
       <FormInput for={this.props.for} group={group} events={events}>
-        <Widget {...props} onChange={this.context.onChange.bind(null, props.for)}/>
+        <Widget {...props} onChange={this.context.onChange.bind(null, props.for)} value={value}/>
       </FormInput>
     );
   },
