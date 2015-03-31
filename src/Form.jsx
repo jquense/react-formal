@@ -1,10 +1,10 @@
 'use strict';
-var Validator = require('react-input-error/lib/components/Validator')
-var React   = require('react')
+var Validator    = require('react-input-error/lib/Validator')
+var React        = require('react')
+  , ReactElement = require('react/lib/ReactElement')
   , update  = require('react/lib/update')
   , yup     = require('yup')
-  , getter  = require('property-expr').getter
-  , assign  = require('xtend/mutable');
+  , getter  = require('property-expr').getter;
 
 var Form = React.createClass({
 
@@ -16,7 +16,7 @@ var Form = React.createClass({
       if(props[propName] !== undefined){
         if ( !props.onChange )
           return new Error(
-              `ReactWidgets: you have provided a \`value\` prop to \`${componentName}\` 
+              `You have provided a \`value\` prop to \`${componentName}\` 
               without an \`onChange()\` handler. This will render a read-only form.`)
       }
 
@@ -24,29 +24,70 @@ var Form = React.createClass({
     }
   },
 
-  componentDidUpdate(prevProps, prevState) {
+  getInitialState() {
+      return {
+        children: attachChildren(
+            this.props.children
+          , this.getChildContext())
+    };
+  },
+
+  componentWillReceiveProps(nextProps){
+    this.setState({ 
+      children: attachChildren(
+          nextProps.children
+        , this.getChildContext())
+    })
+  },
+
+  componentDidUpdate(prevProps) {
     if(prevProps.value !== this.props.value)
       this._flushValidations()
+  },
+
+  childContextTypes: {
+    schema:   React.PropTypes.func,
+    value:    React.PropTypes.func,
+    onChange: React.PropTypes.func,
+  },
+
+  getChildContext() {
+
+    return this._context || (this._context = { 
+
+      schema:   path => yup.reach(this.props.schema, path), 
+
+      value:    path => getter(path)(this.props.value),
+
+      onChange: (path, val, updates) => this._update(path, val, updates)
+    })
+  },
+
+  _update(path, widgetValue, updateMap){
+    var model = this.props.value
+      , updater = (model, path, val) => update(this.props.value, specFromPath(path, val))
+
+    if (updateMap) {
+      for( var key in updateMap ) if ( updateMap.hasOwnProperty(key))
+        model = updater(model, key, val[updateMap[key]])
+    }
+    else
+      model = updater(model, path, widgetValue)
+
+    this.props.onChange && 
+      this.props.onChange(model)
   },
 
   render() {
     var { 
         children
-      , schema
       , onChange
       , ...props } = this.props;
       
-    addChildContext(children, { 
-      schema: path => yup.reach(schema, path), 
-      value:  path => getter(path)(props.value),
-      onChange: (path, val) => 
-        onChange && onChange(update(props.value, specFromPath(path, val)))
-    })
-
     return (
       <Validator ref='validator' validate={this._validate} onValidate={this._validateEvent}>
         <form {...props}>
-          { children }
+          { this.state.children }
         </form>
       </Validator>
     );
@@ -59,7 +100,7 @@ var Form = React.createClass({
     }
   },
 
-  _validate( path, input) {
+  _validate( path) {
     var model = this.props.value
       , field = yup.reach(this.props.schema, path)
       , value = getter(path)(model);
@@ -84,34 +125,53 @@ var Form = React.createClass({
     while( (path = queue.shift()) ) 
       validator.validateField(path)
   }
-
 });
 
 module.exports = Form;
 
-function addChildContext(children, context) {
 
-  React.Children.forEach(children, function(child)  {
-    if( !React.isValidElement(child) ) 
-      return 
+/*
+ * “Do not be afraid; our fate Cannot be taken from us; it is a gift.” 
+ * ― Dante Alighieri, Inferno
+ */
+function attachChildren(children, context) {
 
-    if( child.type.contextTypes )
-      assign(child._context, context)
-    
-    if ( child.props.children) 
-      addChildContext(child.props.children, context)
-  });
+  if ( typeof children === 'string' || React.isValidElement(children))
+    return clone(children)
+
+  return React.Children.map(children, clone)
+
+  function clone (child) {
+    var props = child.props
+
+    if ( !React.isValidElement(child) )
+      return child;
+
+    if ( props.children )
+      props = { ...child.props, children: attachChildren(props.children, context) }
+
+    return new ReactElement(
+      child.type,
+      child.key,
+      child.ref,
+      child._owner,
+      !child.type._isYupFormField 
+        ? child._context
+        : { ...child._context, ...context},
+      props
+    )
+  }
 }
 
 function specFromPath(path, value){
   var parts = path.split('.')
     , obj = {}, current = obj;
 
-  parts.forEach( (part, idx) => {
+  parts.forEach((part, idx) => {
     current = (current[part] = {})
 
     if( idx === (parts.length - 1))
-      current['$set'] = value
+      current.$set = value
   })
 
   return obj

@@ -1,51 +1,51 @@
 {
-  "name": "react-form-validator",
-  "description": "easy form validation based on schema",
+  "name": "yup-forms",
   "version": "0.3.0",
-  "repository": {
-    "url": "git://github.com/jquense/yup-forms.git"
+  "description": "The best module ever.",
+  "author": {
+    "name": "Jason Quense",
+    "email": "monastic.panic@gmail.com"
   },
-  "author": "@monasticpanic Jason Quense",
+  "repository": "jquense/yup-forms",
   "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/jquense/yup-forms/issues"
-  },
-  "main": "index.js",
+  "keywords": [
+    "yup-forms",
+    "react-component",
+    "yup react-component"
+  ],
   "scripts": {
-    "test": "karma start --run-once=true"
+    "test": "karma start --single-run"
   },
   "dependencies": {
-    "es6-promise": "^2.0.1",
-    "property-expr": "^1.0.1",
-    "react": "^0.12.2",
-    "react-classset": "0.0.1",
+    "react": "^0.13.0-rc1",
     "react-input-error": "jquense/react-input-error",
-    "react-widgets": "^2.1.0",
-    "xtend": "^4.0.0",
+    "react-widgets": "^2.2.6",
     "yup": "^0.5.1"
   },
   "devDependencies": {
+    "babel": "^4.6.0",
+    "babel-loader": "^4.0.0",
     "chai": "^1.10.0",
     "chai-as-promised": "^4.1.1",
-    "concat-map": "0.0.1",
-    "convert-source-map": "^0.4.1",
+    "css-loader": "^0.9.1",
     "gulp": "^3.8.10",
-    "gulp-clean": "^0.3.1",
+    "gulp-babel": "^4.0.0",
     "gulp-less": "^2.0.1",
     "gulp-plumber": "^0.6.6",
-    "gulp-react": "^2.0.0",
-    "gulp-replace": "^0.5.0",
-    "jstransform": "^8.2.0",
-    "jsx-loader": "^0.12.2",
+    "gulp-rename": "^1.2.0",
+    "imports-loader": "^0.6.3",
     "karma": "~0.12.23",
     "karma-mocha": "~0.1.9",
+    "karma-mocha-reporter": "^0.3.1",
     "karma-phantomjs-launcher": "~0.1.4",
+    "karma-sourcemap-loader": "^0.3.2",
     "karma-webpack": "~1.2.2",
-    "map": "0.0.3",
+    "less-loader": "^2.0.0",
     "mocha": "~1.21.4",
     "phantomjs": "~1.9.10",
-    "sinon": "^1.12.2",
+    "rimraf": "^2.2.8",
     "sinon-chai": "^2.6.0",
+    "style-loader": "^0.8.3",
     "webpack": "^1.4.15",
     "webpack-dev-server": "^1.7.0"
   }

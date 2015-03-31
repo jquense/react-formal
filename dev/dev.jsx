@@ -1,16 +1,16 @@
 'use strict';
 var React = require('react/addons')
 var Form = require('../src/Form.jsx')
-var ValidatableInput = require('../src/ValidatableInput.jsx')
-var ValidationMessage = require('react-input-error/lib/components/ValidationMessage')
-var FormButton = require('react-input-error/lib/components/ValidateButton')
+var ValidatableInput = require('../src/Field.jsx')
+var ValidationMessage = require('react-input-error/lib/ValidationMessage')
+var FormButton = require('react-input-error/lib/ValidateButton')
 
 var yup = require('yup');
 var assign = require('xtend/mutable');
 var setter = require('property-expr').setter;
 
 var schema = yup.object({
-      personal:  yup.object({
+      personal: yup.object({
         name:     yup
           .string()
           .required('please provide a name')
@@ -29,7 +29,7 @@ var schema = yup.object({
           .required()
           .default(0)
           .min(0, 'your favorite number cannot be negative')
-      }),
+      })
 
     }).strict();
 
@@ -80,7 +80,15 @@ var App = React.createClass({
             <div className='form-group'>
               <label className='control-label col-sm-3'>birthday</label>
               <div className='col-sm-8'>
-                <ValidatableInput for='personal.birthday' group='personal' time={false} format='d'/>
+                <ValidatableInput 
+                  for='personal.birthday' 
+                  updates={{
+                    'personal.birthday': 'Text', 
+                    'personal.value':    'ValueID'
+                  }}
+                  group='personal' 
+                  time={false} 
+                  format='d'/>
                 <ValidationMessage for='personal.birthday'/>
               </div>
             </div>

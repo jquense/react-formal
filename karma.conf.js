@@ -8,38 +8,31 @@ module.exports = function (config) {
 
     frameworks: ['mocha'],
 
-    files: [
-      './vendor/phantomjs-shim.js',
-      './vendor/sinon-1.10.3.js',
-      '__tests__/*.js*',
-    ],
+    reporters: ['mocha'],
 
-    reporters: ['progress'],
+    files: [
+      'vendor/sinon-1.10.3.js', //because sinon hates webpack
+      'test.js'
+    ],
 
     port: 9876,
     colors: true,
     autoWatch: true,
     singleRun: false,
 
-
     logLevel: config.LOG_INFO,
 
     browsers: ['PhantomJS'], 
 
     preprocessors: {
-      '__tests__/*.js*': ['webpack']
+      'test.js': ['webpack', 'sourcemap']
     },
 
-    webpack: require('./tasks/webpack.configs').test,
+    webpack: require('./webpack.configs').test,
 
     webpackServer: {
       noInfo: true
-    },
+    }
 
-    plugins: [
-      require("karma-phantomjs-launcher"),
-      require("karma-webpack"),
-      require("karma-mocha")
-    ]
   });
 };

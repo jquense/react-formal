@@ -2,15 +2,19 @@
 var React = require('react')
   , Widgets = require('react-widgets')
   , Input   = require('./Input.jsx')
-  , FormInput = require('react-input-error/lib/components/ValidationInput')
+  , FormInput = require('react-input-error/lib/ValidationInput')
   , yup = require('yup');
 
-var ValidatableInput = React.createClass({
+var Field = React.createClass({
 
+  statics: {
+    _isYupFormField: true
+  },
+  
   propTypes: {
-    schema: React.PropTypes.instanceOf(yup.mixed).isRequired,
-    widget: React.PropTypes.func,
-    events: React.PropTypes.arrayOf(React.PropTypes.string)
+    schema:  React.PropTypes.instanceOf(yup.mixed).isRequired,
+    control: React.PropTypes.func,
+    events:  React.PropTypes.arrayOf(React.PropTypes.string)
   },
 
   contextTypes: {
@@ -35,14 +39,14 @@ var ValidatableInput = React.createClass({
       
     return (
       <FormInput for={this.props.for} group={group} events={events}>
-        <Widget {...props} onChange={this.context.onChange.bind(null, props.for)} value={value}/>
+        <Widget {...props} onChange={this.context.onChange.bind(null, props.for, props.updates)} value={value}/>
       </FormInput>
     );
   },
 
   _getInputForSchema(){
     var schema = this.context.schema(this.props.for)
-      , Widget = this.props.widget || Widgets[widgetMap[schema._type]]
+      , Widget = this.props.control || Widgets[widgetMap[schema._type]]
 
     if( !Widget )
       Widget = Input
@@ -50,13 +54,13 @@ var ValidatableInput = React.createClass({
     return Widget
   },
 
-  _change(val){
+  _change(){
 
   }
 
 });
 
-module.exports = ValidatableInput;
+module.exports = Field;
 
 var widgetMap = {
   number: 'NumberPicker',
