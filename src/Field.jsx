@@ -2,8 +2,26 @@
 var React = require('react')
   , Widgets = require('react-widgets')
   , Input   = require('./Input.jsx')
-  , FormInput = require('react-input-error/lib/ValidationInput')
+  , MessageSource = require('react-input-message/lib/MessageSource')
   , yup = require('yup');
+
+var has = {}.hasOwnProperty;
+var types = {
+  combobox: 'Combobox',
+  dropdownlist: 'DropdownList',
+  calendar: 'Calendar',
+  selectlist: 'SelectList',
+  numberpicker: 'NumberPicker',
+  datetimepicker: 'DateTimePicker',
+  multiselect: 'MultiSelect'
+}
+
+var widgetMap = {
+  number: 'NumberPicker',
+  date:   'DateTimePicker',
+  array:  'MultiSelect'
+};
+
 
 var Field = React.createClass({
 
@@ -12,9 +30,14 @@ var Field = React.createClass({
   },
   
   propTypes: {
-    schema:  React.PropTypes.instanceOf(yup.mixed).isRequired,
-    control: React.PropTypes.func,
-    events:  React.PropTypes.arrayOf(React.PropTypes.string)
+    input:   React.PropTypes.func,
+    type:    React.PropTypes.oneOfType([
+               React.PropTypes.func,
+               React.PropTypes.string,
+             ]),
+
+    events:  React.PropTypes.arrayOf(
+              React.PropTypes.string)
   },
 
   contextTypes: {
@@ -25,7 +48,8 @@ var Field = React.createClass({
 
   getDefaultProps: function() {
     return {
-      events: ['onChange']
+      type: '',
+      events: ['onChange', 'onBlur']
     };
   },
 
@@ -33,25 +57,24 @@ var Field = React.createClass({
     var { 
         events
       , group
+      , updates
+      , for: pathFor
       , ...props } = this.props
       , Widget = this._getInputForSchema()
-      , value  = this.context.value(props.for)
+      , value  = this.context.value(pathFor)
       
     return (
-      <FormInput for={this.props.for} group={group} events={events}>
-        <Widget {...props} onChange={this.context.onChange.bind(null, props.for, props.updates)} value={value}/>
-      </FormInput>
+      <MessageSource for={pathFor} group={group} events={events}>
+        <Widget {...props} onChange={this.context.onChange.bind(null, pathFor, updates)} value={value}/>
+      </MessageSource>
     );
   },
 
   _getInputForSchema(){
     var schema = this.context.schema(this.props.for)
-      , Widget = this.props.control || Widgets[widgetMap[schema._type]]
+      , type   = types[this.props.type.toLowerCase()] || widgetMap[schema._type]
 
-    if( !Widget )
-      Widget = Input
-
-    return Widget
+    return this.props.control || Widgets[type] || Input
   },
 
   _change(){
@@ -62,8 +85,3 @@ var Field = React.createClass({
 
 module.exports = Field;
 
-var widgetMap = {
-  number: 'NumberPicker',
-  date:   'DateTimePicker',
-  array:  'MultiSelect'
-};
