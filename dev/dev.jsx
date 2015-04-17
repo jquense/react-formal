@@ -2,9 +2,10 @@
 var React = require('react/addons')
 var Form = require('../src')
 
-
+var yup = require('../src/less/styles.less');
 var yup = require('yup');
 var setter = require('property-expr').setter;
+
 
 var people =[
   { id: 0, first: 'John', surname: 'Smith'},
@@ -14,17 +15,16 @@ var people =[
   { id: 4, first: 'Yolanda', surname: 'Diaz'},
   { id: 5, first: 'Bertha', surname: 'Totes'}
 ]
+var emptyString = yup.string().default('')
 
 var schema = yup.object({
       personal: yup.object(
       {
         id:     yup.number()
-          .required('please provide a name')
-          .default(''),
-        first:    yup.string()
-          .default(''),
-        last:     yup.string()
-          .default(''),
+          .required('please provide an ID')
+          .default(0),
+        first:    emptyString,
+        last:     emptyString,
         birthday: yup.date()
           .required('please provide a date of birth')
           .nullable()
@@ -39,7 +39,7 @@ var schema = yup.object({
           .min(0, 'your favorite number cannot be negative')
       })
 
-    }).strict();
+    });
 
 
 // Simple component to pull it all together
@@ -76,13 +76,14 @@ var App = React.createClass({
       <div style={{ width: 400 }}>
         <input type='text' defaultValue='hi'/>
         <Form value={model} onChange={this._change} schema={schema} className='form-horizontal'>
+          <Form.ValidationSummary hi='hello'/>
           <fieldset>
             <legend>Personal</legend>
             <div className='form-group'>
               <label className='control-label col-sm-3'>name</label>
               <div className='col-sm-8'>
                 <Form.Field for='personal.id' 
-                  type='dropdownlist'
+                  type='combobox'
                   updates={{
                     'personal.id':    'id',
                     'personal.first': 'first', 
@@ -93,7 +94,7 @@ var App = React.createClass({
                   valueField='id'
                   data={people}
                   />
-                <Form.ValidationMessage for='personal.name'/>
+                <Form.ValidationMessage for='personal.id'/>
               </div>
             </div>
             <div className='form-group'>
@@ -101,6 +102,7 @@ var App = React.createClass({
               <div className='col-sm-8'>
                 <Form.Field 
                   for='personal.birthday' 
+                  onChange={ e => console.log('hi', e)}
                   group='personal'
                   time={false} 
                   format='d'/>
@@ -119,7 +121,7 @@ var App = React.createClass({
             </div>
             <div className='form-group'>
               <div className='col-sm-offset-3 col-sm-8'>
-                <Form.Submit type='button' className='btn btn-primary'>Submit</Form.Submit>
+                <Form.Button type='submit' className='btn btn-primary'>Submit</Form.Button>
               </div>
             </div>
           </fieldset>

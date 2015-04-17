@@ -2,8 +2,8 @@
 var Validator = require('react-input-message/lib/Validator')
 var Container = require('react-input-message/lib/MessageContainer')
 
-var React        = require('react')
-  , ReactElement = require('react/lib/ReactElement')
+var React    = require('react')
+  , getChildren = require('./util/parentContext')
   , updateIn = require('react/lib/update')
   , yup      = require('yup')
   , getter   = require('property-expr').getter;
@@ -70,7 +70,7 @@ class Form extends React.Component {
     })
 
     this.state = {
-      children: attachChildren(
+      children: getChildren(
             this.props.children
           , this.getChildContext())
     }
@@ -81,7 +81,7 @@ class Form extends React.Component {
     this._flushValidations(nextProps)
 
     this.setState({ 
-      children: attachChildren(
+      children: getChildren(
           nextProps.children
         , this.getChildContext())
     })
@@ -189,38 +189,6 @@ class Form extends React.Component {
 module.exports = Form;
 
 
-/*
- * “Do not be afraid; our fate Cannot be taken from us; it is a gift.” 
- * ― Dante Alighieri, Inferno
- */
-function attachChildren(children, context) {
-
-  if ( typeof children === 'string' || React.isValidElement(children))
-    return clone(children)
-
-  return React.Children.map(children, clone)
-
-  function clone (child) {
-    var props = child.props
-
-    if ( !React.isValidElement(child) )
-      return child;
-
-    if ( props.children )
-      props = { ...child.props, children: attachChildren(props.children, context) }
-
-    return new ReactElement(
-      child.type,
-      child.key,
-      child.ref,
-      child._owner,
-      !child.type._isYupFormField 
-        ? child._context
-        : { ...child._context, ...context},
-      props
-    )
-  }
-}
 
 function specFromPath(path, value){
   var parts = path.split('.')

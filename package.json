@@ -17,13 +17,14 @@
     "test": "karma start --single-run"
   },
   "peerDependencies": {
-    "react": "^0.13.0"
+    "react": ">=0.13.0"
   },
   "dependencies": {
+    "classnames": "^1.2.0",
     "property-expr": "^1.0.1",
-    "react-input-message": "jquense/react-input-message",
-    "react-widgets": "^2.2.6",
-    "yup": "^0.5.1"
+    "react-input-message": "^0.5.1",
+    "react-widgets": "^2.4.1",
+    "yup": "^0.6.3"
   },
   "devDependencies": {
     "babel": "^4.6.0",

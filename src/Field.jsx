@@ -2,7 +2,7 @@
 var React = require('react')
   , Widgets = require('react-widgets')
   , Input   = require('./Input.jsx')
-  , MessageSource = require('react-input-message/lib/MessageSource')
+  , MessageTrigger = require('react-input-message/lib/MessageTrigger')
   , yup = require('yup');
 
 var has = {}.hasOwnProperty;
@@ -23,13 +23,11 @@ var widgetMap = {
 };
 
 
-var Field = React.createClass({
+class Field extends React.Component {
 
-  statics: {
-    _isYupFormField: true
-  },
+  static _isYupFormField = true
   
-  propTypes: {
+  static propTypes = {
     input:   React.PropTypes.func,
     type:    React.PropTypes.oneOfType([
                React.PropTypes.func,
@@ -37,21 +35,22 @@ var Field = React.createClass({
              ]),
 
     events:  React.PropTypes.arrayOf(
-              React.PropTypes.string)
-  },
+               React.PropTypes.string),
+    
+    errorClass:  React.PropTypes.string
+  }
 
-  contextTypes: {
+  static contextTypes = {
     schema:   React.PropTypes.func,
     onChange: React.PropTypes.func,
     value:    React.PropTypes.func
-  },
+  }
 
-  getDefaultProps: function() {
-    return {
-      type: '',
-      events: ['onChange', 'onBlur']
-    };
-  },
+  static defaultProps = {
+    type: '',
+    events: ['onChange', 'onBlur'],
+    errorClass: 'invalid-field'
+  }
 
   render() {
     var { 
@@ -61,27 +60,39 @@ var Field = React.createClass({
       , for: pathFor
       , ...props } = this.props
       , Widget = this._getInputForSchema()
-      , value  = this.context.value(pathFor)
+      , value  = this.getContext().value(pathFor)
       
     return (
-      <MessageSource for={pathFor} group={group} events={events}>
-        <Widget {...props} onChange={this.context.onChange.bind(null, pathFor, updates)} value={value}/>
-      </MessageSource>
-    );
-  },
-
-  _getInputForSchema(){
-    var schema = this.context.schema(this.props.for)
-      , type   = types[this.props.type.toLowerCase()] || widgetMap[schema._type]
-
-    return this.props.control || Widgets[type] || Input
-  },
-
-  _change(){
-
+      <MessageTrigger for={pathFor} group={group} events={events} activeClass={props.errorClass}>
+        <Widget {...props} onChange={this._change.bind(this)} value={value}/>
+      </MessageTrigger>
+    )
   }
 
-});
+  _getInputForSchema(){
+    var schema = this.getContext().schema(this.props.for)
+      , type = this.props.type;
+
+    if ( typeof type === 'function' )
+      return type
+
+    type = types[type.toLowerCase()] || widgetMap[schema._type]
+
+    return Widgets[type] || Input
+  }
+
+  _change(...args){
+    this.getContext().onChange(this.props.for, this.props.updates, args[0])
+    this.props.onChange
+      && this.props.onChange(...args)
+  }
+
+  getContext(){
+    return process.env.NODE_ENV !== 'production' 
+      ? this.context
+      : this._reactInternalInstance._context
+  }
+}
 
 module.exports = Field;
 

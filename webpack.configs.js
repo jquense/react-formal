@@ -11,6 +11,7 @@ var config = {
         'es6.modules',      //needed for something....
         'es6.blockScoping', //needed for classes
         'es6.arrowFunctions',
+        'es6.spread',
         'es6.properties.computed',
         'es6.properties.shorthand',
         'es6.parameters.default',

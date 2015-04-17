@@ -2,34 +2,29 @@ var React = require('react')
 var warning = require('react/lib/warning')
 var Trigger = require('react-input-message/lib/MessageTrigger')
 
+
 class FormButton extends React.Component {
 
   render(){
     let { 
-        component
-      , type
+        type = 'button'
+      , group
       , ...props } = this.props
 
-    warning(!type, 
-      'You have specified a `type` prop on this Form.Button component. ' +
-      'This component overrides type so provided `type` will never be used. ' +
-      'To create a `submit` button use the Form.Submit component or a plain <button/> tag instead.')
+    warning(!group || type.toLowerCase() !== 'submit', 
+      '[yup-forms] You have specified a `group` prop with type="submit" on this Form.Button component. ' +
+      'submit type buttons will automatically trigger a form wide validation. ' +
+      'to trigger validation for jsut the group: `' + group+'` use type="button" instead.')
 
-    return <Trigger {...this.props} type='button'/>
+    if (type.toLowerCase() === 'submit')
+      return <button {...props} type='submit'>{ this.props.children }</button>
+
+    return (
+      <Trigger group={group} events={['onClick']}>
+        <button {...props}>{ this.props.children }</button>
+      </Trigger>
+    )
   }
 }
 
-// for symmetry..
-class FormSubmit extends React.Component {
-
-  render(){
-    warning(!this.props.type, 
-      'You have specified a `type` prop on this Form.Submit component. ' +
-      'This component overrides type so provided `type` will never be used ' +
-      'To trigger form validaton without submitting use the Form.Button component instead.')
-
-    return <button {...this.props} type='submit'/>
-  }
-}
-
-module.exports = { FormSubmit, FormButton }
+module.exports = FormButton
