@@ -2,12 +2,12 @@
 var fs = require('fs')
   , gulp = require('gulp')
   , less = require('gulp-less')
-  , toFive = require("gulp-babel")
+  , babelTransform = require("gulp-babel-helpers")
   , rimraf  = require('rimraf')
   , rename  = require('gulp-rename')
   , plumber = require('gulp-plumber')
   , configs = require('./webpack.configs')
-
+  , assign  = require('react/lib/Object.assign')
   , WebpackDevServer = require("webpack-dev-server")
   , webpack = require('webpack');
 
@@ -36,7 +36,10 @@ gulp.task('build', ['clean'], function(){
 
   return gulp.src(['./src/**/*.jsx', './src/**/*.js'])
       .pipe(plumber())
-      .pipe(toFive(configs.to5Config))
+      .pipe(babelTransform(
+          assign({}, configs.babel)
+        , './util/babelHelpers.js'
+        , './lib/util/babelHelpers.js'))
       .pipe(rename({ extname: '.js' }))
       .pipe(gulp.dest('./lib'));
 })

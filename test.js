@@ -29,7 +29,4 @@ chai.should();
 
 var testsContext = require.context("./test", true);
 
-testsContext.keys().forEach(function(val){
-  console.log('hi33', val)
-  testsContext(val)
-});
+testsContext.keys().forEach(testsContext);

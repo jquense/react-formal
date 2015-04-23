@@ -4,10 +4,9 @@ var Form = require('../src')
 
 var yup = require('../src/less/styles.less');
 var yup = require('yup');
-var setter = require('property-expr').setter;
 
 
-var people =[
+var people = [
   { id: 0, first: 'John', surname: 'Smith'},
   { id: 1, first: 'Jane', surname: 'Smith'},
   { id: 2, first: 'Betsy', surname: 'Quense'},
@@ -15,7 +14,22 @@ var people =[
   { id: 4, first: 'Yolanda', surname: 'Diaz'},
   { id: 5, first: 'Bertha', surname: 'Totes'}
 ]
+
+var orgs = [
+  { id: 0, name: 'Place'},
+  { id: 1, name: 'Walmart'},
+  { id: 2, name: 'Target'}
+]
+
 var emptyString = yup.string().default('')
+
+yup.mixed.prototype.forbidden = function(message){
+  return this.test({ 
+    message, name: 'required', 
+    exclusive: true, 
+    test: v => v == null 
+  })
+}
 
 var schema = yup.object({
       personal: yup.object(
@@ -25,11 +39,15 @@ var schema = yup.object({
           .default(0),
         first:    emptyString,
         last:     emptyString,
+        orgID:    yup.number().required(),
+        location: yup.string().required(),
+
         birthday: yup.date()
           .required('please provide a date of birth')
           .nullable()
           .default(null)
-      }),
+      })
+      .test('both', 'Employer required', value => !value || value.orgID || value.location ),
 
       trivia: yup.object({
 
@@ -50,21 +68,6 @@ var App = React.createClass({
     return { model: schema.default() }
   },
 
-  createHandler(path) {
-    var self = this
-      , setpath = setter(path)
-
-    return function(val){
-      var s = self.state // copy state so we can update without mutating
-
-      if( val && val.target)      // in case we got a `SyntheticEvent` object 
-        val = val.target.value
-
-      setpath(s, val === null ? undefined : val) // i don't want to allow nullable values so coerce to undefined
-      self.setState(s)
-    }
-  },
-
   _change(model) {
     this.setState({ model })
   },
@@ -74,16 +77,15 @@ var App = React.createClass({
     
     return (
       <div style={{ width: 400 }}>
-        <input type='text' defaultValue='hi'/>
-        <Form value={model} onChange={this._change} schema={schema} className='form-horizontal'>
-          <Form.ValidationSummary hi='hello'/>
+        <Form defaultValue={schema.default()} schema={schema} className='form-horizontal' onChange={ model => console.log(model)}>
+          <Form.Summary />
           <fieldset>
             <legend>Personal</legend>
             <div className='form-group'>
               <label className='control-label col-sm-3'>name</label>
               <div className='col-sm-8'>
                 <Form.Field for='personal.id' 
-                  type='combobox'
+                  type='dropdownlist'
                   updates={{
                     'personal.id':    'id',
                     'personal.first': 'first', 
@@ -94,19 +96,35 @@ var App = React.createClass({
                   valueField='id'
                   data={people}
                   />
-                <Form.ValidationMessage for='personal.id'/>
+                <Form.Message for='personal.id'/>
+              </div>
+            </div>
+            <div className='form-group'>
+              <label className='control-label col-sm-3'>Employer</label>
+              <div className='col-sm-8'>
+                <Form.Field for='personal.orgID' validates='personal.location' 
+                  type='combobox'
+                  mapValue={{
+                    'personal.orgID': 'id',
+                    'personal.location': value => typeof value === 'string' ? value : value.name
+                  }}
+                  group='personal' 
+                  textField='name'
+                  valueField='id'
+                  data={orgs}
+                  />
+                <Form.Message for={['personal.orgID', 'personal.location']}/>
               </div>
             </div>
             <div className='form-group'>
               <label className='control-label col-sm-3'>birthday</label>
               <div className='col-sm-8'>
-                <Form.Field 
+                <Form.Field type='date' 
                   for='personal.birthday' 
                   onChange={ e => console.log('hi', e)}
                   group='personal'
-                  time={false} 
-                  format='d'/>
-                <Form.ValidationMessage for='personal.birthday'/>
+                />
+                <Form.Message for='personal.birthday'/>
               </div>
             </div>
           </fieldset>
@@ -116,7 +134,7 @@ var App = React.createClass({
               <label className='control-label col-sm-3'>favorite number</label>
               <div className='col-sm-8'>
                 <Form.Field for='trivia.favNumber'/>
-                <Form.ValidationMessage for='trivia.favNumber'/>
+                <Form.Message for='trivia.favNumber'/>
               </div>
             </div>
             <div className='form-group'>

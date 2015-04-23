@@ -3,14 +3,18 @@ var Validator = require('react-input-message/lib/Validator')
 var Container = require('react-input-message/lib/MessageContainer')
 
 var React    = require('react')
+  , uncontrollable = require('uncontrollable')
   , getChildren = require('./util/parentContext')
   , updateIn = require('react/lib/update')
   , yup      = require('yup')
-  , getter   = require('property-expr').getter;
+  , prop = require('property-expr');
+
+let parent = path => prop.join(prop.split(path).slice(0, -1))
 
 class Form extends React.Component {
 
   static propTypes = {
+    value: React.PropTypes.object,
 
     onChange: React.PropTypes.func,
 
@@ -28,22 +32,13 @@ class Form extends React.Component {
         err = new Error('`schema` must be a proper yup schema: (' + componentName + ')')
 
       return err
-    },
-
-    value: (props, propName, componentName, location) => {
-      if(props[propName] !== undefined){
-        if ( !props.onChange )
-          return new Error(
-              `You have provided a \`value\` prop to \`${componentName}\` 
-              without an \`onChange()\` handler. This will render a read-only form.`)
-      }
-
-      return React.PropTypes.object.isRequired(props, propName, componentName, location)
     }
   }
 
   static defaultProps = {
-    component: 'form'
+    component: 'form',
+    strict: true,
+    updater: (model, path, val) => updateIn(model, specFromPath(path, val))
   }   
     
 
@@ -62,9 +57,10 @@ class Form extends React.Component {
     this.validator = new Validator((path, props) => {
       var model = props.value
         , field = yup.reach(props.schema, path)
-        , value = getter(path)(model);
+        , value = prop.getter(path)(model)
+        , context = prop.getter(parent(path))(model);
 
-      return field.validate(value, { strict: true })
+      return field.validate(value, { strict: props.strict, context })
         .then(() => void 0)       
         .catch(err => err.errors) 
     })
@@ -93,26 +89,27 @@ class Form extends React.Component {
 
       schema:   path => yup.reach(this.props.schema, path), 
 
-      value:    path => getter(path)(this.props.value),
+      value:    path => prop.getter(path)(this.props.value),
 
       onChange: (path, updates, val) => this._update(path, val, updates)
     })
   }
 
-  _update(path, widgetValue, updateMap){
+  _update(path, widgetValue, mapValue){
     var model = this.props.value
-      , updater = (model, path, val) => updateIn(model, specFromPath(path, val))
+      , updater = this.props.updater;
 
+    if (typeof mapValue === 'function')
+      model = updater(model, path, mapValue(widgetValue))
 
-    if (updateMap) {
-      for( var key in updateMap ) if ( updateMap.hasOwnProperty(key))
-        model = updater(model, key, getValue(widgetValue, key, updateMap))
+    else if (mapValue){
+      for( var key in mapValue ) if ( mapValue.hasOwnProperty(key))
+        model = updater(model, key, getValue(widgetValue, key, mapValue))
     }
     else
       model = updater(model, path, widgetValue)
 
-    this.props.onChange && 
-      this.props.onChange(model)
+    this.props.onChange(model)
 
     function getValue(val, key, map){
       let field = map[key]
@@ -152,19 +149,9 @@ class Form extends React.Component {
   _submit(e){
     e.preventDefault()
 
-    var fields = this._container.fields()
-
-    this.validator
-      .validate(fields, this.props)
-      .then(() => {
-        let errors = this.validator.errors()
-
-        if ( Object.keys(errors).length )
-          return this.setState({ errors })
-
-        this.props.onSubmit 
-          && this.props.onSubmit()
-      }) 
+    this.props.schema.validate(this.props.value, { strict: this.props.strict, abortEarly: false })
+      .catch(err => err.errors) 
+      .then(errors => this.setState({ errors }))
   }
 
   _queueValidation(path){
@@ -182,24 +169,19 @@ class Form extends React.Component {
 
     this.validator.validate(fields, props)
       .then(() => this.setState({ errors: validator.errors() }))
-      .catch( e => setTimeout(()=> { throw e }))
+      .catch( e => setTimeout(() => { throw e }))
   }
 }
 
-module.exports = Form;
-
-
+module.exports = uncontrollable(Form, { value: 'onChange' })
 
 function specFromPath(path, value){
-  var parts = path.split('.')
+  var parts = prop.split(path)
     , obj = {}, current = obj;
 
-  parts.forEach((part, idx) => {
-    current = (current[part] = {})
+  parts.forEach(part => current = (current[part] = {}))
 
-    if( idx === (parts.length - 1))
-      current.$set = value
-  })
+  current.$set = value
 
   return obj
 }

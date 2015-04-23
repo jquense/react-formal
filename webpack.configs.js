@@ -24,7 +24,7 @@ var config = {
 
 module.exports = {
 
-  to5Config: config,
+  babel: config,
 
   dev: {
     devtool: 'source-map',
@@ -51,9 +51,9 @@ module.exports = {
       ]
     },
     plugins: [
-        new webpack.ProvidePlugin({
-            babelHelpers: "./util/helpers"
-        })
+      // new webpack.DefinePlugin({
+      //   "process.env": { NODE_ENV: JSON.stringify("production") }
+      // })
     ]
   },
 

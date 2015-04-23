@@ -1,43 +1,27 @@
 'use strict';
 var React = require('react')
-  , Widgets = require('react-widgets')
+  , types = require('./util/types')
   , Input   = require('./Input.jsx')
-  , MessageTrigger = require('react-input-message/lib/MessageTrigger')
-  , yup = require('yup');
+  , MessageTrigger = require('react-input-message/lib/MessageTrigger');
 
 var has = {}.hasOwnProperty;
-var types = {
-  combobox: 'Combobox',
-  dropdownlist: 'DropdownList',
-  calendar: 'Calendar',
-  selectlist: 'SelectList',
-  numberpicker: 'NumberPicker',
-  datetimepicker: 'DateTimePicker',
-  multiselect: 'MultiSelect'
-}
-
-var widgetMap = {
-  number: 'NumberPicker',
-  date:   'DateTimePicker',
-  array:  'MultiSelect'
-};
-
 
 class Field extends React.Component {
 
   static _isYupFormField = true
   
   static propTypes = {
-    input:   React.PropTypes.func,
-    type:    React.PropTypes.oneOfType([
-               React.PropTypes.func,
-               React.PropTypes.string,
-             ]),
+    for: React.PropTypes.string.isRequired,
 
-    events:  React.PropTypes.arrayOf(
-               React.PropTypes.string),
+    type: React.PropTypes.oneOfType([
+            React.PropTypes.func,
+            React.PropTypes.string,
+          ]),
+
+    events: React.PropTypes.arrayOf(
+              React.PropTypes.string),
     
-    errorClass:  React.PropTypes.string
+    errorClass: React.PropTypes.string
   }
 
   static contextTypes = {
@@ -56,12 +40,14 @@ class Field extends React.Component {
     var { 
         events
       , group
-      , updates
+      , mapValue
       , for: pathFor
       , ...props } = this.props
       , Widget = this._getInputForSchema()
       , value  = this.getContext().value(pathFor)
-      
+    
+    pathFor = props.validates == null ? pathFor : [pathFor].concat(props.validates)
+
     return (
       <MessageTrigger for={pathFor} group={group} events={events} activeClass={props.errorClass}>
         <Widget {...props} onChange={this._change.bind(this)} value={value}/>
@@ -70,27 +56,24 @@ class Field extends React.Component {
   }
 
   _getInputForSchema(){
-    var schema = this.getContext().schema(this.props.for)
+    var propFor = this.props.for
+      , schema = this.getContext().schema(propFor)
       , type = this.props.type;
 
     if ( typeof type === 'function' )
       return type
 
-    type = types[type.toLowerCase()] || widgetMap[schema._type]
-
-    return Widgets[type] || Input
+    return types[type.toLowerCase()] || types[schema._type] || Input
   }
 
   _change(...args){
-    this.getContext().onChange(this.props.for, this.props.updates, args[0])
+    this.getContext().onChange(this.props.for, this.props.mapValue, args[0])
     this.props.onChange
       && this.props.onChange(...args)
   }
 
   getContext(){
-    return process.env.NODE_ENV !== 'production' 
-      ? this.context
-      : this._reactInternalInstance._context
+    return this._reactInternalInstance._context
   }
 }
 
