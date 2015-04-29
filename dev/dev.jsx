@@ -5,7 +5,6 @@ var Form = require('../src')
 var yup = require('../src/less/styles.less');
 var yup = require('yup');
 
-
 var people = [
   { id: 0, first: 'John', surname: 'Smith'},
   { id: 1, first: 'Jane', surname: 'Smith'},
@@ -23,31 +22,32 @@ var orgs = [
 
 var emptyString = yup.string().default('')
 
-yup.mixed.prototype.forbidden = function(message){
+yup.mixed.prototype.forbidden = function(message = 'This field is forbidden'){
   return this.test({ 
     message, name: 'required', 
     exclusive: true, 
-    test: v => v == null 
+    test: v => {
+      return v == null 
+    }
   })
 }
 
 var schema = yup.object({
-      personal: yup.object(
+      personal: yup.object().shape(
       {
         id:     yup.number()
           .required('please provide an ID')
           .default(0),
         first:    emptyString,
         last:     emptyString,
-        orgID:    yup.number().required(),
-        location: yup.string().required(),
+        orgID:    yup.number().when('location', (v, s) => !v ? s.required() : s),
+        location: yup.string().when('orgID', (v, s) => v ? s.forbidden() : s),
 
         birthday: yup.date()
           .required('please provide a date of birth')
           .nullable()
           .default(null)
-      })
-      .test('both', 'Employer required', value => !value || value.orgID || value.location ),
+      }, ['orgID', 'location']),
 
       trivia: yup.object({
 
@@ -77,7 +77,7 @@ var App = React.createClass({
     
     return (
       <div style={{ width: 400 }}>
-        <Form defaultValue={schema.default()} schema={schema} className='form-horizontal' onChange={ model => console.log(model)}>
+        <Form defaultValue={model} schema={schema} className='form-horizontal' onChange={ model => console.log(model)}>
           <Form.Summary />
           <fieldset>
             <legend>Personal</legend>

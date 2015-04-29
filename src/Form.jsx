@@ -150,7 +150,10 @@ class Form extends React.Component {
     e.preventDefault()
 
     this.props.schema.validate(this.props.value, { strict: this.props.strict, abortEarly: false })
-      .catch(err => err.errors) 
+      .catch(err => err.inner.reduce((a, e) => {
+        a[e.path] = (a[e.path] || (a[e.path] = [])).concat(e.errors)
+        return a
+      }, {}))
       .then(errors => this.setState({ errors }))
   }
 

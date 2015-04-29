@@ -35,13 +35,15 @@ module.exports = {
     },
 
     resolve: {
-      extensions: ['', '.js', '.jsx']
+      extensions: ['', '.js', '.jsx', 'json']
     },
 
     module: {
       loaders: [
+        { test: /\.json$/,  loader: "json-loader" },
         { test: /\.css$/,  loader: "style-loader!css-loader" },
         { test: /\.less$/, loader: "style-loader!css-loader!less-loader" },
+        //{ test: /globalize/, loader: "imports?define=>false" },
         { 
           test: /\.jsx$|\.js$/, 
           loader: 'babel-loader', 
