@@ -1,3 +1,4 @@
+'use strict';
 var types =  require('./util/types')
   , Form = require('./Form')
   , Field = require('./Field')
