@@ -1,42 +1,43 @@
 'use strict';
 
 let React = require('react')
-  , Input   = require('../Input.jsx')
-  , { 
-    Combobox
-  , DropdownList
-  , NumberPicker
-  , Calendar
-  , DateTimePicker
-  , MultiSelect
-  , SelectList } = require('react-widgets')
+  , Input   = require('../inputs/Input.jsx')
+  , DateInput = require('../inputs/Date')
+  , NumberInput = require('../inputs/Number')
+  , BoolInput = require('../inputs/Bool')
+  , SelectInput = require('../inputs/Select')
+
+let localDt = 'datetime-local'
 
 let wrapWithDefaults = 
-  (Component, defaults) => props => ({
-    props,
+  (Component, defaults) => class extends React.Component {
     render() {
-      return React.createElement(Component, {...defaults, ...this.props})
+      return React.createElement(Component, {
+        ...defaults, 
+        ...this.props, 
+        type: defaults.type || this.props.type
+      })
     }
-  })
+  }
 
 let types = Object.create(null);
 
-types.text           = 
-  types.email        = Input
-  
-types.combobox       = Combobox
-types.dropdownlist   = DropdownList
-types.calendar       = Calendar
-types.selectlist     = SelectList
+types.string     = wrapWithDefaults(Input, { type: 'text'})
+types.number     = NumberInput
+types.date       = 
+  types.time     = 
+  types.datetime = 
+  types[localDt] = DateInput
 
-types.date           = wrapWithDefaults(DateTimePicker, { time: false })
-types.time           = wrapWithDefaults(DateTimePicker, { date: false })
-types.datetimepicker = DateTimePicker
+types.array      =
+  types.listbox  = wrapWithDefaults(SelectInput, { multiple: true })
 
-types.number         = 
-  types.numberpicker = NumberPicker
+types.bool       = 
+  types.boolean  = BoolInput
 
-types.array          =
-  types.multiselect  = MultiSelect
+types.textarea   = wrapWithDefaults(Input, { tagName: 'textarea' })
+
+types.select     = SelectInput
+
 
 module.exports = types

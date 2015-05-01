@@ -41,7 +41,6 @@ class Form extends React.Component {
     updater: (model, path, val) => updateIn(model, specFromPath(path, val))
   }   
     
-
   static childContextTypes = {
 
     schema:   React.PropTypes.func,
@@ -121,6 +120,7 @@ class Form extends React.Component {
     var { 
         children
       , onChange
+      , value
       , component: Element
       , ...props } = this.props;
     
@@ -150,6 +150,7 @@ class Form extends React.Component {
     e.preventDefault()
 
     this.props.schema.validate(this.props.value, { strict: this.props.strict, abortEarly: false })
+      .then(() => undefined)     
       .catch(err => err.inner.reduce((a, e) => {
         a[e.path] = (a[e.path] || (a[e.path] = [])).concat(e.errors)
         return a

@@ -2,7 +2,7 @@
 var React = require('react/addons')
 var Form = require('../src')
 
-var yup = require('../src/less/styles.less');
+require('../src/less/styles.less');
 var yup = require('yup');
 
 var people = [
@@ -40,6 +40,7 @@ var schema = yup.object({
           .default(0),
         first:    emptyString,
         last:     emptyString,
+        
         orgID:    yup.number().when('location', (v, s) => !v ? s.required() : s),
         location: yup.string().when('orgID', (v, s) => v ? s.forbidden() : s),
 
@@ -50,7 +51,7 @@ var schema = yup.object({
       }, ['orgID', 'location']),
 
       trivia: yup.object({
-
+        isCool:    yup.bool().default(false),
         favNumber: yup.number()
           .required()
           .default(0)
@@ -84,46 +85,29 @@ var App = React.createClass({
             <div className='form-group'>
               <label className='control-label col-sm-3'>name</label>
               <div className='col-sm-8'>
-                <Form.Field for='personal.id' 
-                  type='dropdownlist'
-                  updates={{
-                    'personal.id':    'id',
-                    'personal.first': 'first', 
-                    'personal.last':  'surname'
-                  }}
-                  group='personal' 
-                  textField='first'
-                  valueField='id'
-                  data={people}
-                  />
+                <Form.Field for='personal.id' type='select' group='personal' className='form-control'>
+                  { people.map(person => 
+                    <option value={person.id}>{person.first + ' ' + person.surname}</option>)
+                  }
+                </Form.Field>
                 <Form.Message for='personal.id'/>
               </div>
             </div>
             <div className='form-group'>
               <label className='control-label col-sm-3'>Employer</label>
               <div className='col-sm-8'>
-                <Form.Field for='personal.orgID' validates='personal.location' 
-                  type='combobox'
-                  mapValue={{
-                    'personal.orgID': 'id',
-                    'personal.location': value => typeof value === 'string' ? value : value.name
-                  }}
-                  group='personal' 
-                  textField='name'
-                  valueField='id'
-                  data={orgs}
-                  />
+                <Form.Field for='personal.orgID' multiple type='select' group='personal' className='form-control'>
+                  { orgs.map(org => 
+                    <option value={org.id}>{org.name}</option>)
+                  }
+                </Form.Field>
                 <Form.Message for={['personal.orgID', 'personal.location']}/>
               </div>
             </div>
             <div className='form-group'>
               <label className='control-label col-sm-3'>birthday</label>
               <div className='col-sm-8'>
-                <Form.Field type='date' 
-                  for='personal.birthday' 
-                  onChange={ e => console.log('hi', e)}
-                  group='personal'
-                />
+                <Form.Field type='datetime-local' for='personal.birthday' group='personal' className='form-control'/>
                 <Form.Message for='personal.birthday'/>
               </div>
             </div>
@@ -133,8 +117,19 @@ var App = React.createClass({
             <div className='form-group'>
               <label className='control-label col-sm-3'>favorite number</label>
               <div className='col-sm-8'>
-                <Form.Field for='trivia.favNumber'/>
+                <Form.Field for='trivia.favNumber' className='form-control'/>
                 <Form.Message for='trivia.favNumber'/>
+              </div>
+            </div>
+            <div className='form-group'>
+              
+              <div className='col-sm-8 col-sm-offset-3'>
+                <div className='checkbox'>
+                  <label className='checkbox'>
+                    <Form.Field for='trivia.isCool'/> Cool?
+                  </label>
+                  <Form.Message for='trivia.isCool'/>
+                </div>
               </div>
             </div>
             <div className='form-group'>

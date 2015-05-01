@@ -1,7 +1,7 @@
 'use strict';
 var React = require('react')
   , types = require('./util/types')
-  , Input   = require('./Input.jsx')
+  , Input   = require('./inputs/Input.jsx')
   , MessageTrigger = require('react-input-message/lib/MessageTrigger');
 
 var has = {}.hasOwnProperty;
@@ -43,27 +43,22 @@ class Field extends React.Component {
       , mapValue
       , for: pathFor
       , ...props } = this.props
-      , Widget = this._getInputForSchema()
+      , schema = this.getContext().schema(pathFor)
       , value  = this.getContext().value(pathFor)
-    
+      , type = this.props.type || schema._type
+      , Widget = type;
+
+    Widget = typeof this.props.type === 'function' 
+      ? ((type = undefined), this.props.type)
+      : types[type.toLowerCase()] || Input
+
     pathFor = props.validates == null ? pathFor : [pathFor].concat(props.validates)
 
     return (
       <MessageTrigger for={pathFor} group={group} events={events} activeClass={props.errorClass}>
-        <Widget {...props} onChange={this._change.bind(this)} value={value}/>
+        <Widget {...props} type={type} value={value} onChange={this._change.bind(this)}/>
       </MessageTrigger>
     )
-  }
-
-  _getInputForSchema(){
-    var propFor = this.props.for
-      , schema = this.getContext().schema(propFor)
-      , type = this.props.type;
-
-    if ( typeof type === 'function' )
-      return type
-
-    return types[type.toLowerCase()] || types[schema._type] || Input
   }
 
   _change(...args){

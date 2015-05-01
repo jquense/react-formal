@@ -1,8 +1,10 @@
 var React = require('react')
+var pureRender = require('react-purerender')
 var Message = require('react-input-message/lib/Message')
 var cn = require('classnames');
 
-module.exports = class ValidationMessage {
+@pureRender
+class ValidationMessage {
 
   constructor(props, context){
     this.props = props;
@@ -18,3 +20,5 @@ module.exports = class ValidationMessage {
     />
   }
 }
+
+module.exports = ValidationMessage
