@@ -3,12 +3,9 @@ var React = require('react/addons')
   , inputs = require('../src/inputs')
   , Form = require('../src');
 
-
 var $ = require('react-testutil-query')
 
-console.log($.react === React)
-
-describe('Message', ()=> {
+describe('Field', ()=> {
   var schema = yup.object({ 
     name: yup.string().default('') 
   })

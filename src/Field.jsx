@@ -1,29 +1,19 @@
 'use strict';
 var React = require('react')
+  , invariant = require('react/lib/invariant')
   , types = require('./util/types')
   , Input   = require('./inputs/Input.jsx')
   , MessageTrigger = require('react-input-message/lib/MessageTrigger');
 
 var has = {}.hasOwnProperty;
 
+/**
+ * Comment!
+ */
 class Field extends React.Component {
 
   static _isYupFormField = true
   
-  static propTypes = {
-    for: React.PropTypes.string.isRequired,
-
-    type: React.PropTypes.oneOfType([
-            React.PropTypes.func,
-            React.PropTypes.string,
-          ]),
-
-    events: React.PropTypes.arrayOf(
-              React.PropTypes.string),
-    
-    errorClass: React.PropTypes.string
-  }
-
   static contextTypes = {
     schema:   React.PropTypes.func,
     onChange: React.PropTypes.func,
@@ -34,6 +24,13 @@ class Field extends React.Component {
     type: '',
     events: ['onChange', 'onBlur'],
     errorClass: 'invalid-field'
+  }
+
+  componentWillMount() {
+    if ( process.env.NODE_ENV !== 'production' )
+      invariant(!!this.getContext().schema(this.props.for),
+        `[Yup Formal] There is no corresponding schema defined for this field: "${this.props.for}" ` +
+        `Each Field's \`for\` prop must be a valid path defined by the parent Form schema`)
   }
 
   render() {
@@ -71,6 +68,21 @@ class Field extends React.Component {
     return this._reactInternalInstance._context
   }
 }
+
+Field.propTypes = {
+    for: React.PropTypes.string.isRequired,
+
+    type: React.PropTypes.oneOfType([
+            React.PropTypes.func,
+            React.PropTypes.string,
+          ]),
+
+    events: React.PropTypes.arrayOf(
+              React.PropTypes.string),
+    
+    errorClass: React.PropTypes.string
+  }
+
 
 module.exports = Field;
 

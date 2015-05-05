@@ -96,7 +96,7 @@ var App = React.createClass({
             <div className='form-group'>
               <label className='control-label col-sm-3'>Employer</label>
               <div className='col-sm-8'>
-                <Form.Field for='personal.orgID' multiple type='select' group='personal' className='form-control'>
+                <Form.Field for='personal.orgID' type='select' group='personal' className='form-control'>
                   { orgs.map(org => 
                     <option value={org.id}>{org.name}</option>)
                   }
