@@ -10,6 +10,22 @@ module.exports =
     pureRender(
       /**
        * Display all Form validation `errors` in a single summary list.
+       * 
+       * ```editable
+       * <Form 
+       *   schema={modelSchema} 
+       *   defaultValue={modelSchema.default()}
+       * >
+       *   <Form.Summary/>
+       *   
+       *   <Form.Field name='name.first' placeholder='first'/>
+       *   <Form.Field name='name.last' placeholder='surname'/>
+       *   <Form.Field name='dateOfBirth' placeholder='dob'/>
+       *   
+       *   <Form.Button>Validate</Form.Button> 
+       * </Form>      
+       * ```
+       * @alias Summary
        */
       class ValidationSummary extends React.Component {
 
@@ -36,10 +52,14 @@ module.exports =
           ]).isRequired, 
 
           /**
-           * A css class that should be always be applied to the Message container.
+           * A css class that should be always be applied to the Summary container.
            */
           errorClass: React.PropTypes.string,
 
+          /**
+           * Specify a group to show erros for, if empty all form errors will be shown in the Summary.
+           */
+          group: React.PropTypes.string,
         }
 
         static defaultProps = {

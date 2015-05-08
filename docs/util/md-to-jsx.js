@@ -22,6 +22,12 @@ function unescape(html) {
 var template = handlebars.compile(fs.readFileSync(__dirname + '/../templates/page-wrapper.hbs').toString())
 var renderer = new marked.Renderer()
 
+renderer.link = function(href, title, text){
+  return href.indexOf('http') !== -1 
+    ? marked.Renderer.prototype.link.call(this, href, title, text)
+    : '<Link to="' + href + '" title="' + (title || '') + '">' + text + '</Link>'
+}
+
 renderer.codespan = function(text) {
   return '<code>{`' + unescape(text) + '`}</code>';
 };
@@ -34,7 +40,7 @@ renderer.code = function(code, lang, escaped) {
   return lang === 'editable' 
     ? '<Playground lang="js" theme="neo" scope={this.props.scope} codeText={`'+ code +'`} ' 
         + (code.indexOf('React.render(') === -1 ? 'noRender' :'') + '/>\n\n'
-    : '<pre><code>'
+    : '<pre><code className="' + (lang || '') + '">'
     + "{`" + (escaped ? code : escape(code, true)) + "`}"
     + '\n</code></pre>\n';
 };

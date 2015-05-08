@@ -56,17 +56,18 @@ gulp.task('dev', function() {
 
 
 gulp.task('gen-docs', function(){
-  gulp.src(['./src/**/*.jsx', './src/**/*.js'])
-      .pipe(require('./docs/gulp/parse-docs')('api'))
-      .pipe(gulp.dest('./docs/gulp/components'))
+  return merge(
+    gulp.src(['./src/**/*.jsx', './src/**/*.js'])
+      .pipe(require('./docs/gulp/parse-docs')())
+      .pipe(gulp.dest('./docs/components')),
 
-  return gulp.src('./docs/pages/*.md')
-    .pipe(require('./docs/gulp/md-to-jsx'))
-    .pipe(gulp.dest('./docs/components'))
+    gulp.src('./docs/pages/*.md')
+      .pipe(require('./docs/gulp/md-to-jsx')())
+      .pipe(gulp.dest('./docs/components'))
+  )
 })
 
 gulp.task('docs', function(cb){
-
   webpack(configs.docs, function(err, stat){
     console.log(stat.compilation.errors)
     cb()

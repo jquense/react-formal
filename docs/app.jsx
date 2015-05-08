@@ -1,6 +1,7 @@
 var React = require('react')
-  , types = require('./type-adapter')
+  , types = require('react-formal-inputs')
   , Form = require('../src')
+  , MyDateInput = require('../src/inputs/Date')
   , yup = require('yup')
   , {
     create: createRouter
@@ -18,8 +19,7 @@ Form.addInputTypes(types)
 
 var nameSchema = yup.string()
       .default('')
-      .required('You must provide a name')
-      .min(2, 'names must be at least 2 characters long');
+      .required('You must provide a name');
 
 var modelSchema = yup.object({
    name: yup.object({
@@ -29,13 +29,18 @@ var modelSchema = yup.object({
    dateOfBirth: yup.date()
       .required('Please enter a date of birth')
       .max(new Date(), "You can't be born in the future!"),
+
+   colorId: yup.number(),
+
    age: yup.number()
      .nullable()
      .required('Please enter an age')
      .positive('Ages must be a positive number')
 })
 
-var scope = { Form, React, yup, modelSchema }
+
+var reqMap = { 'react-formal': 'Form', 'react': 'React', 'react/addons': 'React', 'react-formal-inputs': 'types' }
+  , scope = { Form, React, yup, modelSchema, MyDateInput, types, require(name){ return scope[reqMap[name] || name] } }
   , Intro = require('./components/intro')
 
 class Docs extends React.Component {
@@ -48,12 +53,14 @@ class Docs extends React.Component {
             <li className='side-heading '>API</li>
             <li><Link to='/api/form'>Form</Link></li>
             <li><Link to='/api/field'>Form.Field</Link></li>
+            <li><Link to='/api/message'>Form.Message</Link></li>
             <li><Link to='/api/summary'>Form.Summary</Link></li>
             <li><Link to='/api/button'>Form.Button</Link></li>
+            <li><Link to='/api/yup'>Schema</Link></li>
           </ul>
         </nav>
       </aside>
-      <main className='col-sm-9 col-md-10'>
+      <main className='col-sm-9 col-md-10 doc-page'>
         <RouteHandler scope={scope} />
       </main>
      </div>)
@@ -67,7 +74,7 @@ class Main extends React.Component {
       <div className="jumbotron">
         <div className="container">
           <h1>React&nbsp;<img src='./bow-tie.svg' style={{ width: 75, marginTop: -5 }}/>&nbsp;Formal</h1>
-          <p>Straight forward HTML form management</p>
+          <p>Classy HTML form management</p>
         </div>
       </div>
       <div className='container'>
@@ -116,6 +123,7 @@ var routes = (
       <Route path='yup' handler={require('./components/yup')}/>
       <Route path='form' handler={require('./components/Form')}/>
       <Route path='field' handler={require('./components/Field')}/>
+      <Route path='message' handler={require('./components/ValidationMessage')}/>
       <Route path='summary' handler={require('./components/ValidationSummary')}/>
       <Route path='button' handler={require('./components/Button')}/>
     </Route>
@@ -125,5 +133,5 @@ var routes = (
 var rootInstance = null;
 
 createRouter({ routes }).run(function (Handler, state) {
-  rootInstance = React.render(<Handler params={state.params}/>, document.body);
+  rootInstance = React.render(<Handler params={state.params}/>, document.getElementById('AppContainer'));
 })

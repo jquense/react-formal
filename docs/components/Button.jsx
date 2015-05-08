@@ -1,4 +1,5 @@
 var React = require('react')
+  , Link = require('react-router').Link
   , Playground = require('component-playground');
 
 module.exports = class  extends React.Component {

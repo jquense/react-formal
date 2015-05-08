@@ -1,4 +1,5 @@
 var React = require('react')
+  , Link = require('react-router').Link
   , Playground = require('component-playground');
 
 module.exports = class  extends React.Component {
@@ -9,16 +10,36 @@ module.exports = class  extends React.Component {
 <p>The Field Component renders a form control and handles input value updates and validations. 
 Changes to the Field value are automatically propagated back up to the containing Form 
 Component.</p>
+<p>Fields provide a light abstraction over normal input components where values and onChange handlers
+are take care of for you. Beyond that they just render the input for their type, Fields whille pass along
+any props and children to the input so you can easily configure new input types.</p>
+<Playground lang="js" theme="neo" scope={this.props.scope} codeText={`<Form noValidate
+  schema={modelSchema} 
+  defaultValue={{ name: { first: 'Sally'}, colorID: 0 }}
+>
+  <label>Name</label>
+  <Form.Field name='name.first' placeholder='First name'/>
+
+  <label>Favorite Color</label>
+  <Form.Field name='colorId' type='select'>
+    <option value={0}>Red</option>
+    <option value={1}>Yellow</option>
+    <option value={2}>Blue</option>
+    <option value={3}>other</option>
+  </Form.Field>
+  <Form.Button type='submit'>Submit</Form.Button>
+</Form>`} noRender/>
+
 <h3 id="props">Props</h3>
 <h4 id="-name-__-required-__"><code>{`name`}</code> <strong>(required)</strong></h4>
 <p>The Field name, which should be path corresponding to a specific form <code>{`value`}</code> path.</p>
-<pre><code>{`// given the form value 
+<pre><code className="js">{`// given the form value 
 value = {
   name: { first: '' }
   languages: ['english', 'spanish']
 }
 
-// the path "name.first" would update the &quot;first&quot; property of the form value
+// the path "name.first" would update the "first" property of the form value
 <Form.Field name='name.first' />
 
 // use indexes for paths that cross arrays
@@ -52,10 +73,25 @@ with a string name e.g <code>{`'text'`}</code>, <code>{`'datetime-local'`}</code
 type class directly. When no type is provided the Field will attempt determine 
 the correct input from the corresponding scheme. A Field corresponding to a <code>{`yup.number()`}</code> 
 will render a <code>{`type='number'`}</code> input by default.</p>
-<pre><code>{`<Form.Field type='number' />
+<Playground lang="js" theme="neo" scope={this.props.scope} codeText={`<Form noValidate schema={modelSchema}>
+  Use the schema to determine type
+  <Form.Field 
+    name='dateOfBirth' 
+    placeholder='date'/>
 
-<Form.Field type={MyInputComponent}/>`}
-</code></pre>
+  Override it!
+  <Form.Field name='dateOfBirth' 
+      type='time' 
+      placeholder='time only'/>
+
+  Use a custom Component 
+  (need native 'datetime' support to see it)
+  <Form.Field 
+    name='dateOfBirth' 
+    type={MyDateInput}/>
+
+</Form>`} noRender/>
+
 <p>Custom Inputs should comply with the basic input api contract: set a value via a <code>{`value`}</code> prop and 
 broadcast changes to that value via an <code>{`onChange`}</code> handler.</p>
 <p>You can also permenantly map Components to a string <code>{`type`}</code> name via the top-level 
@@ -68,7 +104,7 @@ broadcast changes to that value via an <code>{`onChange`}</code> handler.</p>
 <p>Customize how the Field value maps to the overall Form <code>{`value`}</code>. 
 <code>{`mapValue`}</code> can be a function that returns a value for <code>{`name`}</code>&#39;d path, allowing 
 you to set commuted values from the Field.</p>
-<pre><code>{`<Form.Field name='name'
+<pre><code className="js">{`<Form.Field name='name'
   mapValue={ fieldValue => fieldValue.first + ' ' + fieldValue.last }
 />`}
 </code></pre>
@@ -102,7 +138,7 @@ to fields in the field value using a string field name, or a function accessor.<
 <h4 id="-alsovalidates-"><code>{`alsoValidates`}</code></h4>
 <p>Tells the Field to trigger validation for addition paths as well as its own (<code>{`name`}</code>). 
 Useful when used in conjuction with a <code>{`mapValue`}</code> hash that updates more than one value.</p>
-<pre><code>{`<Form.Field name='name'
+<pre><code className="js">{`<Form.Field name='name'
   mapValue={{
     'name.first': 'first',
     'name.last':  'surname'

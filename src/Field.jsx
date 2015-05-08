@@ -11,6 +11,29 @@ var has = {}.hasOwnProperty;
  * The Field Component renders a form control and handles input value updates and validations. 
  * Changes to the Field value are automatically propagated back up to the containing Form 
  * Component.
+ *
+ * Fields provide a light abstraction over normal input components where values and onChange handlers
+ * are take care of for you. Beyond that they just render the input for their type, Fields whille pass along
+ * any props and children to the input so you can easily configure new input types.
+ * 
+ * ```editable
+ * <Form noValidate
+ *   schema={modelSchema} 
+ *   defaultValue={{ name: { first: 'Sally'}, colorID: 0 }}
+ * >
+ *   <label>Name</label>
+ *   <Form.Field name='name.first' placeholder='First name'/>
+ *   
+ *   <label>Favorite Color</label>
+ *   <Form.Field name='colorId' type='select'>
+ *     <option value={0}>Red</option>
+ *     <option value={1}>Yellow</option>
+ *     <option value={2}>Blue</option>
+ *     <option value={3}>other</option>
+ *   </Form.Field>
+ *   <Form.Button type='submit'>Submit</Form.Button>
+ * </Form>
+ * ```
  */
 class Field extends React.Component {
 
@@ -34,7 +57,7 @@ class Field extends React.Component {
      *   languages: ['english', 'spanish']
      * }
      *
-     * // the path "name.first" would update the `first` property of the form value
+     * // the path "name.first" would update the "first" property of the form value
      * <Form.Field name='name.first' />
      *
      * // use indexes for paths that cross arrays
@@ -76,12 +99,26 @@ class Field extends React.Component {
      * the correct input from the corresponding scheme. A Field corresponding to a `yup.number()` 
      * will render a `type='number'` input by default.
      * 
-     * ```js
-     * <Form.Field type='number' />
+     * ```editable
+     * <Form noValidate schema={modelSchema}>
+     *   Use the schema to determine type
+     *   <Form.Field 
+     *     name='dateOfBirth' 
+     *     placeholder='date'/>
+     *       
+     *   Override it!
+     *   <Form.Field name='dateOfBirth' 
+     *       type='time' 
+     *       placeholder='time only'/>
      *
-     * <Form.Field type={MyInputComponent}/>
+     *   Use a custom Component 
+     *   (need native 'datetime' support to see it)
+     *   <Form.Field 
+     *     name='dateOfBirth' 
+     *     type={MyDateInput}/>
+     *   
+     * </Form>      
      * ```
-     * 
      * Custom Inputs should comply with the basic input api contract: set a value via a `value` prop and 
      * broadcast changes to that value via an `onChange` handler.
      *
@@ -177,8 +214,8 @@ class Field extends React.Component {
   componentWillMount() {
     if ( process.env.NODE_ENV !== 'production' )
       invariant(
-           !this.getContext().noValidate() 
-        && !!this.getContext().schema(this.props.name),
+           this.getContext().noValidate() 
+        || !!this.getContext().schema(this.props.name),
         `There is no corresponding schema defined for this field: "${this.props.name}" ` +
         `Each Field's \`name\` prop must be a valid path defined by the parent Form schema`)
   }

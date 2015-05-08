@@ -3,12 +3,14 @@ var pureRender = require('react-purerender')
 var Message = require('react-input-message/lib/Message')
 var cn = require('classnames');
 
+
+@pureRender
 /**
  * Represents a Form validation error message. Only renders when the 
  * value that it is `for` is invalid.
+ * @alias Message
  */
-@pureRender
-class ValidationMessage {
+class ValidationMessage extends React.Component {
 
   static propTypes = {
     /**
@@ -29,11 +31,6 @@ class ValidationMessage {
   static defaultProps = {
     component: 'span',
     errorClass: 'validation-error'
-  }
-
-  constructor(props, context){
-    this.props = props;
-    this.context = context
   }
 
   render(){

@@ -6,7 +6,8 @@ var marked = require('marked')
   , mdToJsx = require('../util/md-to-jsx')
 
 
-module.exports = through.obj(function transpile(file, enc, cb) {
+module.exports = function(){
+  return through.obj(function transpile(file, enc, cb) {
     if (file.isNull()) return cb();
 
     if (file.isStream()) {
@@ -14,12 +15,12 @@ module.exports = through.obj(function transpile(file, enc, cb) {
       return cb();
     }
 
-    
     var name = path.basename(file.path, path.extname(file.path))
-    console.log(name)
+    //console.log(name)
     this.push(mdToJsx(file, name, file.contents.toString()));
     cb()
   })
+}
 
 function replaceExtension(npath, ext) {
   if (typeof npath !== 'string') return npath;

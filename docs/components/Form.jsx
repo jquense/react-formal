@@ -1,4 +1,5 @@
 var React = require('react')
+  , Link = require('react-router').Link
   , Playground = require('component-playground');
 
 module.exports = class  extends React.Component {
@@ -11,49 +12,51 @@ Forms can be thought of as <code>{`<input/>`}</code>s for complex values, or mod
 a bunch of smaller inputs, each in charge of updating a small part of the overall model.
 The Form will integrate and validate each change and fire a single unified <code>{`onChange`}</code> with the new <code>{`value`}</code>.</p>
 <p>Validation messages can be displayed anywhere inside a Form with Message Components. </p>
-<Playground lang="js" theme="neo" scope={this.props.scope} codeText={`var nameSchema = yup.string()
-      .default('')
-      .required('You must provide a name')
-      .min(2, 'names must be at least 2 characters long');
+<Playground lang="js" theme="neo" scope={this.props.scope} codeText={`var defaultStr = yup.string().default('')
+  , modelSchema = yup.object({
+      name: yup.object({
+        first: defaultStr.required('please enter a first name'),
+        last:  defaultStr.required('please enter a surname'),
+      }),
 
-var modelSchema = yup.object({
-   name: yup.object({
-     first: nameSchema,
-     last:  nameSchema
-   }),
-   dateOfBirth: yup.date()
-     .max(new Date(), "You can't be born in the future!"),
-   age: yup.number()
-     .nullable()
-     .required('Please enter an age')
-     .positive('Ages must be a positive number')
-})
+      dateOfBirth: yup.date()
+        .max(new Date(), "You can't be born in the future!"),
 
-React.render(
+      colorId: yup.number().nullable()
+        .required('Please select a color')
+    });
+
+var form = (
   <Form 
     schema={modelSchema}
     defaultValue={modelSchema.default()}
   >
-    <fieldset>
-      <legend>Name</legend>
+    <div> {\/\*'grandchildren' are no problem \*\/}
+      <label>Name</label>
 
       <Form.Field name='name.first' placeholder='First name'/>
       <Form.Field name='name.last' placeholder='Surname'/>
 
       <Form.Message for={['name.first', 'name.last']}/>
-    </fieldset>
+    </div>
 
     <label>Date of Birth</label>
     <Form.Field name='dateOfBirth'/>
     <Form.Message for='dateOfBirth'/>
 
-    <label>Age</label>
-    <Form.Field name='age'/>
-    <Form.Message for='age'/>
+    <label>Favorite Color</label>
+    <Form.Field name='colorId' type='select'>
+      <option value={null}>Select a color...</option>
+      <option value={0}>Red</option>
+      <option value={1}>Yellow</option>
+      <option value={2}>Blue</option>
+      <option value={3}>other</option>
+    </Form.Field>
+    <Form.Message for='colorId'/>
 
-    <Form.Button type='submit'>Submit</Form.Button>
-</Form>
-, mountNode);`} />
+  <Form.Button type='submit'>Submit</Form.Button>
+</Form>)
+React.render(form, mountNode);`} />
 
 <h3 id="props">Props</h3>
 <h4 id="-value-"><code>{`value`}</code></h4>
@@ -67,7 +70,7 @@ use the <code>{`defaultValue`}</code> prop to initialize an uncontrolled form.</
 <p>An object hash of field errors for the form. The object should be keyed with paths
 with the values being string messages or an array of messages. Errors can be left 
 uncontrolled (use <code>{`defaultErrors`}</code> to set an initial value) or managed along with the <code>{`onError`}</code> callback</p>
-<pre><code>{`errors={{
+<pre><code className="js">{`errors={{
  "name.first": [
    'First names are required', 
    "Names must be at least 2 characters long"
@@ -77,7 +80,7 @@ uncontrolled (use <code>{`defaultErrors`}</code> to set an initial value) or man
 <p>type: <code>{`object`}</code>  </p>
 <h4 id="-onerror-"><code>{`onError`}</code></h4>
 <p>Callback that is called when a validation error occures. It is called with an <code>{`errors`}</code> object</p>
-<pre><code>{`function onError(errors){
+<pre><code className="js">{`function onError(errors){
   errors['name.first'] 
   // => 'required field', "Names must be at least 2 characters long"]
 }`}
@@ -86,7 +89,7 @@ uncontrolled (use <code>{`defaultErrors`}</code> to set an initial value) or man
 <h4 id="-onvalidate-"><code>{`onValidate`}</code></h4>
 <p>Callback that is called whenever a validation is triggered. 
 It is called <em>before</em> the validation is actually run.</p>
-<pre><code>{`function onError(e){
+<pre><code className="js">{`function onError(e){
   { event, field, args, target } = e
 }`}
 </code></pre>
@@ -94,7 +97,7 @@ It is called <em>before</em> the validation is actually run.</p>
 <h4 id="-onsubmit-"><code>{`onSubmit`}</code></h4>
 <p>Callback that is fired when the native onSubmit event is triggered. Only relevant when 
 the <code>{`component`}</code> prop renders a <code>{`<form/>`}</code> tag. onSubmit will trigger only if the form is valid.</p>
-<pre><code>{`function onSubmit(e){
+<pre><code className="js">{`function onSubmit(e){
   // do something with valid value
 }`}
 </code></pre>
@@ -102,18 +105,18 @@ the <code>{`component`}</code> prop renders a <code>{`<form/>`}</code> tag. onSu
 <h4 id="-getter-"><code>{`getter`}</code></h4>
 <p>A value getter function. <code>{`getter`}</code> is called with <code>{`path`}</code> and <code>{`value`}</code> and 
 should return the plain <strong>javascript</strong> value at the path.</p>
-<pre><code>{`function(
+<pre><code className="js">{`function(
  path: string,
  value: any,
 ) -> object`}
 </code></pre>
-<p>type: <code>{`func`}</code>  <em>default</em>: <code>{`(path, model) => expr.getter(path)(model)`}</code></p>
+<p>type: <code>{`func`}</code>  <em>default</em>: <code>{`(path, model) => expr.getter(path, true)(model || {})`}</code></p>
 <h4 id="-setter-__-required-__"><code>{`setter`}</code> <strong>(required)</strong></h4>
 <p>A value setter function. <code>{`setter`}</code> is called with <code>{`path`}</code>, the form <code>{`value`}</code> and the path <code>{`value`}</code>. 
 The <code>{`setter`}</code> must return updated form <code>{`value`}</code>, which allows you to leave the original value unmutated.</p>
 <p>The default implementation uses the <a href="http://facebook.github.io/react/docs/update.html">react immutability helpers</a>, 
 letting you treat the form <code>{`value`}</code> as immutable.</p>
-<pre><code>{`function(
+<pre><code className="js">{`function(
  path: string,
  formValue: object,
  pathValue: any

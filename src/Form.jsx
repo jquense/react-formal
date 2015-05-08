@@ -23,51 +23,52 @@ let parent = path => expr.join(expr.split(path).slice(0, -1))
  * Validation messages can be displayed anywhere inside a Form with Message Components. 
  * 
  * ```editable
- * var nameSchema = yup.string()
- *       .default('')
- *       .required('You must provide a name')
- *       .min(2, 'names must be at least 2 characters long');
- * 
- * var modelSchema = yup.object({
- *    name: yup.object({
- *      first: nameSchema,
- *      last:  nameSchema
- *    }),
- *    dateOfBirth: yup.date()
- *      .max(new Date(), "You can't be born in the future!"),
- *    age: yup.number()
- *      .nullable()
- *      .required('Please enter an age')
- *      .positive('Ages must be a positive number')
- * })
+ * var defaultStr = yup.string().default('')
+ *   , modelSchema = yup.object({
+ *       name: yup.object({
+ *         first: defaultStr.required('please enter a first name'),
+ *         last:  defaultStr.required('please enter a surname'),
+ *       }),
+ *    
+ *       dateOfBirth: yup.date()
+ *         .max(new Date(), "You can't be born in the future!"),
+ *      
+ *       colorId: yup.number().nullable()
+ *         .required('Please select a color')
+ *     });
  *
- * React.render(
+ * var form = (
  *   <Form 
  *     schema={modelSchema}
  *     defaultValue={modelSchema.default()}
  *   >
- *     <fieldset>
- *       <legend>Name</legend>
+ *     <div> {\/\*'grandchildren' are no problem \*\/}
+ *       <label>Name</label>
  *
  *       <Form.Field name='name.first' placeholder='First name'/>
  *       <Form.Field name='name.last' placeholder='Surname'/>
  *     
  *       <Form.Message for={['name.first', 'name.last']}/>
- *     </fieldset>
+ *     </div>
  *
  *     <label>Date of Birth</label>
  *     <Form.Field name='dateOfBirth'/>
  *     <Form.Message for='dateOfBirth'/>
  *
- *     <label>Age</label>
- *     <Form.Field name='age'/>
- *     <Form.Message for='age'/>
+ *     <label>Favorite Color</label>
+ *     <Form.Field name='colorId' type='select'>
+ *       <option value={null}>Select a color...</option>
+ *       <option value={0}>Red</option>
+ *       <option value={1}>Yellow</option>
+ *       <option value={2}>Blue</option>
+ *       <option value={3}>other</option>
+ *     </Form.Field>
+ *     <Form.Message for='colorId'/>
  *   
- *     <Form.Button type='submit'>Submit</Form.Button>
- * </Form>
- * , mountNode);
+ *   <Form.Button type='submit'>Submit</Form.Button>
+ * </Form>)
+ * React.render(form, mountNode);
  * ```
- * 
  */
 class Form extends React.Component {
 
@@ -205,7 +206,7 @@ class Form extends React.Component {
     component: 'form',
     strict: true,
     delay: 300,
-    getter: (path, model) => expr.getter(path)(model),
+    getter: (path, model) => expr.getter(path, true)(model || {}),
     setter: (path, model, val) => updateIn(model, toUpdateSpec(path, val)),
   }   
     
@@ -225,7 +226,7 @@ class Form extends React.Component {
         , schema  = reach(props.schema, path)
         , value   = props.getter(path, model)
         , context = schema._conditions.length 
-            ? props.getter(parent(path), model)
+            ? props.getter(parent(path), model) || {}
             : undefined; // an optimization may save a .toJS() call
 
       return schema.validate(value, { strict: props.strict, context })

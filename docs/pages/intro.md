@@ -21,75 +21,84 @@
   </div>
 </div>
 
-React Formal is a library for quickly and painlessly handling HTML form validation and serialization. It tries to strike a balance between prescriptive form generators and libraries that require you to manually handle ever input and manage them in state. React formal, lets you build your form however you want with no restrictions on form markup, or uncessary boilerplate.
-
-React formal leverages a schema validation system, through `yup` a joi like schema DSL, which offers helpful benefits over the traditional "validate the state DOM" approach.
+React Formal is a library for quickly and painlessly handling HTML form validation and serialization. It tries to strike a balance between prescriptive form generators and libraries that require you to manually handle ever input and manage them in state. React Formal, lets you build your form however you want with no restrictions on form markup, or uncessary boilerplate. React Formal leverages a schema validation system, which offers helpful benefits over the traditional "validate the state DOM" approach.
 
  - Forms can be handled the "React Way", with controlled or uncontrolled values, completely decoupled from DOM state.
- - Validating and updating javascripts objects instead of an HTML representation of an object, means no need for `<input type='hidden'/>`; only render inputs that a user actually needs to change!
+ - Working against javascript objects instead of HTML representations of an objects, means no need for `<input type='hidden'/>`; only render inputs that a user actually needs to change!
  - Schema based validation, lets you reuse your parsing and model validation logic outside of forms, in your server API utilities, or Flux stores.
 
 ### Getting Started
 
-```sh
-  npm install --save react-formal yup
-```
-If you want to use the default inputs or just define your own thats it. If you'd like some additional inputs, like date pickers, multiselects and comboboxes (used here) you might want to also install.
+Lets install both `react-formal` and `yup`.
 
 ```sh
-  npm install --save react-formal-inputs
+npm install react-formal yup --save 
 ```
 
-Lets first define the object schema that our form will provide input too. The `yup` api and style is heavily inspired by Joi, an excellent library but is too large and difficult to use in a browser. Yup is a leaner and mostly as expressive, without the server specific bulk. Check out the our quick start guide to yup [here](/api/yup) for just basics, or the [yup documentation site](https://github.com/jquense/yup/blob/master/README.md) for a full run down of the features.
+If you'd like more robust input options like, date and number pickers, multiselect, and comboboxes (like in the documentation) you might want to also install `react-formal-inputs` which is swaps out the native input types for [react-widgets](http://jquense.github.io/react-widgets/docs/#/).
 
-```console
-var nameSchema = yup.string()
-  .default('')
-  .required('You must provide a name');
+```sh
+npm install react-formal-inputs --save
+```
 
-var formSchema = yup.object({
-  name: yup.object({
-    first: nameSchema,
-    last:  nameSchema
-  }),
 
-  dateOfBirth: yup.date()
-    .max(new Date(), "You can't be born in the future!"),
+Lets first define the object schema that our form will provide input too. The `yup` api and style is heavily inspired by Joi, an excellent library but is too large and difficult to use in a browser. Yup is a leaner and mostly as expressive, without the server specific bulk. Check out the [quick start guide to `yup`](/api/yup) for schema basics, or the [yup documentation site](https://github.com/jquense/yup/blob/master/README.md) for a full run down of the features.
 
-  age: yup.number()
-    .required('Please enter an age')
-    .positive('Ages must be a positive number')
-})
+```editable
+var Form = require('react-formal')
+  , yup = require('yup')
 
-//now we define our Form
+// if we are using a different set of inputs 
+// we can set some defaults once at the beginning
+Form.addInputTypes(
+  require('react-formal-inputs'))
+
+var defaultStr = yup.string().default('')
+
+var modelSchema = yup.object({
+
+    name: yup.object({
+      first: defaultStr.required('please enter a first name'),
+      last:  defaultStr.required('please enter a surname'),
+    }),
+
+    dateOfBirth: yup.date()
+      .max(new Date(), "You can't be born in the future!"),
+
+    colorId: yup.number().nullable()
+      .required('Please select a color')
+  });
+
 var form = (
   <Form 
     schema={modelSchema}
     defaultValue={modelSchema.default()}
   >
-    <fieldset>
-      <legend>Name</legend>
+    <div>
+      <label>Name</label>
 
       <Form.Field name='name.first' placeholder='First name'/>
-      <Form.Message for='name.first'/>
-
       <Form.Field name='name.last' placeholder='Surname'/>
-      <Form.Message for='name.last'/>
-    </fieldset>
+
+      <Form.Message for={['name.first', 'name.last']}/>
+    </div>
 
     <label>Date of Birth</label>
     <Form.Field name='dateOfBirth'/>
     <Form.Message for='dateOfBirth'/>
 
-    <label>Age</label>
-    <Form.Field name='age'/>
-    <Form.Message for='age'/>
+    <label>Favorite Color</label>
+    <Form.Field name='colorId' type='select'>
+      <option value={null}>Select a color...</option>
+      <option value={0}>Red</option>
+      <option value={1}>Yellow</option>
+      <option value={2}>Blue</option>
+      <option value={3}>other</option>
+    </Form.Field>
+    <Form.Message for='colorId'/>
 
-    <Form.Button type='submit'>Submit</Form.Button>
-  </Form>
-)
+  <Form.Button type='submit'>Submit</Form.Button>
+</Form>)
 
- React.render(form, mountNode);
+React.render(form, mountNode);
 ```
-
-Once we have a Schema we are ready to build our Form.

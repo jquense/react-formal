@@ -66,8 +66,11 @@ module.exports = function(filename, opts) {
     each(metadata(file.contents, opts), function(val, key) {
       var markdown;
 
-      if( val.desc || Object.keys(val.props).length )
-        markdown = apiFile(assign({ name: key }, val))
+      if( val.desc || Object.keys(val.props).length ){
+        var doclets = metadata.parseDoclets(val.desc) || {};
+        
+        markdown = apiFile(assign({ name: doclets.alias || key }, val))
+      }
 
       if ( seen.indexOf(key) !== -1)
         key = key + uuid()
@@ -75,6 +78,7 @@ module.exports = function(filename, opts) {
       seen.push(key)
 
       if ( markdown){
+        
         this.push(mdToJsx(file, key, markdown));
       }
     }, this)

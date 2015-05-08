@@ -50,6 +50,8 @@ h4 {
 
 pre {
   border-radius: 0;
+  border: none;
+  border-left: 4px solid #ccc; 
 }
 
 .side-nav {
@@ -65,10 +67,16 @@ pre {
 }
 
 .side-nav .nav > li > a {
+  border-left: 3px;
+  padding: 10px 10px;
   font-size: 12px;
 
   &:hover, &:active, &:focus {
-    background-color: transparent;;
+    background-color: transparent;
+  }
+
+  &.active {
+    border-left: 3px solid #ccc;
   }
 }
 
@@ -99,9 +107,13 @@ code {
   height: auto;
 }
 
+.cm-s-neo div.CodeMirror-cursor {
+  border-left: 1px solid #9b9da2;
+}
+
 .playgroundCode {
   padding: 15px;
-  border-bottom: 1px solid #ddd;
+  //border-bottom: 1px solid #ddd;
 }
 
 @media (min-width: 992px) {
@@ -110,8 +122,8 @@ code {
   }
 
   .playgroundCode {
-    border-right: 1px solid #ddd;
-    border-bottom-width: 0;
+    // border-right: 1px solid #ddd;
+    // border-bottom-width: 0;
     flex-grow: 2;
   }
 }
@@ -142,8 +154,9 @@ code {
   position: relative;
   margin:  0;
   margin-bottom: 20px;
-  border-radius: 3px;
-  border: 1px solid #ddd;
+  border-left: 4px solid #ccc; 
+  // border-radius: 3px;
+  // border: 1px solid #ddd;
 }
 
 .navbar-default {
@@ -184,6 +197,10 @@ code {
     font: 14px "Helvetica Neue", Helvetica, Arial, sans-serif;
     color: #888;
 
+    .doc-page & {
+      width: 270px;
+    }
+
     .validation-error {
       display: block;
       color: #a94442;
@@ -217,7 +234,8 @@ textarea + .validation-error,
     margin: 0px 0px 5px;
 }
 
-input:not(.rw-input) {
+input:not(.rw-input),
+select {
     display: block;
     width: 100%;
     height: 34px;
