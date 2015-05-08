@@ -31,6 +31,15 @@ React formal leverages a schema validation system, through `yup` a joi like sche
 
 ### Getting Started
 
+```sh
+  npm install --save react-formal yup
+```
+If you want to use the default inputs or just define your own thats it. If you'd like some additional inputs, like date pickers, multiselects and comboboxes (used here) you might want to also install.
+
+```sh
+  npm install --save react-formal-inputs
+```
+
 Lets first define the object schema that our form will provide input too. The `yup` api and style is heavily inspired by Joi, an excellent library but is too large and difficult to use in a browser. Yup is a leaner and mostly as expressive, without the server specific bulk. Check out the our quick start guide to yup [here](/api/yup) for just basics, or the [yup documentation site](https://github.com/jquense/yup/blob/master/README.md) for a full run down of the features.
 
 ```console
