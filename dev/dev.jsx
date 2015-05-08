@@ -85,7 +85,7 @@ var App = React.createClass({
             <div className='form-group'>
               <label className='control-label col-sm-3'>name</label>
               <div className='col-sm-8'>
-                <Form.Field for='personal.id' type='select' group='personal' className='form-control'>
+                <Form.Field name='personal.id' type='select' group='personal' className='form-control'>
                   { people.map(person => 
                     <option value={person.id}>{person.first + ' ' + person.surname}</option>)
                   }
@@ -96,7 +96,7 @@ var App = React.createClass({
             <div className='form-group'>
               <label className='control-label col-sm-3'>Employer</label>
               <div className='col-sm-8'>
-                <Form.Field for='personal.orgID' type='select' group='personal' className='form-control'>
+                <Form.Field name='personal.orgID' type='select' group='personal' className='form-control'>
                   { orgs.map(org => 
                     <option value={org.id}>{org.name}</option>)
                   }
@@ -107,7 +107,7 @@ var App = React.createClass({
             <div className='form-group'>
               <label className='control-label col-sm-3'>birthday</label>
               <div className='col-sm-8'>
-                <Form.Field type='datetime-local' for='personal.birthday' group='personal' className='form-control'/>
+                <Form.Field type='datetime-local' name='personal.birthday' group='personal' className='form-control'/>
                 <Form.Message for='personal.birthday'/>
               </div>
             </div>
@@ -117,7 +117,7 @@ var App = React.createClass({
             <div className='form-group'>
               <label className='control-label col-sm-3'>favorite number</label>
               <div className='col-sm-8'>
-                <Form.Field for='trivia.favNumber' className='form-control'/>
+                <Form.Field name='trivia.favNumber' className='form-control'/>
                 <Form.Message for='trivia.favNumber'/>
               </div>
             </div>
@@ -126,7 +126,7 @@ var App = React.createClass({
               <div className='col-sm-8 col-sm-offset-3'>
                 <div className='checkbox'>
                   <label className='checkbox'>
-                    <Form.Field for='trivia.isCool'/> Cool?
+                    <Form.Field name='trivia.isCool'/> Cool?
                   </label>
                   <Form.Message for='trivia.isCool'/>
                 </div>

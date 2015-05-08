@@ -1,7 +1,49 @@
-
+var path = require('path')
 var webpack = require('webpack');
 
+var loaders = [
+      { test: /\.json$/,  loader: "json-loader" },
+      { test: /\.css$/,  loader: "style-loader!css-loader" },
+      { test: /\.less$/, loader: "style-loader!css-loader!less-loader" },
+
+      { 
+        test: /\.jsx$|\.js$/, 
+        loader: 'babel-loader', 
+        exclude: /node_modules/
+      }
+    ]
+
 module.exports = {
+  docs: {
+    devtool: 'source-map',
+    entry:'./docs/app.jsx',
+    cache: false,
+    output: {
+      path: __dirname + '/docs/',
+      filename: 'app.js'
+    },
+
+    resolve: {
+      extensions: ['', '.js', '.jsx', 'json']
+    },
+
+    externals: {
+      react: 'window.React',
+      'react/addons': 'window.React',
+      'babel-core/browser': 'window.babel'
+    },
+    module: {
+      noParse: [
+        path.join(__dirname, './node_modules/component-playground/node_modules/babel-core/browser.js')
+      ],
+      loaders: loaders.concat([
+        { test: /\.gif$/, loader: "url-loader?mimetype=image/png" },
+        { test: /\.woff(2)?(\?v=[0-9]\.[0-9]\.[0-9])?$/, loader: "url-loader?limit=10000&minetype=application/font-woff" },
+        { test: /\.(ttf|eot|svg)(\?v=[0-9]\.[0-9]\.[0-9])?$/, loader: "file-loader?name=[name].[ext]" },
+      ]),
+    }
+    
+  },
 
   dev: {
     devtool: 'source-map',
@@ -16,17 +58,7 @@ module.exports = {
     },
 
     module: {
-      loaders: [
-        { test: /\.json$/,  loader: "json-loader" },
-        { test: /\.css$/,  loader: "style-loader!css-loader" },
-        { test: /\.less$/, loader: "style-loader!css-loader!less-loader" },
-        //{ test: /globalize/, loader: "imports?define=>false" },
-        { 
-          test: /\.jsx$|\.js$/, 
-          loader: 'babel-loader', 
-          exclude: /node_modules/
-        }
-      ]
+      loaders: loaders
     },
     plugins: [
       // new webpack.DefinePlugin({
@@ -42,16 +74,7 @@ module.exports = {
       extensions: ['', '.js', '.jsx']
     },
     module: {
-      loaders: [
-        { test: /\.css$/, loader: 'style-loader!css-loader' },
-        { test: /\.less$/, loader: 'style-loader!css-loader!less-loader' },
-        { test: /sinon-chai/, loader: 'imports?define=>false' },
-        { 
-          test: /\.jsx$|\.js$/, 
-          loader: 'babel-loader', 
-          exclude: /node_modules/
-        }
-      ]
+      loaders: loaders
     },
   }
 }

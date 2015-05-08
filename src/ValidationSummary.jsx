@@ -3,22 +3,49 @@ var pureRender = require('react-purerender')
 var connectToMessageContainer = require('react-input-message/lib/connectToMessageContainer')
 var cn = require('classnames');
 
-let values = obj => Object.keys(obj).map( k => obj[k] )
 let splat  = obj => obj == null ? [] : [].concat(obj)
 
 module.exports = 
   connectToMessageContainer(
     pureRender(
-      class ValidationSummary {
+      /**
+       * Display all Form validation `errors` in a single summary list.
+       */
+      class ValidationSummary extends React.Component {
+
+        static propTypes = {
+
+          /**
+           * An error message renderer, Should return a `ReactElement`
+           * ```
+           * function(
+           *   message: string, 
+           *   idx: number, 
+           *   messages: array
+           * ) -> ReactElement
+           * ```
+           */
+          formatMessage: React.PropTypes.func.isRequired,
+
+          /**
+           * A DOM node tag name or Component class the Message should render as.
+           */
+          component: React.PropTypes.oneOfType([
+            React.PropTypes.func,
+            React.PropTypes.string,
+          ]).isRequired, 
+
+          /**
+           * A css class that should be always be applied to the Message container.
+           */
+          errorClass: React.PropTypes.string,
+
+        }
 
         static defaultProps = {
           component: 'ul',
-          formatMessage: (msg, idx) => <li key={idx}>{msg}</li>
-        }
-
-        constructor(props, context){
-          this.props = props;
-          this.context = context
+          errorClass: 'validation-error',
+          formatMessage: (message, idx) => <li key={idx}>{message}</li>
         }
 
         render() {

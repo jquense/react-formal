@@ -1,6 +1,6 @@
 'use strict';
 var React     = require('react')
-  , invariant = require('react/lib/invariant')
+  , invariant = require('scoped-invariant')('formal-yup')
   , reach     = require('yup/lib/util/reach')
   , expr      = require('property-expr')
   , updateIn  = require('react/lib/update')
@@ -10,18 +10,72 @@ var React     = require('react')
   , getChildren    = require('./util/parentContext')
   , toUpdateSpec   = require('./util/pathToUpdateSpec');
 
-
 let done = e => setTimeout(() => { throw e })
 
 let parent = path => expr.join(expr.split(path).slice(0, -1))
 
+/**
+ * Form component renders a `value` to be updated and validated by child Fields. 
+ * Forms can be thought of as `<input/>`s for complex values, or models. A Form aggregates 
+ * a bunch of smaller inputs, each in charge of updating a small part of the overall model.
+ * The Form will integrate and validate each change and fire a single unified `onChange` with the new `value`.
+ *
+ * Validation messages can be displayed anywhere inside a Form with Message Components. 
+ * 
+ * ```editable
+ * var nameSchema = yup.string()
+ *       .default('')
+ *       .required('You must provide a name')
+ *       .min(2, 'names must be at least 2 characters long');
+ * 
+ * var modelSchema = yup.object({
+ *    name: yup.object({
+ *      first: nameSchema,
+ *      last:  nameSchema
+ *    }),
+ *    dateOfBirth: yup.date()
+ *      .max(new Date(), "You can't be born in the future!"),
+ *    age: yup.number()
+ *      .nullable()
+ *      .required('Please enter an age')
+ *      .positive('Ages must be a positive number')
+ * })
+ *
+ * React.render(
+ *   <Form 
+ *     schema={modelSchema}
+ *     defaultValue={modelSchema.default()}
+ *   >
+ *     <fieldset>
+ *       <legend>Name</legend>
+ *
+ *       <Form.Field name='name.first' placeholder='First name'/>
+ *       <Form.Field name='name.last' placeholder='Surname'/>
+ *     
+ *       <Form.Message for={['name.first', 'name.last']}/>
+ *     </fieldset>
+ *
+ *     <label>Date of Birth</label>
+ *     <Form.Field name='dateOfBirth'/>
+ *     <Form.Message for='dateOfBirth'/>
+ *
+ *     <label>Age</label>
+ *     <Form.Field name='age'/>
+ *     <Form.Message for='age'/>
+ *   
+ *     <Form.Button type='submit'>Submit</Form.Button>
+ * </Form>
+ * , mountNode);
+ * ```
+ * 
+ */
 class Form extends React.Component {
 
   static propTypes = {
 
     /**
      * Form value object, can be left uncontrolled; 
-     * use the `defaultValue` prop to initialize an uncontrolled form
+     * use the `defaultValue` prop to initialize an uncontrolled form.
      */
     value: React.PropTypes.object,
 
@@ -33,19 +87,25 @@ class Form extends React.Component {
     /**
      * An object hash of field errors for the form. The object should be keyed with paths
      * with the values being string messages or an array of messages. Errors can be left 
-     * uncontrolled, or managed along with the `onError` callback
-     * ```
+     * uncontrolled (use `defaultErrors` to set an initial value) or managed along with the `onError` callback
+     * 
+     * ```js
      * errors={{
-     *  "name.first": ['First names are required', "Names must be at least 2 characters long"],
+     *  "name.first": [
+     *    'First names are required', 
+     *    "Names must be at least 2 characters long"
+     *  ],
      * }}
+     * ```
      */
     errors: React.PropTypes.object,
 
     /**
      * Callback that is called when a validation error occures. It is called with an `errors` object
-     * ```
+     * ```js
      * function onError(errors){
-     *   errors['name.first'] // => 'First names are required', "Names must be at least 2 characters long"]
+     *   errors['name.first'] 
+     *   // => 'required field', "Names must be at least 2 characters long"]
      * }
      * ```
      */
@@ -54,7 +114,7 @@ class Form extends React.Component {
     /**
      * Callback that is called whenever a validation is triggered. 
      * It is called _before_ the validation is actually run.
-     * ```
+     * ```js
      * function onError(e){
      *   { event, field, args, target } = e
      * }
@@ -63,9 +123,21 @@ class Form extends React.Component {
     onValidate: React.PropTypes.func,
 
     /**
+     * Callback that is fired when the native onSubmit event is triggered. Only relevant when 
+     * the `component` prop renders a `<form/>` tag. onSubmit will trigger only if the form is valid.
+     * 
+     * ```js
+     * function onSubmit(e){
+     *   // do something with valid value
+     * }
+     * ```
+     */
+    onSubmit: React.PropTypes.func,
+
+    /**
      * A value getter function. `getter` is called with `path` and `value` and 
-     * should return the plain **javascript** value at the path
-      * ```
+     * should return the plain **javascript** value at the path.
+      * ```js
      * function(
      *  path: string,
      *  value: any,
@@ -75,9 +147,12 @@ class Form extends React.Component {
     getter: React.PropTypes.func,
 
     /**
-     * A value setter function. `setter` is called with `path`, the `formValue` and the `pathValue`. 
-     * The `setter` must return updated `formvalue`, which allows you to leave the original value unmutated.
-     * ```
+     * A value setter function. `setter` is called with `path`, the form `value` and the path `value`. 
+     * The `setter` must return updated form `value`, which allows you to leave the original value unmutated.
+     *
+     * The default implementation uses the [react immutability helpers](http://facebook.github.io/react/docs/update.html), 
+     * letting you treat the form `value` as immutable.
+     * ```js
      * function(
      *  path: string,
      *  formValue: object,
@@ -87,18 +162,37 @@ class Form extends React.Component {
      */
     setter: React.PropTypes.func.isRequired,
 
+    /**
+     * Time in milliseconds that validations should be debounced. Reduces the amount of validation calls
+     * made at the expense of a slight delay. Helpful for performance.
+     */
+    delay: React.PropTypes.number,
+
+    /**
+     * Validations will be strict, making no attempt to coarce input values to the appropriate type.
+     */
     strict: React.PropTypes.bool,
+
+    /**
+     * Turns off input validation for the Form, value updates will continue to work.
+     */
     noValidate: React.PropTypes.oneOf([true, 'heelo', 5]),
 
-    otherProp: React.PropTypes.instanceOf(Message),
-
+    /**
+     * A tag name or Component class the Form should render as
+     */
     component: React.PropTypes.oneOfType([
       React.PropTypes.func,
       React.PropTypes.string,
     ]).isRequired,
 
+    /**
+     * A Yup schema  that validates the Form `value` prop. Used to validate the form input values 
+     * For more information about the yup api check out: https://github.com/jquense/yup/blob/master/README.md
+     * @type {YupSchema}
+     */
     schema(props, name, componentName) {
-      var err = React.PropTypes.any.isRequired(props, name, componentName)
+      var err = !props.noValidate && React.PropTypes.any.isRequired(props, name, componentName)
 
       if (!err && !props[name].__isYupSchema__) 
         err = new Error('`schema` must be a proper yup schema: (' + componentName + ')')
@@ -110,17 +204,17 @@ class Form extends React.Component {
   static defaultProps = {
     component: 'form',
     strict: true,
+    delay: 300,
     getter: (path, model) => expr.getter(path)(model),
     setter: (path, model, val) => updateIn(model, toUpdateSpec(path, val)),
   }   
     
   static childContextTypes = {
-
-    schema:   React.PropTypes.func,
-    value:    React.PropTypes.func,
-    onChange: React.PropTypes.func,
-    onSubmit: React.PropTypes.func
-    
+    schema:     React.PropTypes.func,
+    value:      React.PropTypes.func,
+    onChange:   React.PropTypes.func,
+    onSubmit:   React.PropTypes.func,
+    noValidate: React.PropTypes.func,
   }
 
   constructor(props, context){
@@ -128,9 +222,11 @@ class Form extends React.Component {
 
     this.validator = new Validator((path, props) => {
       var model   = props.value
-        , schema  = yup.reach(props.schema, path)
+        , schema  = reach(props.schema, path)
         , value   = props.getter(path, model)
-        , context = props.getter(parent(path), model);
+        , context = schema._conditions.length 
+            ? props.getter(parent(path), model)
+            : undefined; // an optimization may save a .toJS() call
 
       return schema.validate(value, { strict: props.strict, context })
         .then(() => void 0)       
@@ -144,8 +240,15 @@ class Form extends React.Component {
     }
   }
 
-  componentWillReceiveProps(nextProps){
+  componentWillUnmount() {
+    var timers = this._timers || {};
 
+    this._unmounted = true;
+    for (var k in timers) if ( has(timers, k) ) 
+      clearTimeout(timers[k])
+  }
+
+  componentWillReceiveProps(nextProps){
     this._flushValidations(nextProps)
 
     this.setState({ 
@@ -159,7 +262,9 @@ class Form extends React.Component {
 
     return this._context || (this._context = { 
 
-      schema:   path => reach(this.props.schema, path), 
+      noValidate: ()=> this.props.noValidate,
+
+      schema:   path => path && reach(this.props.schema, path), 
 
       value:    path => this.props.getter(path, this.props.value),
 
@@ -222,9 +327,12 @@ class Form extends React.Component {
     if( e.event === 'onChange')
       return this._queueValidation(e.field)
     
-    this.validator.validate(e.field, this.props) 
-      .then(() => this.notify('onError', this.validator.errors()))
-      .catch(done)
+    this.timeout(e.field, () => {
+      this.validator.validate(e.field, this.props) 
+        .then(() => this.notify('onError', this.validator.errors()))
+        .catch(done)
+
+    }, this.props.delay)
   }
 
   _submit(e){
@@ -236,7 +344,8 @@ class Form extends React.Component {
     e.preventDefault()
 
     this.props.schema
-      .validate(this.props.value, options)   
+      .validate(this.props.value, options)
+      .then(() => this.notify('onSubmit', e))
       .catch(err => {
         var errors = err.inner.reduce((list, e) => {
           list[e.path] = (list[e.path] || (list[e.path] = [])).concat(e.errors)
@@ -245,6 +354,15 @@ class Form extends React.Component {
 
         this.notify('onError', errors)
       })
+  }
+
+  timeout(key, fn, ms){
+    var timers = this._timers || (this._timers = Object.create(null));
+
+    if ( this._unmounted) return
+
+    clearTimeout(this._timers[key])
+    this._timers[key] = setTimeout(fn, ms)
   }
 
   _queueValidation(path){
@@ -257,16 +375,17 @@ class Form extends React.Component {
   _flushValidations(newProps){
     var newValue = newProps.value
       , oldValue = this.props.value
-      , validator = this.validator
       , fields = this._queue || [];
 
-    this._queue = []
-
     if ( fields.length ) {
-      this.validator
-        .validate(fields, newProps)
-        .then(() => this.notify('onError', validator.errors()))
-        .catch(done)
+      this.timeout('yup_flush_validations', () => {
+        this._queue = []
+
+        this.validator
+          .validate(fields, newProps)
+          .then(() => this.notify('onError', this.validator.errors()))
+          .catch(done)
+      }, newProps.delay)
     }
   }
 
@@ -284,4 +403,8 @@ function wrapSetter(setter){
       '`setter(..)` props must return the form value object after updating a value.')
     return result
   }
+}
+
+function has(o, k){
+  return o ? Object.prototype.hasOwnProperty.call(o, k) : false
 }

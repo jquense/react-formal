@@ -11,6 +11,6 @@ Form.Message = ValidationMessage
 Form.Summary = ValidationSummary
 Form.Button = FormButton
 
-Form.addInputType = addType
+Form.addInputTypes = addType
 
 module.exports = Form

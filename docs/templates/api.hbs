@@ -1,0 +1,13 @@
+## {{ name }}
+
+{{{cleanDoclets desc }}}
+
+### Props
+
+{{#each props }}
+#### `{{@key}}` {{#if (isRequired this) }}__(required)__{{/if}}
+{{{cleanDoclets desc }}}
+
+type: `{{{propType this}}}`  {{#if defaultValue }}_default_: `{{{ defaultValue }}}`{{/if}}
+
+{{/each}}
