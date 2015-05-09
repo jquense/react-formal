@@ -84,3 +84,5 @@ gulp.task('dev-docs', function() {
 })
 
 gulp.task('release', ['clean', 'build', 'less'])
+
+gulp.task('publish', ['release'], require('rf-release'))

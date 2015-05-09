@@ -70,6 +70,7 @@
     "mocha": "~1.21.4",
     "phantomjs": "~1.9.10",
     "react-component-metadata": "git://github.com/jquense/react-component-metadata",
+    "rf-release": "jquense/rf-release",
     "react-formal-inputs": "^1.0.0",
     "react-router": "^0.13.3",
     "react-testutil-query": "^1.0.0",
