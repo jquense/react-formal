@@ -41,13 +41,13 @@ render(){
             <fieldset>
                 <legend>Personal Details</legend>
 
-                <Form.field for='name.first'/>
+                <Form.field name='name.first'/>
                 <Form.Message for='name.first'/>
 
-                <Form.field for='name.last'/>
+                <Form.field name='name.last'/>
                 <Form.Message for='name.last'/>
 
-                <Form.field for='dateOfBirth'/>
+                <Form.field name='dateOfBirth'/>
                 <Form.Message for='dateOfBirth'/>
             </fieldset>
             <Form.Button type='submit' >Submit</Form.Button>
