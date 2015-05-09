@@ -104,7 +104,7 @@ class App extends React.Component {
           }
           <ul className='nav navbar-nav navbar-right'>
             <li><Link to='/api'>Documentation</Link></li>
-            <li><a href='https://github.com'>Github</a></li>
+            <li><a href='https://github.com/jquense/react-formal'>Github</a></li>
           </ul>
         </div>
       </nav>
