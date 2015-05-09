@@ -1,19 +1,21 @@
-# formal-yup
+# react-formal
 
-Another form validation and value management component for React. Provides __minimal__ wiring while also allowing for complete input flexibility.
+Better form validation and value management for React. Provides __minimal__ wiring while also allowing for complete input flexibility.
 
 Built on [yup](https://github.com/jquense/yup) and [react-input-message](https://github.com/jquense/react-input-message).
 
 ## Install
 
 ```sh
-npm i -S jquense/yup-forms
+npm i -S react-formal yup
 ```
 
 
 ### Use
 
-`formal-yup` uses a [yup](https://github.com/jquense/yup) schema to update and validate form values. It treats the `form` like an input (representing an object) with a `value` and `onChange`. The `form` can be controlled or uncontrolled as well, just like a React input.
+__For more complete api documentations, live examples, and getting started guide check out the [documentation site](http://jquense.github.io/react-formal/docs/#/getting-started).__
+
+`react-formal` uses a [yup](https://github.com/jquense/yup) schema to update and validate form values. It treats the `form` like an input (representing an object) with a `value` and `onChange`. The `form` can be controlled or uncontrolled as well, just like a normal React input.
 
 ```js
 var yup = require('yup')
@@ -53,5 +55,3 @@ render(){
     )
 }
 ```
-
-The above form 
