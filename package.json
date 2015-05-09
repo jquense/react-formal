@@ -2,6 +2,7 @@
   "name": "react-formal",
   "version": "0.5.0",
   "description": "Classy HTML form management for React",
+  "main": "lib/index.js",
   "author": {
     "name": "Jason Quense",
     "email": "monastic.panic@gmail.com"
