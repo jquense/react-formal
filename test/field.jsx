@@ -19,7 +19,7 @@ describe('Field', ()=> {
   it('should pass props to inner type', function(){
     var inst = $(
       <Form schema={schema} defaultValue={{}}>
-        <Form.Field for='name' type={TestInput} className='test'/>
+        <Form.Field name='name' type={TestInput} className='test'/>
       </Form>)
 
     var input = inst.single(TestInput)[0]
@@ -38,11 +38,11 @@ describe('Field', ()=> {
 
     var inst = $(
       <Form schema={schema} defaultValue={{}}>
-        <Form.Field for='string'/>
-        <Form.Field for='number'/>
-        <Form.Field for='date'/>
-        <Form.Field for='bool'/>
-        <Form.Field for='array'/>
+        <Form.Field name='string'/>
+        <Form.Field name='number'/>
+        <Form.Field name='date'/>
+        <Form.Field name='bool'/>
+        <Form.Field name='array'/>
       </Form>)
 
     inst.single(inputs.Input)
@@ -55,9 +55,9 @@ describe('Field', ()=> {
   it('should use type override', function(){
     var inst = $(
       <Form schema={schema} defaultValue={{}}>
-        <Form.Field for='name'/>
-        <Form.Field for='name' type='textarea'/>
-        <Form.Field for='name' type={TestInput}/>
+        <Form.Field name='name'/>
+        <Form.Field name='name' type='textarea'/>
+        <Form.Field name='name' type={TestInput}/>
       </Form>)
 
     inst.single(TestInput)
@@ -67,7 +67,7 @@ describe('Field', ()=> {
   it('should fire onChange', function(done){
     var inst = $(
       <Form schema={schema} defaultValue={{}}>
-        <Form.Field for='name' type={TestInput} onChange={()=> done()}/>
+        <Form.Field name='name' type={TestInput} onChange={()=> done()}/>
       </Form>)
 
     inst.single('input').trigger('change')

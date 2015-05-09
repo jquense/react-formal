@@ -177,7 +177,7 @@ class Form extends React.Component {
     /**
      * Turns off input validation for the Form, value updates will continue to work.
      */
-    noValidate: React.PropTypes.oneOf([true, 'heelo', 5]),
+    noValidate: React.PropTypes.bool,
 
     /**
      * A tag name or Component class the Form should render as

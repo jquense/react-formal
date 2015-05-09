@@ -17,8 +17,8 @@ describe('Form', ()=> {
       , change = sinon.spy(v => value = v)
       , inst = $(
           <Form schema={schema} defaultValue={schema.default()} onChange={change}>
-            <Form.Field for='name.first' className='field'/>
-            <Form.Field for='name.last' className='field'/>
+            <Form.Field name='name.first' className='field'/>
+            <Form.Field name='name.last' className='field'/>
           </Form>
         )
 
@@ -50,8 +50,8 @@ describe('Form', ()=> {
       , change = sinon.spy()
       , inst = $(
           <Form noValidate schema={schema} defaultValue={schema.default()} onValidate={change}>
-            <Form.Field for='name.first' className='field'/>
-            <Form.Field for='name.last' className='field'/>
+            <Form.Field name='name.first' className='field'/>
+            <Form.Field name='name.last' className='field'/>
           </Form>
         )
 

@@ -90,11 +90,14 @@ class App extends React.Component {
   }
 
   render(){
+    var home = this.context.router.getCurrentPath() === '/'
+            || this.context.router.isActive('intro')
+
     return (<div>
       <nav className='navbar navbar-default navbar-static-top' style={{ marginBottom: 0 }}>
         
         <div className='container'>
-          { !this.context.router.isActive('intro') && 
+          { !home && 
           <span className='navbar-brand'>
             <Link to='intro'>React&nbsp;<img src='./bow-tie.svg' style={{ width: 30, marginTop: -5 }}/>&nbsp;Formal</Link>
           </span>

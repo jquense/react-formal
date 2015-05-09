@@ -1,17 +1,23 @@
 {
-  "name": "yup-formal",
+  "name": "react-formal",
   "version": "0.5.0",
-  "description": "A 'formal' version of yup, for building, updating and validating React forms",
+  "description": "Classy HTML form management for React",
   "author": {
     "name": "Jason Quense",
     "email": "monastic.panic@gmail.com"
   },
-  "repository": "jquense/yup-forms",
+  "homepage": "http://jquense.github.io/react-formal/docs/",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jquense/react-formal"
+  },
   "license": "MIT",
   "keywords": [
-    "yup-formal",
+    "react-formal",
     "react",
     "form",
+    "forms",
+    "inputs",
     "validator",
     "schema",
     "validation",
@@ -62,8 +68,10 @@
     "merge-stream": "^0.1.7",
     "mocha": "~1.21.4",
     "phantomjs": "~1.9.10",
+    "react-component-metadata": "git://github.com/jquense/react-component-metadata",
     "react-formal-inputs": "^1.0.0",
     "react-router": "^0.13.3",
+    "react-testutil-query": "^1.0.0",
     "react-widgets": "^2.6.0",
     "rimraf": "^2.2.8",
     "sinon-chai": "^2.6.0",

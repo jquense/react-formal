@@ -132,7 +132,7 @@ made at the expense of a slight delay. Helpful for performance.</p>
 <p>type: <code>{`bool`}</code>  <em>default</em>: <code>{`true`}</code></p>
 <h4 id="-novalidate-"><code>{`noValidate`}</code></h4>
 <p>Turns off input validation for the Form, value updates will continue to work.</p>
-<p>type: <code>{`enum<true, 'heelo', 5>`}</code>  </p>
+<p>type: <code>{`bool`}</code>  </p>
 <h4 id="-component-__-required-__"><code>{`component`}</code> <strong>(required)</strong></h4>
 <p>A tag name or Component class the Form should render as</p>
 <p>type: <code>{`func, string`}</code>  <em>default</em>: <code>{`'form'`}</code></p>
