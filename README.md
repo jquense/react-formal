@@ -19,7 +19,7 @@ __For more complete api documentations, live examples, and getting started guide
 
 ```js
 var yup = require('yup')
-  , Form = require('formal-yup')
+  , Form = require('react-formal')
 
 var modelSchema =  yup.object({
         name: yup.object({
