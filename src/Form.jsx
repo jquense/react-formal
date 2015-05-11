@@ -234,6 +234,8 @@ class Form extends React.Component {
         .catch(err => err.errors) 
     })
 
+    syncErrors(this.validator, props.errors || {})
+
     this.state = {
       children: getChildren(
             this.props.children
@@ -250,6 +252,7 @@ class Form extends React.Component {
   }
 
   componentWillReceiveProps(nextProps){
+    syncErrors(this.validator, nextProps.errors || {})
     this._flushValidations(nextProps)
 
     this.setState({ 
@@ -404,6 +407,14 @@ function wrapSetter(setter){
       '`setter(..)` props must return the form value object after updating a value.')
     return result
   }
+}
+
+function syncErrors(validator, errors){
+  validator._errors = {}
+  Object.keys(errors).forEach(key => {
+    if ( errors[key] != null)
+      validator._errors[key] = [].concat(errors[key])
+  })
 }
 
 function has(o, k){
