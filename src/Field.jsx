@@ -2,28 +2,28 @@
 var React = require('react')
   , invariant = require('scoped-invariant')('formal-yup')
   , types = require('./util/types')
-  , Input   = require('./inputs/Input.jsx')
+  , Input   = require('./inputs/Input')
   , MessageTrigger = require('react-input-message/lib/MessageTrigger');
 
 var has = {}.hasOwnProperty;
 
 /**
- * The Field Component renders a form control and handles input value updates and validations. 
- * Changes to the Field value are automatically propagated back up to the containing Form 
+ * The Field Component renders a form control and handles input value updates and validations.
+ * Changes to the Field value are automatically propagated back up to the containing Form
  * Component.
  *
  * Fields provide a light abstraction over normal input components where values and onChange handlers
  * are take care of for you. Beyond that they just render the input for their type, Fields whille pass along
  * any props and children to the input so you can easily configure new input types.
- * 
+ *
  * ```editable
  * <Form noValidate
- *   schema={modelSchema} 
+ *   schema={modelSchema}
  *   defaultValue={{ name: { first: 'Sally'}, colorID: 0 }}
  * >
  *   <label>Name</label>
  *   <Form.Field name='name.first' placeholder='First name'/>
- *   
+ *
  *   <label>Favorite Color</label>
  *   <Form.Field name='colorId' type='select'>
  *     <option value={0}>Red</option>
@@ -38,7 +38,7 @@ var has = {}.hasOwnProperty;
 class Field extends React.Component {
 
   static _isYupFormField = true
-  
+
   static contextTypes = {
     schema:     React.PropTypes.func,
     onChange:   React.PropTypes.func,
@@ -49,9 +49,9 @@ class Field extends React.Component {
   static propTypes = {
     /**
      * The Field name, which should be path corresponding to a specific form `value` path.
-     * 
+     *
      * ```js
-     * // given the form value 
+     * // given the form value
      * value = {
      *   name: { first: '' }
      *   languages: ['english', 'spanish']
@@ -62,67 +62,67 @@ class Field extends React.Component {
      *
      * // use indexes for paths that cross arrays
      * <Form.Field name='languages[0]' />
-     * 
+     *
      * ```
      */
     name: React.PropTypes.string.isRequired,
 
     /**
-     * Group Fields together with a common `group` name. Groups can be 
+     * Group Fields together with a common `group` name. Groups can be
      * validated together, helpful for multi-part forms.
      *
      * ```editable
      * <Form schema={modelSchema} defaultValue={modelSchema.default()}>
-     *   
-     *   <Form.Field name='name.first' group='name' 
+     *
+     *   <Form.Field name='name.first' group='name'
      *     placeholder='first'/>
-     *     
-     *   <Form.Field name='name.last' group='name' 
+     *
+     *   <Form.Field name='name.last' group='name'
      *     placeholder='surname'/>
      *
      *   <Form.Message for={['name.first', 'name.last']}/>
-     *   
+     *
      *   <Form.Field name='dateOfBirth' placeholder='dob'/>
-     *   
+     *
      *   <Form.Button group='name'>
      *     Validate Name
-     *   </Form.Button> 
-     * </Form>      
+     *   </Form.Button>
+     * </Form>
      * ```
      */
     group: React.PropTypes.string,
 
     /**
-     * The Component Input the form should render. You can sepcify a builtin type 
+     * The Component Input the form should render. You can sepcify a builtin type
      * with a string name e.g `'text'`, `'datetime-local'`, etc. or provide a Component
-     * type class directly. When no type is provided the Field will attempt determine 
-     * the correct input from the corresponding scheme. A Field corresponding to a `yup.number()` 
+     * type class directly. When no type is provided the Field will attempt determine
+     * the correct input from the corresponding scheme. A Field corresponding to a `yup.number()`
      * will render a `type='number'` input by default.
-     * 
+     *
      * ```editable
      * <Form noValidate schema={modelSchema}>
      *   Use the schema to determine type
-     *   <Form.Field 
-     *     name='dateOfBirth' 
+     *   <Form.Field
+     *     name='dateOfBirth'
      *     placeholder='date'/>
-     *       
+     *
      *   Override it!
-     *   <Form.Field name='dateOfBirth' 
-     *       type='time' 
+     *   <Form.Field name='dateOfBirth'
+     *       type='time'
      *       placeholder='time only'/>
      *
-     *   Use a custom Component 
+     *   Use a custom Component
      *   (need native 'datetime' support to see it)
-     *   <Form.Field 
-     *     name='dateOfBirth' 
+     *   <Form.Field
+     *     name='dateOfBirth'
      *     type={MyDateInput}/>
-     *   
-     * </Form>      
+     *
+     * </Form>
      * ```
-     * Custom Inputs should comply with the basic input api contract: set a value via a `value` prop and 
+     * Custom Inputs should comply with the basic input api contract: set a value via a `value` prop and
      * broadcast changes to that value via an `onChange` handler.
      *
-     * You can also permenantly map Components to a string `type` name via the top-level 
+     * You can also permenantly map Components to a string `type` name via the top-level
      * `addInputType()` api.
      */
     type: React.PropTypes.oneOfType([
@@ -135,10 +135,10 @@ class Field extends React.Component {
      */
     events: React.PropTypes.arrayOf(
               React.PropTypes.string),
-    
+
     /**
-     * Customize how the Field value maps to the overall Form `value`. 
-     * `mapValue` can be a function that returns a value for `name`'d path, allowing 
+     * Customize how the Field value maps to the overall Form `value`.
+     * `mapValue` can be a function that returns a value for `name`'d path, allowing
      * you to set commuted values from the Field.
      *
      * ```js
@@ -147,28 +147,28 @@ class Field extends React.Component {
      * />
      * ```
      *
-     * You can also provide an object hash, mapping paths of the Form `value` 
+     * You can also provide an object hash, mapping paths of the Form `value`
      * to fields in the field value using a string field name, or a function accessor.
      *
      * ```editable
-     * <Form 
+     * <Form
      *   schema={modelSchema}
      *   defaultValue={modelSchema.default()}
      * >
      *   <label>Name</label>
      *   <Form.Field name='name.first' placeholder='First name'/>
-     *   
+     *
      *   <label>Date of Birth</label>
-     *   <Form.Field name='dateOfBirth' 
+     *   <Form.Field name='dateOfBirth'
      *     mapValue={{
      *       'dateOfBirth': date => date,
-     *       'age': date => 
+     *       'age': date =>
      *       (new Date()).getFullYear() - date.getFullYear()
      *   }}/>
 
      *   <label>Age</label>
      *   <Form.Field name='age'/>
-     *   
+     *
      *   <Form.Button type='submit'>Submit</Form.Button>
      * </Form>
      * ```
@@ -184,7 +184,7 @@ class Field extends React.Component {
     errorClass: React.PropTypes.string,
 
     /**
-     * Tells the Field to trigger validation for addition paths as well as its own (`name`). 
+     * Tells the Field to trigger validation for addition paths as well as its own (`name`).
      * Useful when used in conjuction with a `mapValue` hash that updates more than one value.
      *
      * ```js
@@ -214,14 +214,14 @@ class Field extends React.Component {
   componentWillMount() {
     if ( process.env.NODE_ENV !== 'production' )
       invariant(
-           this.getContext().noValidate() 
+           this.getContext().noValidate()
         || !!this.getContext().schema(this.props.name),
         `There is no corresponding schema defined for this field: "${this.props.name}" ` +
         `Each Field's \`name\` prop must be a valid path defined by the parent Form schema`)
   }
 
   render() {
-    var { 
+    var {
         events
       , group
       , mapValue
@@ -232,15 +232,15 @@ class Field extends React.Component {
       , type = this.props.type || (schema && schema._type) || ''
       , Widget = type;
 
-    Widget = typeof this.props.type === 'function' 
+    Widget = typeof this.props.type === 'function'
       ? ((type = undefined), this.props.type)
       : types[type.toLowerCase()] || Input
 
     Widget = (
-      <Widget {...props}   
-        name={name} 
-        type={type} 
-        value={value} 
+      <Widget {...props}
+        name={name}
+        type={type}
+        value={value}
         onChange={this._change.bind(this)}/>
     )
 
@@ -248,7 +248,7 @@ class Field extends React.Component {
       return Widget
 
     name = props.alsoValidates == null ? name : [name].concat(props.alsoValidates)
-    
+
     return (
       <MessageTrigger for={name} group={group} events={events} activeClass={props.errorClass}>
         { Widget }
