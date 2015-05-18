@@ -75,7 +75,7 @@ class Form extends React.Component {
   static propTypes = {
 
     /**
-     * Form value object, can be left uncontrolled; 
+     * Form value object, can be left [uncontrolled](/controllables); 
      * use the `defaultValue` prop to initialize an uncontrolled form.
      */
     value: React.PropTypes.object,
@@ -86,9 +86,10 @@ class Form extends React.Component {
     onChange: React.PropTypes.func,
 
     /**
-     * An object hash of field errors for the form. The object should be keyed with paths
-     * with the values being string messages or an array of messages. Errors can be left 
-     * uncontrolled (use `defaultErrors` to set an initial value) or managed along with the `onError` callback
+     * An object hash of field errors for the form. The object should be keyed with paths 
+     * with the values being string messages or an array of messages. Errors can be 
+     * left [uncontrolled](/controllables) (use `defaultErrors` to set an initial value) 
+     * or managed along with the `onError` callback.
      * 
      * ```js
      * errors={{
@@ -103,11 +104,22 @@ class Form extends React.Component {
 
     /**
      * Callback that is called when a validation error occures. It is called with an `errors` object
-     * ```js
-     * function onError(errors){
-     *   errors['name.first'] 
-     *   // => 'required field', "Names must be at least 2 characters long"]
-     * }
+     * 
+     * ```editable
+     * <Form schema={modelSchema}
+     *   defaultValue={modelSchema.default()}
+     *   errors={this.state ? this.state.errors : {}}
+     *   onError={errors => {
+     *     if( errors.dateOfBirth )
+     *       errors.dateOfBirth = 'hijacked!'
+     *     this.setState({ errors })
+     *   }}>
+     *   
+     *   <Form.Field name='dateOfBirth'/>
+     *   <Form.Message for='dateOfBirth'/>
+     *   
+     *   <Form.Button type='submit'>Submit</Form.Button>
+     * </Form>
      * ```
      */
     onError: React.PropTypes.func,
@@ -250,6 +262,9 @@ class Form extends React.Component {
   }
 
   componentWillReceiveProps(nextProps){
+    if ( nextProps.schema !== this.props.schema )
+      this._queue = uniq((this._queue || []).concat(Object.keys(nextProps.errors)))
+
     this._flushValidations(nextProps)
 
     this.setState({ 
@@ -404,6 +419,10 @@ function wrapSetter(setter){
       '`setter(..)` props must return the form value object after updating a value.')
     return result
   }
+}
+
+function uniq(arr){
+  return arr.filter((item, i) => arr.indexOf(item) === i)
 }
 
 function has(o, k){

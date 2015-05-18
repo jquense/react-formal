@@ -118,6 +118,7 @@ class App extends React.Component {
 var routes = (
   <Route name="app" path="/" handler={App}>
     <DefaultRoute handler={Main} />
+    
     <Route name="intro" path='getting-started' handler={Main}/>
     
 
@@ -129,6 +130,7 @@ var routes = (
       <Route path='message' handler={require('./components/ValidationMessage')}/>
       <Route path='summary' handler={require('./components/ValidationSummary')}/>
       <Route path='button' handler={require('./components/Button')}/>
+      <Route path="/controllables" handler={require('./components/controllables')}/>
     </Route>
   </Route>
 );

@@ -60,16 +60,17 @@ React.render(form, mountNode);`} />
 
 <h3 id="props">Props</h3>
 <h4 id="-value-"><code>{`value`}</code></h4>
-<p>Form value object, can be left uncontrolled; 
+<p>Form value object, can be left <Link to="/controllables" title="">uncontrolled</Link>; 
 use the <code>{`defaultValue`}</code> prop to initialize an uncontrolled form.</p>
 <p>type: <code>{`object`}</code>  </p>
 <h4 id="-onchange-"><code>{`onChange`}</code></h4>
 <p>Callback that is called when the <code>{`value`}</code> prop changes.</p>
 <p>type: <code>{`func`}</code>  </p>
 <h4 id="-errors-"><code>{`errors`}</code></h4>
-<p>An object hash of field errors for the form. The object should be keyed with paths
-with the values being string messages or an array of messages. Errors can be left 
-uncontrolled (use <code>{`defaultErrors`}</code> to set an initial value) or managed along with the <code>{`onError`}</code> callback</p>
+<p>An object hash of field errors for the form. The object should be keyed with paths 
+with the values being string messages or an array of messages. Errors can be 
+left <Link to="/controllables" title="">uncontrolled</Link> (use <code>{`defaultErrors`}</code> to set an initial value) 
+or managed along with the <code>{`onError`}</code> callback.</p>
 <pre><code className="js">{`errors={{
  "name.first": [
    'First names are required', 
@@ -80,11 +81,21 @@ uncontrolled (use <code>{`defaultErrors`}</code> to set an initial value) or man
 <p>type: <code>{`object`}</code>  </p>
 <h4 id="-onerror-"><code>{`onError`}</code></h4>
 <p>Callback that is called when a validation error occures. It is called with an <code>{`errors`}</code> object</p>
-<pre><code className="js">{`function onError(errors){
-  errors['name.first'] 
-  // => 'required field', "Names must be at least 2 characters long"]
-}`}
-</code></pre>
+<Playground lang="js" theme="neo" scope={this.props.scope} codeText={`<Form schema={modelSchema}
+  defaultValue={modelSchema.default()}
+  errors={this.state ? this.state.errors : {}}
+  onError={errors => {
+    if( errors.dateOfBirth )
+      errors.dateOfBirth = 'hijacked!'
+    this.setState({ errors })
+  }}>
+
+  <Form.Field name='dateOfBirth'/>
+  <Form.Message for='dateOfBirth'/>
+
+  <Form.Button type='submit'>Submit</Form.Button>
+</Form>`} noRender/>
+
 <p>type: <code>{`func`}</code>  </p>
 <h4 id="-onvalidate-"><code>{`onValidate`}</code></h4>
 <p>Callback that is called whenever a validation is triggered. 
