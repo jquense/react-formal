@@ -246,6 +246,8 @@ class Form extends React.Component {
         .catch(err => err.errors) 
     })
 
+    syncErrors(this.validator, props.errors || {})
+
     this.state = {
       children: getChildren(
             this.props.children
@@ -264,6 +266,8 @@ class Form extends React.Component {
   componentWillReceiveProps(nextProps){
     if ( nextProps.schema !== this.props.schema )
       this._queue = uniq((this._queue || []).concat(Object.keys(nextProps.errors)))
+
+    syncErrors(this.validator, nextProps.errors || {})
 
     this._flushValidations(nextProps)
 
@@ -423,6 +427,14 @@ function wrapSetter(setter){
 
 function uniq(arr){
   return arr.filter((item, i) => arr.indexOf(item) === i)
+}
+
+function syncErrors(validator, errors){
+  validator._errors = {}
+  Object.keys(errors).forEach(key => {
+    if ( errors[key] != null)
+      validator._errors[key] = [].concat(errors[key])
+  })
 }
 
 function has(o, k){
