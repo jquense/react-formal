@@ -1,5 +1,5 @@
 var React = require('react')
-var warning = require('scoped-warning')('formal-yup')
+var warning = require('scoped-warning')('react-formal')
 var Trigger = require('react-input-message/lib/MessageTrigger')
 
 /**

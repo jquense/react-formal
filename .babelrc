@@ -9,5 +9,6 @@
     "es7.trailingFunctionCommas",
     "es7.comprehensions",
     "es7.exportExtensions"
-  ]
+  ],
+  "plugins": [ "object-assign"]
 }

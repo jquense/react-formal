@@ -1,14 +1,13 @@
 'use strict';
 var React     = require('react')
-  , invariant = require('scoped-invariant')('formal-yup')
+  , invariant = require('scoped-invariant')('react-formal')
   , reach     = require('yup/lib/util/reach')
   , expr      = require('property-expr')
-  , updateIn  = require('react/lib/update')
+  , updateIn  = require('./util/update')
   , Validator = require('react-input-message/lib/Validator')
   , Container = require('react-input-message/lib/MessageContainer')
   , uncontrollable = require('uncontrollable')
-  , getChildren    = require('./util/parentContext')
-  , toUpdateSpec   = require('./util/pathToUpdateSpec');
+  , getChildren    = require('./util/parentContext');
 
 let done = e => setTimeout(() => { throw e })
 
@@ -75,7 +74,7 @@ class Form extends React.Component {
   static propTypes = {
 
     /**
-     * Form value object, can be left uncontrolled; 
+     * Form value object, can be left [uncontrolled](/controllables); 
      * use the `defaultValue` prop to initialize an uncontrolled form.
      */
     value: React.PropTypes.object,
@@ -86,28 +85,40 @@ class Form extends React.Component {
     onChange: React.PropTypes.func,
 
     /**
-     * An object hash of field errors for the form. The object should be keyed with paths
-     * with the values being string messages or an array of messages. Errors can be left 
-     * uncontrolled (use `defaultErrors` to set an initial value) or managed along with the `onError` callback
+     * An object hash of field errors for the form. The object should be keyed with paths 
+     * with the values being string messages or an array of messages. Errors can be 
+     * left [uncontrolled](/controllables) (use `defaultErrors` to set an initial value) 
+     * or managed along with the `onError` callback.
      * 
      * ```js
-     * errors={{
+     * <Form errors={{
      *  "name.first": [
      *    'First names are required', 
      *    "Names must be at least 2 characters long"
      *  ],
-     * }}
+     * }}/>
      * ```
      */
     errors: React.PropTypes.object,
 
     /**
-     * Callback that is called when a validation error occures. It is called with an `errors` object
-     * ```js
-     * function onError(errors){
-     *   errors['name.first'] 
-     *   // => 'required field', "Names must be at least 2 characters long"]
-     * }
+     * Callback that is called when a validation error occurs. It is called with an `errors` object
+     * 
+     * ```editable
+     * <Form schema={modelSchema}
+     *   defaultValue={modelSchema.default()}
+     *   errors={this.state ? this.state.errors : {}}
+     *   onError={errors => {
+     *     if( errors.dateOfBirth )
+     *       errors.dateOfBirth = 'hijacked!'
+     *     this.setState({ errors })
+     *   }}>
+     *   
+     *   <Form.Field name='dateOfBirth'/>
+     *   <Form.Message for='dateOfBirth'/>
+     *   
+     *   <Form.Button type='submit'>Submit</Form.Button>
+     * </Form>
      * ```
      */
     onError: React.PropTypes.func,
@@ -195,7 +206,7 @@ class Form extends React.Component {
     schema(props, name, componentName) {
       var err = !props.noValidate && React.PropTypes.any.isRequired(props, name, componentName)
 
-      if (!err && !props[name].__isYupSchema__) 
+      if (props[name] && !props[name].__isYupSchema__) 
         err = new Error('`schema` must be a proper yup schema: (' + componentName + ')')
 
       return err
@@ -207,7 +218,7 @@ class Form extends React.Component {
     strict: true,
     delay: 300,
     getter: (path, model) => expr.getter(path, true)(model || {}),
-    setter: (path, model, val) => updateIn(model, toUpdateSpec(path, val)),
+    setter: (path, model, val) => updateIn(model, path, val),
   }   
     
   static childContextTypes = {
@@ -234,6 +245,8 @@ class Form extends React.Component {
         .catch(err => err.errors) 
     })
 
+    syncErrors(this.validator, props.errors || {})
+
     this.state = {
       children: getChildren(
             this.props.children
@@ -250,6 +263,11 @@ class Form extends React.Component {
   }
 
   componentWillReceiveProps(nextProps){
+    if ( nextProps.schema !== this.props.schema )
+      this._queue = uniq((this._queue || []).concat(Object.keys(nextProps.errors)))
+
+    syncErrors(this.validator, nextProps.errors || {})
+
     this._flushValidations(nextProps)
 
     this.setState({ 
@@ -265,7 +283,7 @@ class Form extends React.Component {
 
       noValidate: ()=> this.props.noValidate,
 
-      schema:   path => path && reach(this.props.schema, path), 
+      schema:   path => path && this.props.schema && reach(this.props.schema, path), 
 
       value:    path => this.props.getter(path, this.props.value),
 
@@ -404,6 +422,18 @@ function wrapSetter(setter){
       '`setter(..)` props must return the form value object after updating a value.')
     return result
   }
+}
+
+function uniq(arr){
+  return arr.filter((item, i) => arr.indexOf(item) === i)
+}
+
+function syncErrors(validator, errors){
+  validator._errors = {}
+  Object.keys(errors).forEach(key => {
+    if ( errors[key] != null)
+      validator._errors[key] = [].concat(errors[key])
+  })
 }
 
 function has(o, k){

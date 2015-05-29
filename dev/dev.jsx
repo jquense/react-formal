@@ -78,7 +78,7 @@ var App = React.createClass({
     
     return (
       <div style={{ width: 400 }}>
-        <Form defaultValue={model} schema={schema} className='form-horizontal' onChange={ model => console.log(model)}>
+        <Form defaultValue={{}} noValidate className='form-horizontal' onChange={ model => console.log(model)}>
           <Form.Summary />
           <fieldset>
             <legend>Personal</legend>
@@ -96,7 +96,7 @@ var App = React.createClass({
             <div className='form-group'>
               <label className='control-label col-sm-3'>Employer</label>
               <div className='col-sm-8'>
-                <Form.Field name='personal.orgID' type='select' group='personal' className='form-control'>
+                <Form.Field value={2} name='personal.orgID' type='select' group='personal' className='form-control'>
                   { orgs.map(org => 
                     <option value={org.id}>{org.name}</option>)
                   }

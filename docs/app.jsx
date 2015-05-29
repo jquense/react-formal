@@ -14,6 +14,7 @@ var React = require('react')
 
 require('./style.less')
 require('react-widgets/lib/less/react-widgets.less')
+require('./vendor/jsx')
 
 Form.addInputTypes(types)
 
@@ -41,7 +42,7 @@ var modelSchema = yup.object({
 
 var reqMap = { 'react-formal': 'Form', 'react': 'React', 'react/addons': 'React', 'react-formal-inputs': 'types' }
   , scope = { Form, React, yup, modelSchema, MyDateInput, types, require(name){ return scope[reqMap[name] || name] } }
-  , Intro = require('./components/intro')
+  , Intro = require('./pages/intro.md')
 
 class Docs extends React.Component {
 
@@ -118,17 +119,19 @@ class App extends React.Component {
 var routes = (
   <Route name="app" path="/" handler={App}>
     <DefaultRoute handler={Main} />
+    
     <Route name="intro" path='getting-started' handler={Main}/>
     
 
     <Route path='api' handler={Docs}>
-      <DefaultRoute handler={require('./components/Form')} />
-      <Route path='yup' handler={require('./components/yup')}/>
-      <Route path='form' handler={require('./components/Form')}/>
-      <Route path='field' handler={require('./components/Field')}/>
-      <Route path='message' handler={require('./components/ValidationMessage')}/>
-      <Route path='summary' handler={require('./components/ValidationSummary')}/>
-      <Route path='button' handler={require('./components/Button')}/>
+      <DefaultRoute handler={require('!babel-loader!./loaders/jsx!./loaders/metadata!../src/Form')} />
+      <Route path='yup'     handler={require('./pages/yup.md')}/>
+      <Route path='form'    handler={require('!babel-loader!./loaders/jsx!./loaders/metadata!../src/Form')}/>
+      <Route path='field'   handler={require('!babel-loader!./loaders/jsx!./loaders/metadata!../src/Field')}/>
+      <Route path='message' handler={require('!babel-loader!./loaders/jsx!./loaders/metadata!../src/ValidationMessage')}/>
+      <Route path='summary' handler={require('!babel-loader!./loaders/jsx!./loaders/metadata!../src/ValidationSummary')}/>
+      <Route path='button'  handler={require('!babel-loader!./loaders/jsx!./loaders/metadata!../src/FormButton')}/>
+      <Route path="/controllables" handler={require('./pages/controllables.md')}/>
     </Route>
   </Route>
 );
