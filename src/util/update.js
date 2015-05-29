@@ -9,6 +9,9 @@ module.exports = function update(model, path, value) {
     , newModel = copy(model)
     , part, islast;
 
+  if ( newModel === undefined )
+    newModel = IS_ARRAY.test(parts[0]) ? [] : {}
+
   var current = newModel
 
   for (var idx = 0; idx < parts.length; idx++) {

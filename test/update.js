@@ -28,5 +28,11 @@ describe('immutable setter', ()=>{
     assert(objA.foo === undefined)
     assert.deepEqual(objB.foo,  [ { bar: { quuz: 5 } } ])
   })
+
+  it.only('should work when input is undefined', ()=>{
+    var obj = update(void 0, 'foo[0].bar.quuz', 5)
+
+    assert.deepEqual(obj,  { foo: [ { bar: { quuz: 5 } } ] })
+  })
 })
 
