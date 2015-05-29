@@ -26,10 +26,10 @@ function attachChildren(children, context, test) {
   return React.Children.map(children, clone)
 
   function clone (child) {
-    var props = child.props
-
     if ( !React.isValidElement(child) )
       return child;
+
+    var props = child.props
 
     if ( props.children )
       props = { ...child.props, children: attachChildren(props.children, context, test) }

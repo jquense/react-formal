@@ -1,14 +1,11 @@
 var metadata = require('react-component-metadata')
   , handlebars = require('handlebars')
   , assign = require('react/lib/Object.assign')
-  , uuid = require('lodash/utility/uniqueId')
   , each = require('lodash/collection/each')
   , transform = require('lodash/object/transform')
   , fs = require('fs')
-  , inspect = require('util').inspect
-  , path = require('path')
-  , mdToJsx = require('../util/md-to-jsx')
-  , through = require('through2')
+  , path = require('path');
+
 
 
 handlebars.registerHelper('cleanDoclets', function types(desc, options){
@@ -52,44 +49,22 @@ handlebars.registerHelper('propType', function types(prop, options){
 
 var apiFile = handlebars.compile(fs.readFileSync(__dirname + '/../templates/api.hbs').toString())
 
-module.exports = function(filename, opts) {
-  var seen = [];
+module.exports = function(contents) {
+  var result = {}
+  var markdown;
 
-  return through.obj(function transpile(file, enc, cb) {
-    if (file.isNull()) return cb();
+  each(metadata(contents), function(val, key) {
 
-    if (file.isStream()) {
-      this.emit('error', new Error('Streaming not supported'));
-      return cb();
+    if( val.desc || Object.keys(val.props).length ){
+      var doclets = metadata.parseDoclets(val.desc) || {};
+      
+      markdown = apiFile(assign({ name: doclets.alias || key }, val))
     }
+  }, this)
 
-    each(metadata(file.contents, opts), function(val, key) {
-      var markdown;
-
-      if( val.desc || Object.keys(val.props).length ){
-        var doclets = metadata.parseDoclets(val.desc) || {};
-        
-        markdown = apiFile(assign({ name: doclets.alias || key }, val))
-      }
-
-      if ( seen.indexOf(key) !== -1)
-        key = key + uuid()
-
-      seen.push(key)
-
-      if ( markdown){
-        
-        this.push(mdToJsx(file, key, markdown));
-      }
-    }, this)
-
-    cb()
-  })
+  return markdown
 }
 
-function createJsx(file, md){
-
-}
 
 function displayObj(obj){
   return JSON.stringify(obj, null, 2).replace(/"|'/g, '')

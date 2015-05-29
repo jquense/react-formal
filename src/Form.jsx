@@ -1,14 +1,13 @@
 'use strict';
 var React     = require('react')
-  , invariant = require('scoped-invariant')('formal-yup')
+  , invariant = require('scoped-invariant')('react-formal')
   , reach     = require('yup/lib/util/reach')
   , expr      = require('property-expr')
-  , updateIn  = require('react/lib/update')
+  , updateIn  = require('./util/update')
   , Validator = require('react-input-message/lib/Validator')
   , Container = require('react-input-message/lib/MessageContainer')
   , uncontrollable = require('uncontrollable')
-  , getChildren    = require('./util/parentContext')
-  , toUpdateSpec   = require('./util/pathToUpdateSpec');
+  , getChildren    = require('./util/parentContext');
 
 let done = e => setTimeout(() => { throw e })
 
@@ -92,18 +91,18 @@ class Form extends React.Component {
      * or managed along with the `onError` callback.
      * 
      * ```js
-     * errors={{
+     * <Form errors={{
      *  "name.first": [
      *    'First names are required', 
      *    "Names must be at least 2 characters long"
      *  ],
-     * }}
+     * }}/>
      * ```
      */
     errors: React.PropTypes.object,
 
     /**
-     * Callback that is called when a validation error occures. It is called with an `errors` object
+     * Callback that is called when a validation error occurs. It is called with an `errors` object
      * 
      * ```editable
      * <Form schema={modelSchema}
@@ -207,7 +206,7 @@ class Form extends React.Component {
     schema(props, name, componentName) {
       var err = !props.noValidate && React.PropTypes.any.isRequired(props, name, componentName)
 
-      if (!err && !props[name].__isYupSchema__) 
+      if (props[name] && !props[name].__isYupSchema__) 
         err = new Error('`schema` must be a proper yup schema: (' + componentName + ')')
 
       return err
@@ -219,7 +218,7 @@ class Form extends React.Component {
     strict: true,
     delay: 300,
     getter: (path, model) => expr.getter(path, true)(model || {}),
-    setter: (path, model, val) => updateIn(model, toUpdateSpec(path, val)),
+    setter: (path, model, val) => updateIn(model, path, val),
   }   
     
   static childContextTypes = {
@@ -284,7 +283,7 @@ class Form extends React.Component {
 
       noValidate: ()=> this.props.noValidate,
 
-      schema:   path => path && reach(this.props.schema, path), 
+      schema:   path => path && this.props.schema && reach(this.props.schema, path), 
 
       value:    path => this.props.getter(path, this.props.value),
 

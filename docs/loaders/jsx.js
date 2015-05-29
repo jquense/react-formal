@@ -2,8 +2,7 @@
 var marked = require('marked')
   , fs = require('fs')
   , handlebars = require('handlebars')
-  , path = require('path')
-  , through = require('through2')
+  , path = require('path');
 
 function escape(html, encode) {
   return html
@@ -45,16 +44,14 @@ renderer.code = function(code, lang, escaped) {
     + '\n</code></pre>\n';
 };
 
-module.exports = function(file, filename, md) {
-  var html = file.clone({ contents: false });
-  var body =  marked(md, { renderer: renderer })
 
-  html.path = replaceExtension(
-    path.join(file.base, filename), '.jsx')
+module.exports = function(markdown) {
+  if (this && this.cacheable)
+    this.cacheable();
 
-  html.contents = new Buffer(template({ body: body }))
-
-  return html
+  return template({ 
+    body: marked(markdown, { renderer: renderer }) 
+  })
 }
 
 function replaceExtension(npath, ext) {

@@ -1,11 +1,11 @@
 'use strict';
 var React = require('react')
-  , invariant = require('scoped-invariant')('formal-yup')
+  , invariant = require('scoped-invariant')('react-formal')
   , types = require('./util/types')
-  , Input   = require('./inputs/Input')
-  , MessageTrigger = require('react-input-message/lib/MessageTrigger');
+  , Input   = require('./inputs/Input');
 
-var has = {}.hasOwnProperty;
+var has = {}.hasOwnProperty
+  , MessageTrigger = require('react-input-message/lib/MessageTrigger');
 
 /**
  * The Field Component renders a form control and handles input value updates and validations.
@@ -229,7 +229,7 @@ class Field extends React.Component {
       , ...props } = this.props
       , schema = this.getContext().schema(name)
       , value  = this.getContext().value(name)
-      , type = this.props.type || (schema && schema._type) || ''
+      , type   = this.props.type || (schema && schema._type) || ''
       , Widget = type;
 
     Widget = typeof this.props.type === 'function'
@@ -237,10 +237,11 @@ class Field extends React.Component {
       : types[type.toLowerCase()] || Input
 
     Widget = (
-      <Widget {...props}
+      <Widget 
         name={name}
         type={type}
         value={value}
+        {...props}
         onChange={this._change.bind(this)}/>
     )
 
