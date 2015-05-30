@@ -37,17 +37,17 @@ render(){
             schema={modelSchema}
             value={this.state.model} 
             onChange={model => this.setState({ model})}
-        />
+        >
             <fieldset>
                 <legend>Personal Details</legend>
 
-                <Form.field name='name.first'/>
+                <Form.Field name='name.first'/>
                 <Form.Message for='name.first'/>
 
-                <Form.field name='name.last'/>
+                <Form.Field name='name.last'/>
                 <Form.Message for='name.last'/>
 
-                <Form.field name='dateOfBirth'/>
+                <Form.Field name='dateOfBirth'/>
                 <Form.Message for='dateOfBirth'/>
             </fieldset>
             <Form.Button type='submit' >Submit</Form.Button>
