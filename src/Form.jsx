@@ -236,9 +236,7 @@ class Form extends React.Component {
       var model   = props.value
         , schema  = reach(props.schema, path)
         , value   = props.getter(path, model)
-        , context = schema._conditions.length 
-            ? props.getter(parent(path), model) || {}
-            : undefined; // an optimization may save a .toJS() call
+        , context = props.getter(parent(path), model) || {};
 
       return schema.validate(value, { strict: props.strict, context })
         .then(() => void 0)       
