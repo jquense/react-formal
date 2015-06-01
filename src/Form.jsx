@@ -217,7 +217,7 @@ class Form extends React.Component {
     component: 'form',
     strict: true,
     delay: 300,
-    getter: (path, model) => expr.getter(path, true)(model || {}),
+    getter: (path, model) => path ? expr.getter(path, true)(model || {}) : model,
     setter: (path, model, val) => updateIn(model, path, val),
   }   
     
