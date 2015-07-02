@@ -263,8 +263,11 @@ class Form extends React.Component {
   }
 
   componentWillReceiveProps(nextProps){
-    if ( nextProps.schema !== this.props.schema )
-      this._queue = uniq((this._queue || []).concat(Object.keys(nextProps.errors)))
+    if ( nextProps.schema !== this.props.schema ){
+      this._queueValidation({
+        fields: uniq((this._queue || []).concat(Object.keys(nextProps.errors)))
+      })
+    }
 
     syncErrors(this.validator, nextProps.errors || {})
 
@@ -393,8 +396,8 @@ class Form extends React.Component {
   _queueValidation(e){
     var queue = this._queue || (this._queue = [])
 
-    if ( !queue.some( q => q.path === e.path) )
-      queue.push(e)
+    //if ( !queue.some( q => q.path === e.path) )
+    queue.push(e)
   }
 
   _flushValidations(props){
