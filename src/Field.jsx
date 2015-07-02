@@ -2,6 +2,7 @@
 var React = require('react')
   , invariant = require('scoped-invariant')('react-formal')
   , types = require('./util/types')
+  , paths = require('./util/paths')
   , Input   = require('./inputs/Input');
 
 var has = {}.hasOwnProperty
@@ -175,7 +176,7 @@ class Field extends React.Component {
      */
     mapValue: React.PropTypes.oneOfType([
             React.PropTypes.func,
-            React.PropTypes.object,
+            React.PropTypes.object
           ]),
 
     /**
@@ -185,19 +186,25 @@ class Field extends React.Component {
 
     /**
      * Tells the Field to trigger validation for addition paths as well as its own (`name`).
-     * Useful when used in conjuction with a `mapValue` hash that updates more than one value.
+     * Useful when used in conjuction with a `mapValue` hash that updates more than one value, or 
+     * if you want to trigger validation for the parent path as well.
      *
      * ```js
-     * <Form.Field name='name'
-     *   mapValue={{
-     *     'name.first': 'first',
-     *     'name.last':  'surname'
-     *   }}
-     *   alsoValidates={['name.first', 'name.last']}
-     * />
+     * <Form.Field name='name.first' alsoValidates={['name']}/>
+     * <Form.Field name='name.last' alsoValidates={['name']}/>
      * ```
      */
     alsoValidates: React.PropTypes.arrayOf(React.PropTypes.string),
+
+    /**
+     * Specify whether the Field will recursively validate sub paths. 
+     * The below example will also validate `name.first` and `name.last`. Generally you won't need to tough this 
+     * as `react-formal` makes some intelligent guesses about whether to recurse or not on any given path.
+     * ```js
+     * <Form.Field name='name' recursive={true}/>
+     * ```
+     */
+    recursive: React.PropTypes.string,
 
     /**
      * Disables validation for the Field.
@@ -248,10 +255,17 @@ class Field extends React.Component {
     if ( this.props.noValidate || this.getContext().noValidate() )
       return Widget
 
-    name = props.alsoValidates == null ? name : [name].concat(props.alsoValidates)
+    name = props.alsoValidates == null ? name : [ name ].concat(props.alsoValidates)
 
+    // name = paths.reduce(name)
     return (
-      <MessageTrigger for={name} group={group} events={events} activeClass={props.errorClass}>
+      <MessageTrigger 
+        for={name} 
+        group={group} 
+        events={events} 
+        options={{ recursive: props.recursive }}
+        activeClass={props.errorClass}
+      >
         { Widget }
       </MessageTrigger>
     )

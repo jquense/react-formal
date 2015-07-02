@@ -18,17 +18,19 @@ class Button extends React.Component {
      * If the button type is 'submit' the group will be ignored and the 
      * entire form will be validated prior to submission.
      */
-    group: React.PropTypes.string,
+    group: React.PropTypes.string
   }
 
   static defaultProps = {
     type: 'button',
+    events: ['onClick']
   }
 
   render(){
     let { 
         type
       , group
+      , events
       , ...props } = this.props
 
     warning(!group || type.toLowerCase() !== 'submit', 
@@ -40,7 +42,7 @@ class Button extends React.Component {
       return <button {...props} type='submit'>{ this.props.children }</button>
 
     return (
-      <Trigger group={group} events={['onClick']}>
+      <Trigger group={group} events={events}>
         <button {...props} type={type}>{ this.props.children }</button>
       </Trigger>
     )

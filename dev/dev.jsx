@@ -78,7 +78,7 @@ var App = React.createClass({
     
     return (
       <div style={{ width: 400 }}>
-        <Form defaultValue={{}} noValidate className='form-horizontal' onChange={ model => console.log(model)}>
+        <Form defaultValue={{}} schema={schema} className='form-horizontal' onChange={ model => console.log(model)}>
           <Form.Summary />
           <fieldset>
             <legend>Personal</legend>

@@ -7,6 +7,7 @@ var React     = require('react')
   , Validator = require('react-input-message/lib/Validator')
   , Container = require('react-input-message/lib/MessageContainer')
   , uncontrollable = require('uncontrollable')
+  , paths = require('./util/paths')
   , getChildren    = require('./util/parentContext');
 
 let done = e => setTimeout(() => { throw e })
@@ -14,13 +15,13 @@ let done = e => setTimeout(() => { throw e })
 let parent = path => expr.join(expr.split(path).slice(0, -1))
 
 /**
- * Form component renders a `value` to be updated and validated by child Fields. 
- * Forms can be thought of as `<input/>`s for complex values, or models. A Form aggregates 
+ * Form component renders a `value` to be updated and validated by child Fields.
+ * Forms can be thought of as `<input/>`s for complex values, or models. A Form aggregates
  * a bunch of smaller inputs, each in charge of updating a small part of the overall model.
  * The Form will integrate and validate each change and fire a single unified `onChange` with the new `value`.
  *
- * Validation messages can be displayed anywhere inside a Form with Message Components. 
- * 
+ * Validation messages can be displayed anywhere inside a Form with Message Components.
+ *
  * ```editable
  * var defaultStr = yup.string().default('')
  *   , modelSchema = yup.object({
@@ -28,16 +29,16 @@ let parent = path => expr.join(expr.split(path).slice(0, -1))
  *         first: defaultStr.required('please enter a first name'),
  *         last:  defaultStr.required('please enter a surname'),
  *       }),
- *    
+ *
  *       dateOfBirth: yup.date()
  *         .max(new Date(), "You can't be born in the future!"),
- *      
+ *
  *       colorId: yup.number().nullable()
  *         .required('Please select a color')
  *     });
  *
  * var form = (
- *   <Form 
+ *   <Form
  *     schema={modelSchema}
  *     defaultValue={modelSchema.default()}
  *   >
@@ -46,7 +47,7 @@ let parent = path => expr.join(expr.split(path).slice(0, -1))
  *
  *       <Form.Field name='name.first' placeholder='First name'/>
  *       <Form.Field name='name.last' placeholder='Surname'/>
- *     
+ *
  *       <Form.Message for={['name.first', 'name.last']}/>
  *     </div>
  *
@@ -63,7 +64,7 @@ let parent = path => expr.join(expr.split(path).slice(0, -1))
  *       <option value={3}>other</option>
  *     </Form.Field>
  *     <Form.Message for='colorId'/>
- *   
+ *
  *   <Form.Button type='submit'>Submit</Form.Button>
  * </Form>)
  * React.render(form, mountNode);
@@ -74,7 +75,7 @@ class Form extends React.Component {
   static propTypes = {
 
     /**
-     * Form value object, can be left [uncontrolled](/controllables); 
+     * Form value object, can be left [uncontrolled](/controllables);
      * use the `defaultValue` prop to initialize an uncontrolled form.
      */
     value: React.PropTypes.object,
@@ -85,15 +86,15 @@ class Form extends React.Component {
     onChange: React.PropTypes.func,
 
     /**
-     * An object hash of field errors for the form. The object should be keyed with paths 
-     * with the values being string messages or an array of messages. Errors can be 
-     * left [uncontrolled](/controllables) (use `defaultErrors` to set an initial value) 
+     * An object hash of field errors for the form. The object should be keyed with paths
+     * with the values being string messages or an array of messages. Errors can be
+     * left [uncontrolled](/controllables) (use `defaultErrors` to set an initial value)
      * or managed along with the `onError` callback.
-     * 
+     *
      * ```js
      * <Form errors={{
      *  "name.first": [
-     *    'First names are required', 
+     *    'First names are required',
      *    "Names must be at least 2 characters long"
      *  ],
      * }}/>
@@ -103,7 +104,7 @@ class Form extends React.Component {
 
     /**
      * Callback that is called when a validation error occurs. It is called with an `errors` object
-     * 
+     *
      * ```editable
      * <Form schema={modelSchema}
      *   defaultValue={modelSchema.default()}
@@ -113,10 +114,10 @@ class Form extends React.Component {
      *       errors.dateOfBirth = 'hijacked!'
      *     this.setState({ errors })
      *   }}>
-     *   
+     *
      *   <Form.Field name='dateOfBirth'/>
      *   <Form.Message for='dateOfBirth'/>
-     *   
+     *
      *   <Form.Button type='submit'>Submit</Form.Button>
      * </Form>
      * ```
@@ -124,7 +125,7 @@ class Form extends React.Component {
     onError: React.PropTypes.func,
 
     /**
-     * Callback that is called whenever a validation is triggered. 
+     * Callback that is called whenever a validation is triggered.
      * It is called _before_ the validation is actually run.
      * ```js
      * function onError(e){
@@ -135,9 +136,9 @@ class Form extends React.Component {
     onValidate: React.PropTypes.func,
 
     /**
-     * Callback that is fired when the native onSubmit event is triggered. Only relevant when 
+     * Callback that is fired when the native onSubmit event is triggered. Only relevant when
      * the `component` prop renders a `<form/>` tag. onSubmit will trigger only if the form is valid.
-     * 
+     *
      * ```js
      * function onSubmit(e){
      *   // do something with valid value
@@ -147,7 +148,7 @@ class Form extends React.Component {
     onSubmit: React.PropTypes.func,
 
     /**
-     * A value getter function. `getter` is called with `path` and `value` and 
+     * A value getter function. `getter` is called with `path` and `value` and
      * should return the plain **javascript** value at the path.
       * ```js
      * function(
@@ -159,10 +160,10 @@ class Form extends React.Component {
     getter: React.PropTypes.func,
 
     /**
-     * A value setter function. `setter` is called with `path`, the form `value` and the path `value`. 
+     * A value setter function. `setter` is called with `path`, the form `value` and the path `value`.
      * The `setter` must return updated form `value`, which allows you to leave the original value unmutated.
      *
-     * The default implementation uses the [react immutability helpers](http://facebook.github.io/react/docs/update.html), 
+     * The default implementation uses the [react immutability helpers](http://facebook.github.io/react/docs/update.html),
      * letting you treat the form `value` as immutable.
      * ```js
      * function(
@@ -195,18 +196,18 @@ class Form extends React.Component {
      */
     component: React.PropTypes.oneOfType([
       React.PropTypes.func,
-      React.PropTypes.string,
+      React.PropTypes.string
     ]).isRequired,
 
     /**
-     * A Yup schema  that validates the Form `value` prop. Used to validate the form input values 
+     * A Yup schema  that validates the Form `value` prop. Used to validate the form input values
      * For more information about the yup api check out: https://github.com/jquense/yup/blob/master/README.md
      * @type {YupSchema}
      */
     schema(props, name, componentName) {
       var err = !props.noValidate && React.PropTypes.any.isRequired(props, name, componentName)
 
-      if (props[name] && !props[name].__isYupSchema__) 
+      if (props[name] && !props[name].__isYupSchema__)
         err = new Error('`schema` must be a proper yup schema: (' + componentName + ')')
 
       return err
@@ -218,29 +219,30 @@ class Form extends React.Component {
     strict: true,
     delay: 300,
     getter: (path, model) => path ? expr.getter(path, true)(model || {}) : model,
-    setter: (path, model, val) => updateIn(model, path, val),
-  }   
-    
+    setter: (path, model, val) => updateIn(model, path, val)
+  }
+
   static childContextTypes = {
     schema:     React.PropTypes.func,
     value:      React.PropTypes.func,
     onChange:   React.PropTypes.func,
     onSubmit:   React.PropTypes.func,
-    noValidate: React.PropTypes.func,
+    noValidate: React.PropTypes.func
   }
 
   constructor(props, context){
     super(props, context)
 
-    this.validator = new Validator((path, props) => {
+    this.validator = new Validator((path, { props, options }) => {
       var model   = props.value
         , schema  = reach(props.schema, path)
         , value   = props.getter(path, model)
         , context = props.getter(parent(path), model) || {};
 
-      return schema.validate(value, { strict: props.strict, context })
-        .then(() => void 0)       
-        .catch(err => err.errors) 
+      return schema
+        .validate(value, { context, strict: props.strict })
+        .then(() => void 0)
+        .catch(err => err.errors)
     })
 
     syncErrors(this.validator, props.errors || {})
@@ -256,7 +258,7 @@ class Form extends React.Component {
     var timers = this._timers || {};
 
     this._unmounted = true;
-    for (var k in timers) if ( has(timers, k) ) 
+    for (var k in timers) if ( has(timers, k) )
       clearTimeout(timers[k])
   }
 
@@ -268,7 +270,7 @@ class Form extends React.Component {
 
     this._flushValidations(nextProps)
 
-    this.setState({ 
+    this.setState({
       children: getChildren(
           nextProps.children
         , this.getChildContext())
@@ -277,11 +279,11 @@ class Form extends React.Component {
 
   getChildContext() {
 
-    return this._context || (this._context = { 
+    return this._context || (this._context = {
 
       noValidate: ()=> this.props.noValidate,
 
-      schema:   path => path && this.props.schema && reach(this.props.schema, path), 
+      schema:   path => path && this.props.schema && reach(this.props.schema, path),
 
       value:    path => this.props.getter(path, this.props.value),
 
@@ -315,22 +317,22 @@ class Form extends React.Component {
   }
 
   render() {
-    var { 
+    var {
         children
       , onChange
       , value
       , component: Element
       , ...props } = this.props;
-    
+
     if ( Element === 'form')
       props.noValidate = true // disable html5 validation
 
     return (
       <Container
         ref={ref => this._container = ref}
-        messages={this.props.errors} 
+        messages={this.props.errors}
         onValidationNeeded={this.props.noValidate ? ()=> {} : e => this._handleValidationRequest(e)}>
-        
+
         <Element {...props} onSubmit={this._submit.bind(this)}>
           { this.state.children }
         </Element>
@@ -340,12 +342,18 @@ class Form extends React.Component {
 
   _handleValidationRequest(e) {
     this.notify('onValidate', e)
+    return e.event === 'onChange'
+      ? this._queueValidation(e)
+      : this._processValidationRequest(e, this.props)
+  }
 
-    if( e.event === 'onChange')
-      return this._queueValidation(e.field)
-    
-    this.timeout(e.field, () => {
-      this.validator.validate(e.field, this.props) 
+  _processValidationRequest(e, props){
+    var fields = paths.reduce(e.fields)
+      , options = e.target ? e.target.props.options : {};
+
+    this.timeout(fields.join('-'), () => {
+      this.validator
+        .validate(fields, { props, options })
         .then(() => this.notify('onError', this.validator.errors()))
         .catch(done)
 
@@ -353,9 +361,9 @@ class Form extends React.Component {
   }
 
   _submit(e){
-    var options = { 
-      strict: this.props.strict, 
-      abortEarly: false 
+    var options = {
+      strict: this.props.strict,
+      abortEarly: false
     }
 
     e.preventDefault()
@@ -374,7 +382,7 @@ class Form extends React.Component {
   }
 
   timeout(key, fn, ms){
-    var timers = this._timers || (this._timers = Object.create(null));
+    this._timers || (this._timers = Object.create(null));
 
     if ( this._unmounted) return
 
@@ -382,28 +390,20 @@ class Form extends React.Component {
     this._timers[key] = setTimeout(fn, ms)
   }
 
-  _queueValidation(path){
+  _queueValidation(e){
     var queue = this._queue || (this._queue = [])
 
-    if (queue.indexOf(path) === -1)
-      queue.push(path)
+    if ( !queue.some( q => q.path === e.path) )
+      queue.push(e)
   }
 
-  _flushValidations(newProps){
-    var newValue = newProps.value
-      , oldValue = this.props.value
-      , fields = this._queue || [];
+  _flushValidations(props){
+    var requests = this._queue || [];
 
-    if ( fields.length ) {
-      this.timeout('yup_flush_validations', () => {
-        this._queue = []
+    this._queue = [];
 
-        this.validator
-          .validate(fields, newProps)
-          .then(() => this.notify('onError', this.validator.errors()))
-          .catch(done)
-      }, newProps.delay)
-    }
+    requests
+      .forEach( r => this._processValidationRequest(r, props))
   }
 
   notify(event, arg){
@@ -416,7 +416,7 @@ module.exports = uncontrollable(Form, { value: 'onChange', errors: 'onError' })
 function wrapSetter(setter){
   return (...args) => {
     var result = setter(...args)
-    invariant(result && typeof result === 'object', 
+    invariant(result && typeof result === 'object',
       '`setter(..)` props must return the form value object after updating a value.')
     return result
   }
