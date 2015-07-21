@@ -12,7 +12,7 @@ var React     = require('react')
 
 let done = e => setTimeout(() => { throw e })
 
-let parent = path => expr.join(expr.split(path).slice(0, -1))
+let getParent = path => expr.join(expr.split(path).slice(0, -1))
 
 /**
  * Form component renders a `value` to be updated and validated by child Fields.
@@ -237,10 +237,10 @@ class Form extends React.Component {
       var model   = props.value
         , schema  = reach(props.schema, path)
         , value   = props.getter(path, model)
-        , context = props.getter(parent(path), model) || {};
+        , parent = props.getter(getParent(path), model) || {};
 
       return schema
-        .validate(value, { context, strict: props.strict })
+        ._validate(value, { ...props, ...options }, { parent, path })
         .then(() => void 0)
         .catch(err => err.errors)
     })
@@ -265,7 +265,7 @@ class Form extends React.Component {
   componentWillReceiveProps(nextProps){
     if ( nextProps.schema !== this.props.schema ){
       this._queueValidation({
-        fields: uniq((this._queue || []).concat(Object.keys(nextProps.errors)))
+        fields: uniq((this._queue || []).concat(Object.keys(nextProps.errors || {})))
       })
     }
 
@@ -357,22 +357,25 @@ class Form extends React.Component {
     this.timeout(fields.join('-'), () => {
       this.validator
         .validate(fields, { props, options })
-        .then(() => this.notify('onError', this.validator.errors()))
+        .then(() => {
+          var errors = this.validator.errors();
+          if ( errors && Object.keys(errors).length )
+            this.notify('onError', errors)
+        })
         .catch(done)
 
     }, this.props.delay)
   }
 
   _submit(e){
-    var options = {
-      strict: this.props.strict,
-      abortEarly: false
-    }
+    var { schema, value, ...options } = this.props
+
+    props.abortEarly = false
 
     e.preventDefault()
 
-    this.props.schema
-      .validate(this.props.value, options)
+    schema
+      .validate(value, options)
       .then(() => this.notify('onSubmit', e))
       .catch(err => {
         var errors = err.inner.reduce((list, e) => {
@@ -380,7 +383,8 @@ class Form extends React.Component {
           return list
         }, {})
 
-        this.notify('onError', errors)
+        if (Object.keys(errors).length)
+          this.notify('onError', errors)
       })
   }
 
