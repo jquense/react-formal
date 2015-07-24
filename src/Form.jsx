@@ -359,8 +359,7 @@ class Form extends React.Component {
         .validate(fields, { props, options })
         .then(() => {
           var errors = this.validator.errors();
-          if ( errors && Object.keys(errors).length )
-            this.notify('onError', errors)
+          this.notify('onError', errors)
         })
         .catch(done)
 
@@ -383,8 +382,7 @@ class Form extends React.Component {
           return list
         }, {})
 
-        if (Object.keys(errors).length)
-          this.notify('onError', errors)
+        this.notify('onError', errors)
       })
   }
 
