@@ -369,7 +369,7 @@ class Form extends React.Component {
   _submit(e){
     var { schema, value, ...options } = this.props
 
-    props.abortEarly = false
+    options.abortEarly = false
 
     e.preventDefault()
 
