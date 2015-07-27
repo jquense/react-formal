@@ -133,4 +133,14 @@ describe('Field', ()=> {
 
     inst.single('input').trigger('change')
   })
+
+  it.only('should expose input instance', function() {
+    var spy = sinon.spy()
+    var inst = $(
+      <Form schema={schema} defaultValue={{}}>
+        <Form.Field name='name' type={TestInput}/>
+      </Form>)
+
+    ;(inst.single(Form.Field)[0].inputInstance() instanceof TestInput).should.be.true
+  })
 })

@@ -246,6 +246,7 @@ class Field extends React.Component {
 
     Widget = (
       <Widget
+        ref='input'
         name={name}
         type={type}
         value={value}
@@ -280,6 +281,10 @@ class Field extends React.Component {
 
   getContext(){
     return this._reactInternalInstance._context
+  }
+
+  inputInstance(){
+    return this.refs.input
   }
 }
 
