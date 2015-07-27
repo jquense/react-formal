@@ -290,32 +290,36 @@ class Form extends React.Component {
 
       value:    path => this.props.getter(path, this.props.value),
 
-      onChange: (path, updates, val) => this._update(path, val, updates)
+      onChange: (path, updates, args) => this._update(path, args, updates)
     })
   }
 
-  _update(path, widgetValue, mapValue){
+  _update(path, args, mapValue){
     var model = this.props.value
+      , widgetValue = args[0]
       , updater = this.props.setter;
 
     if ( process.env.NODE_ENV !== 'production' )
       updater = wrapSetter(updater)
 
     if (typeof mapValue === 'function')
-      model = updater(path, model, mapValue(widgetValue))
+      model = updater(path, model, mapValue(...args))
 
-    else if (mapValue){
+    else if (typeof mapValue === 'string')
+      model = updater(path, model, widgetValue[mapValue])
+
+    else if (mapValue) {
       for( var key in mapValue ) if ( mapValue.hasOwnProperty(key))
-        model = updater(key, model, getValue(widgetValue, key, mapValue))
+        model = updater(key, model, getValue(args, key, mapValue))
     }
     else
       model = updater(path, model, widgetValue)
 
     this.notify('onChange', model)
 
-    function getValue(val, key, map){
+    function getValue(args, key, map){
       let field = map[key]
-      return typeof field === 'function' ? field(val) : val[field]
+      return typeof field === 'function' ? field(...args) : args[0][field]
     }
   }
 

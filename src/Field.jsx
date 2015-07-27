@@ -139,8 +139,8 @@ class Field extends React.Component {
 
     /**
      * Customize how the Field value maps to the overall Form `value`.
-     * `mapValue` can be a function that returns a value for `name`'d path, allowing
-     * you to set commuted values from the Field.
+     * `mapValue` can be a a string property name or a function that returns a
+     * value for `name`'d path, allowing you to set commuted values from the Field.
      *
      * ```js
      * <Form.Field name='name'
@@ -176,6 +176,7 @@ class Field extends React.Component {
      */
     mapValue: React.PropTypes.oneOfType([
             React.PropTypes.func,
+            React.PropTypes.string,
             React.PropTypes.object
           ]),
 
@@ -186,7 +187,7 @@ class Field extends React.Component {
 
     /**
      * Tells the Field to trigger validation for addition paths as well as its own (`name`).
-     * Useful when used in conjuction with a `mapValue` hash that updates more than one value, or 
+     * Useful when used in conjuction with a `mapValue` hash that updates more than one value, or
      * if you want to trigger validation for the parent path as well.
      *
      * ```js
@@ -197,8 +198,8 @@ class Field extends React.Component {
     alsoValidates: React.PropTypes.arrayOf(React.PropTypes.string),
 
     /**
-     * Specify whether the Field will recursively validate sub paths. 
-     * The below example will also validate `name.first` and `name.last`. Generally you won't need to tough this 
+     * Specify whether the Field will recursively validate sub paths.
+     * The below example will also validate `name.first` and `name.last`. Generally you won't need to tough this
      * as `react-formal` makes some intelligent guesses about whether to recurse or not on any given path.
      * ```js
      * <Form.Field name='name' recursive={true}/>
@@ -244,7 +245,7 @@ class Field extends React.Component {
       : types[type.toLowerCase()] || Input
 
     Widget = (
-      <Widget 
+      <Widget
         name={name}
         type={type}
         value={value}
@@ -259,10 +260,10 @@ class Field extends React.Component {
 
     // name = paths.reduce(name)
     return (
-      <MessageTrigger 
-        for={name} 
-        group={group} 
-        events={events} 
+      <MessageTrigger
+        for={name}
+        group={group}
+        events={events}
         options={{ recursive: props.recursive }}
         activeClass={props.errorClass}
       >
@@ -272,7 +273,7 @@ class Field extends React.Component {
   }
 
   _change(...args){
-    this.getContext().onChange(this.props.name, this.props.mapValue, args[0])
+    this.getContext().onChange(this.props.name, this.props.mapValue, args)
     this.props.onChange
       && this.props.onChange(...args)
   }

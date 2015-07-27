@@ -26,7 +26,8 @@
     "yup"
   ],
   "scripts": {
-    "test": "karma start --single-run"
+    "test": "karma start --single-run",
+    "release": "gulp publish"
   },
   "peerDependencies": {
     "react": ">=0.13.0"
@@ -42,10 +43,10 @@
     "yup": "^0.7.5"
   },
   "devDependencies": {
-    "babel": "^5.2.16",
-    "babel-core": "^5.4.3",
-    "babel-loader": "^5.0.0",
-    "babel-plugin-object-assign": "^1.1.0",
+    "babel": "5.4.3",
+    "babel-core": "5.4.3",
+    "babel-loader": "5.0.0",
+    "babel-plugin-object-assign": "1.1.0",
     "chai": "^1.10.0",
     "chai-as-promised": "^4.1.1",
     "component-playground": "jquense/component-playground",
@@ -53,7 +54,7 @@
     "file-loader": "^0.8.1",
     "gulp": "^3.8.10",
     "gulp-babel-helpers": "^2.1.0",
-    "gulp-less": "^2.0.1",
+    "gulp-less": "^3.0.0",
     "gulp-plumber": "^0.6.6",
     "gulp-rename": "^1.2.0",
     "handlebars": "^3.0.3",
@@ -71,6 +72,7 @@
     "merge-stream": "^0.1.7",
     "mocha": "~1.21.4",
     "phantomjs": "~1.9.10",
+    "react": ">=0.13.0",
     "react-component-metadata": "git://github.com/jquense/react-component-metadata",
     "react-formal-inputs": "^1.0.0",
     "react-router": "^0.13.3",
