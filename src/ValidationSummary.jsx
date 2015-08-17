@@ -1,29 +1,28 @@
 var React = require('react')
-var pureRender = require('react-purerender')
+var shouldComponentUpdate = require('react-pure-render/function')
 var connectToMessageContainer = require('react-input-message/lib/connectToMessageContainer')
 var cn = require('classnames');
 
 let splat  = obj => obj == null ? [] : [].concat(obj)
 
-module.exports = 
+module.exports =
   connectToMessageContainer(
-    pureRender(
       /**
        * Display all Form validation `errors` in a single summary list.
-       * 
+       *
        * ```editable
-       * <Form 
-       *   schema={modelSchema} 
+       * <Form
+       *   schema={modelSchema}
        *   defaultValue={modelSchema.default()}
        * >
        *   <Form.Summary/>
-       *   
+       *
        *   <Form.Field name='name.first' placeholder='first'/>
        *   <Form.Field name='name.last' placeholder='surname'/>
        *   <Form.Field name='dateOfBirth' placeholder='dob'/>
-       *   
-       *   <Form.Button>Validate</Form.Button> 
-       * </Form>      
+       *
+       *   <Form.Button>Validate</Form.Button>
+       * </Form>
        * ```
        * @alias Summary
        */
@@ -35,8 +34,8 @@ module.exports =
            * An error message renderer, Should return a `ReactElement`
            * ```
            * function(
-           *   message: string, 
-           *   idx: number, 
+           *   message: string,
+           *   idx: number,
            *   messages: array
            * ) -> ReactElement
            * ```
@@ -49,7 +48,7 @@ module.exports =
           component: React.PropTypes.oneOfType([
             React.PropTypes.func,
             React.PropTypes.string,
-          ]).isRequired, 
+          ]).isRequired,
 
           /**
            * A css class that should be always be applied to the Summary container.
@@ -68,8 +67,12 @@ module.exports =
           formatMessage: (message, idx) => <li key={idx}>{message}</li>
         }
 
+        shouldComponentUpdate(p, s, c){
+          return shouldComponentUpdate(p, s, c)
+        }
+
         render() {
-          var { 
+          var {
               component: Component
             , messages
             , active
@@ -80,10 +83,10 @@ module.exports =
             return null
 
           return (
-            <Component 
-              {...props} 
+            <Component
+              {...props}
               className={cn(props.className, props.errorClass || 'validation-error')}>
-            { 
+            {
               Object.keys(messages)
                 .reduce((list, k) => list.concat(splat(messages[k])), [])
                 .map(props.formatMessage)
@@ -91,5 +94,5 @@ module.exports =
             </Component>
           )
         }
-      }))
+      })
 

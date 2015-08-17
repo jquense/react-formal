@@ -338,8 +338,8 @@ class Form extends React.Component {
       <Container
         ref={ref => this._container = ref}
         messages={this.props.errors}
-        onValidationNeeded={this.props.noValidate ? ()=> {} : e => this._handleValidationRequest(e)}>
-
+        onValidationNeeded={this.props.noValidate ? ()=> {} : e => this._handleValidationRequest(e)}
+      >
         <Element {...props} onSubmit={this._submit.bind(this)}>
           { this.state.children }
         </Element>

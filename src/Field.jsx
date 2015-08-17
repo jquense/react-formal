@@ -1,12 +1,13 @@
 'use strict';
 var React = require('react')
-  , invariant = require('scoped-invariant')('react-formal')
-  , types = require('./util/types')
-  , paths = require('./util/paths')
-  , Input   = require('./inputs/Input');
+var shallowEqual = require('react-pure-render/shallowEqual')
+var invariant = require('scoped-invariant')('react-formal')
+var types = require('./util/types')
+var paths = require('./util/paths')
+var Input = require('./inputs/Input');
 
 var has = {}.hasOwnProperty
-  , MessageTrigger = require('react-input-message/lib/MessageTrigger');
+var MessageTrigger = require('react-input-message/lib/MessageTrigger');
 
 var useRealContext = /^0\.14/.test(React.version);
 
@@ -230,6 +231,11 @@ class Field extends React.Component {
         `Each Field's \`name\` prop must be a valid path defined by the parent Form schema`)
   }
 
+  shouldComponentUpdate(nextProps, nextState, nextContext) {
+    return this._lastValue !== nextContext.value(nextProps.name)
+      || !shallowEqual(nextProps, this.props)
+  }
+
   render() {
     var {
         events
@@ -246,6 +252,8 @@ class Field extends React.Component {
       ? ((type = undefined), this.props.type)
       : types[type.toLowerCase()] || Input
 
+    this._lastValue = value;
+
     Widget = (
       <Widget
         ref='input'
@@ -253,15 +261,15 @@ class Field extends React.Component {
         type={type}
         value={value}
         {...props}
-        onChange={this._change.bind(this)}/>
+        onChange={this._change.bind(this)}
+      />
     )
 
-    if ( this.props.noValidate || this.getContext().noValidate() )
+    if (this.props.noValidate || this.getContext().noValidate())
       return Widget
 
     name = props.alsoValidates == null ? name : [ name ].concat(props.alsoValidates)
 
-    // name = paths.reduce(name)
     return (
       <MessageTrigger
         for={name}
