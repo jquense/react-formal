@@ -68,7 +68,7 @@ module.exports =
         }
 
         shouldComponentUpdate(p, s, c){
-          return shouldComponentUpdate(p, s, c)
+          return shouldComponentUpdate.call(this, p, s, c)
         }
 
         render() {
