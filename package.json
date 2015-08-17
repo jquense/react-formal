@@ -1,6 +1,6 @@
 {
   "name": "react-formal",
-  "version": "0.8.4",
+  "version": "0.8.5",
   "description": "Classy HTML form management for React",
   "main": "lib/index.js",
   "author": {
@@ -39,7 +39,7 @@
     "react-purerender": "^0.1.0",
     "scoped-invariant": "^1.0.0",
     "scoped-warning": "^1.0.0",
-    "uncontrollable": "^2.0.0",
+    "uncontrollable": "^3.0.2",
     "yup": "^0.7.5"
   },
   "devDependencies": {
