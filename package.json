@@ -1,6 +1,6 @@
 {
   "name": "react-formal",
-  "version": "0.8.3",
+  "version": "0.8.4",
   "description": "Classy HTML form management for React",
   "main": "lib/index.js",
   "author": {
@@ -30,7 +30,7 @@
     "release": "gulp publish"
   },
   "peerDependencies": {
-    "react": ">=0.13.0"
+    "react": ">=0.13.0 || ^0.14.0-beta1"
   },
   "dependencies": {
     "classnames": "^1.2.0",

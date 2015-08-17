@@ -5,17 +5,17 @@ if ( process.env.NODE_ENV !== 'production' )
   ReactElement = require('react/lib/ReactElement')
 
 module.exports = function getChildren(children, context, test = ()=> true) {
-  
-  if ( process.env.NODE_ENV !== 'production' ){
+
+  if ( !/^0\.14/.test(React.version) && process.env.NODE_ENV !== 'production' ){
     // this is to avoid the warning but its hacky so lets do it a less hacky way in production
     return attachChildren(children, context, test)
   }
   else
     return children
 }
- 
+
 /*
- * “Do not be afraid; our fate Cannot be taken from us; it is a gift.” 
+ * “Do not be afraid; our fate Cannot be taken from us; it is a gift.”
  * ― Dante Alighieri, Inferno
  */
 function attachChildren(children, context, test) {
@@ -39,7 +39,7 @@ function attachChildren(children, context, test) {
       child.key,
       child.ref,
       child._owner,
-      test(child.type) 
+      test(child.type)
         ? { ...child._context, ...context }
         : child._context,
       props

@@ -8,6 +8,8 @@ var React = require('react')
 var has = {}.hasOwnProperty
   , MessageTrigger = require('react-input-message/lib/MessageTrigger');
 
+var useRealContext = /^0\.14/.test(React.version);
+
 /**
  * The Field Component renders a form control and handles input value updates and validations.
  * Changes to the Field value are automatically propagated back up to the containing Form
@@ -280,7 +282,7 @@ class Field extends React.Component {
   }
 
   getContext(){
-    return this._reactInternalInstance._context
+    return useRealContext ? this.context : this._reactInternalInstance._context
   }
 
   inputInstance(){
