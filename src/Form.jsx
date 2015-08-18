@@ -236,6 +236,7 @@ class Form extends React.Component {
   constructor(props, context){
     super(props, context)
 
+
     this.validator = new Validator((path, { props, options }) => {
       var model   = props.value
         , schema  = reach(props.schema, path)
@@ -250,8 +251,9 @@ class Form extends React.Component {
 
     syncErrors(this.validator, props.errors || {})
 
-    if (!useRealContext)
-      this.state = {
+
+    this.state = useRealContext ? {}
+      : {
         children: getChildren(
               this.props.children
             , this.getChildContext())
