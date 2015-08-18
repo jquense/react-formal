@@ -239,7 +239,6 @@ class Field extends React.Component {
     let result = this._lastValue !== nextContext.value(nextProps.name)
       || !shallowEqual(nextProps, this.props)
 
-    if (result) console.log('update ', nextProps.name)
     return result
   }
 
