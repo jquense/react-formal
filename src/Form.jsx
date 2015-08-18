@@ -1,5 +1,6 @@
 'use strict';
 var React     = require('react')
+var scu = require('react-pure-render/function')
   , invariant = require('scoped-invariant')('react-formal')
   , reach     = require('yup/lib/util/reach')
   , expr      = require('property-expr')
@@ -8,9 +9,11 @@ var React     = require('react')
   , Container = require('react-input-message/lib/MessageContainer')
   , uncontrollable = require('uncontrollable/batching')
   , paths = require('./util/paths')
-  , getChildren    = require('./util/parentContext');
+  , getChildren = require('./util/parentContext');
 
 let done = e => setTimeout(() => { throw e })
+
+let useRealContext = /^0\.14/.test(React.version);
 
 let getParent = path => expr.join(expr.split(path).slice(0, -1))
 
@@ -247,11 +250,16 @@ class Form extends React.Component {
 
     syncErrors(this.validator, props.errors || {})
 
-    this.state = {
-      children: getChildren(
-            this.props.children
-          , this.getChildContext())
-    }
+    if (!useRealContext)
+      this.state = {
+        children: getChildren(
+              this.props.children
+            , this.getChildContext())
+      }
+  }
+
+  shouldComponentUpdate(nextProps, nextState) {
+    return scu.call(this, nextProps, nextState)
   }
 
   componentWillUnmount() {
@@ -273,11 +281,14 @@ class Form extends React.Component {
 
     this._flushValidations(nextProps)
 
-    this.setState({
-      children: getChildren(
-          nextProps.children
-        , this.getChildContext())
-    })
+    if (!useRealContext){
+      this.setState({
+        children: getChildren(
+            nextProps.children
+          , this.getChildContext())
+      })
+    }
+
   }
 
   getChildContext() {
@@ -341,7 +352,7 @@ class Form extends React.Component {
         onValidationNeeded={this.props.noValidate ? ()=> {} : e => this._handleValidationRequest(e)}
       >
         <Element {...props} onSubmit={this._submit.bind(this)}>
-          { this.state.children }
+          { this.state.children || this.props.children }
         </Element>
       </Container>
     );
@@ -438,7 +449,7 @@ function uniq(arr){
 function syncErrors(validator, errors){
   validator._errors = {}
   Object.keys(errors).forEach(key => {
-    if ( errors[key] != null)
+    if (errors[key] != null)
       validator._errors[key] = [].concat(errors[key])
   })
 }

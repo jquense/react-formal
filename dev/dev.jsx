@@ -4,6 +4,7 @@ var Form = require('../src')
 
 require('../src/less/styles.less');
 var yup = require('yup');
+var perf = window.perf = React.addons.Perf;
 
 var people = [
   { id: 0, first: 'John', surname: 'Smith'},
@@ -23,11 +24,11 @@ var orgs = [
 var emptyString = yup.string().default('')
 
 yup.mixed.prototype.forbidden = function(message = 'This field is forbidden'){
-  return this.test({ 
-    message, name: 'required', 
-    exclusive: true, 
+  return this.test({
+    message, name: 'required',
+    exclusive: true,
     test: v => {
-      return v == null 
+      return v == null
     }
   })
 }
@@ -35,12 +36,13 @@ yup.mixed.prototype.forbidden = function(message = 'This field is forbidden'){
 var schema = yup.object({
       personal: yup.object().shape(
       {
-        id:     yup.number()
-          .required('please provide an ID')
-          .default(0),
+        id:     yup.number(),
+
         first:    emptyString,
         last:     emptyString,
-        
+
+        address:  emptyString,
+
         orgID:    yup.number().when('location', (v, s) => !v ? s.required() : s),
         location: yup.string().when('orgID', (v, s) => v ? s.forbidden() : s),
 
@@ -66,7 +68,7 @@ var App = React.createClass({
 
   getInitialState() {
     // create a default empty model for the initial value
-    return { model: schema.default() }
+    return { model: {} }
   },
 
   _change(model) {
@@ -75,33 +77,35 @@ var App = React.createClass({
 
   render(){
     var model = this.state.model; // the data to bind to the form
-    
+
     return (
       <div style={{ width: 400 }}>
-        <Form defaultValue={{}} schema={schema} className='form-horizontal' onChange={ model => console.log(model)}>
+        <Form value={this.state.model} schema={schema} className='form-horizontal' onChange={this._change}>
           <Form.Summary />
           <fieldset>
             <legend>Personal</legend>
             <div className='form-group'>
               <label className='control-label col-sm-3'>name</label>
               <div className='col-sm-8'>
-                <Form.Field name='personal.id' type='select' group='personal' className='form-control'>
-                  { people.map(person => 
-                    <option value={person.id}>{person.first + ' ' + person.surname}</option>)
-                  }
-                </Form.Field>
-                <Form.Message for='personal.id'/>
+                <Form.Field name='personal.first' type='select' className='form-control'/>
+                <Form.Message for='personal.first'/>
+
+                <Form.Field name='personal.last' type='select' className='form-control'/>
+                <Form.Message for='personal.first'/>
               </div>
             </div>
             <div className='form-group'>
               <label className='control-label col-sm-3'>Employer</label>
               <div className='col-sm-8'>
-                <Form.Field value={2} name='personal.orgID' type='select' group='personal' className='form-control'>
-                  { orgs.map(org => 
-                    <option value={org.id}>{org.name}</option>)
-                  }
-                </Form.Field>
+
                 <Form.Message for={['personal.orgID', 'personal.location']}/>
+              </div>
+            </div>
+            <div className='form-group'>
+              <label className='control-label col-sm-3'>birthday</label>
+              <div className='col-sm-8'>
+                <Form.Field type='textarea' name='personal.address' className='form-control'/>
+                <Form.Message for='personal.address'/>
               </div>
             </div>
             <div className='form-group'>
@@ -122,7 +126,7 @@ var App = React.createClass({
               </div>
             </div>
             <div className='form-group'>
-              
+
               <div className='col-sm-8 col-sm-offset-3'>
                 <div className='checkbox'>
                   <label className='checkbox'>
@@ -144,7 +148,12 @@ var App = React.createClass({
   }
 })
 
-React.render(<App/>, document.body);
+perf
+React.render(<App/>, document.body, function(){
+  console.log('starting')
+  perf.start()
+
+});
 
 
 

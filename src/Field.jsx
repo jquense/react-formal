@@ -1,6 +1,7 @@
 'use strict';
 var React = require('react')
 var shallowEqual = require('react-pure-render/shallowEqual')
+//var { shouldComponentUpdate: scu } = require('react-pure-render-debug')
 var invariant = require('scoped-invariant')('react-formal')
 var types = require('./util/types')
 var paths = require('./util/paths')
@@ -10,6 +11,8 @@ var has = {}.hasOwnProperty
 var MessageTrigger = require('react-input-message/lib/MessageTrigger');
 
 var useRealContext = /^0\.14/.test(React.version);
+
+let options = { recursive: undefined }
 
 /**
  * The Field Component renders a form control and handles input value updates and validations.
@@ -232,8 +235,12 @@ class Field extends React.Component {
   }
 
   shouldComponentUpdate(nextProps, nextState, nextContext) {
-    return this._lastValue !== nextContext.value(nextProps.name)
+    //return scu.call(this, nextProps, nextState)
+    let result = this._lastValue !== nextContext.value(nextProps.name)
       || !shallowEqual(nextProps, this.props)
+
+    if (result) console.log('update ', nextProps.name)
+    return result
   }
 
   render() {
@@ -270,12 +277,15 @@ class Field extends React.Component {
 
     name = props.alsoValidates == null ? name : [ name ].concat(props.alsoValidates)
 
+    if (options.recursive !== props.recursive)
+      options = { recursive: props.recursive };
+
     return (
       <MessageTrigger
         for={name}
         group={group}
         events={events}
-        options={{ recursive: props.recursive }}
+        options={options}
         activeClass={props.errorClass}
       >
         { Widget }
