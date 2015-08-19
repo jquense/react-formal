@@ -410,7 +410,7 @@ class Form extends React.Component {
 
     schema
       .validate(value, options)
-      .then(() => this.notify('onSubmit', [value]))
+      .then(() => this.notify('onSubmit', value))
       .catch(err => {
         var errors = err.inner.reduce((list, e) => {
           list[e.path] = (list[e.path] || (list[e.path] = [])).concat(e.errors)
@@ -469,7 +469,10 @@ class Form extends React.Component {
   }
 }
 
-module.exports = uncontrollable(Form, { value: 'onChange', errors: 'onError' })
+module.exports = uncontrollable(Form,
+  { value: 'onChange', errors: 'onError' },
+  ['submit']
+)
 
 function wrapSetter(setter){
   return (...args) => {
