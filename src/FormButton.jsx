@@ -18,8 +18,15 @@ class Button extends React.Component {
      * If the button type is 'submit' the group will be ignored and the
      * entire form will be validated prior to submission.
      */
-    group: React.PropTypes.string
+    group: React.PropTypes.string,
+
+    /**
+     * An array of event names that trigger validation.
+     */
+    events: React.PropTypes.arrayOf(
+              React.PropTypes.string),
   }
+
   static contextTypes = {
     onSubmit: React.PropTypes.func
   }

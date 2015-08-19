@@ -6,9 +6,9 @@ var loaders = [
       { test: /\.css$/,  loader: "style-loader!css-loader" },
       { test: /\.less$/, loader: "style-loader!css-loader!less-loader" },
 
-      { 
-        test: /\.jsx$|\.js$/, 
-        loader: 'babel-loader', 
+      {
+        test: /\.jsx$|\.js$/,
+        loader: 'babel-loader',
         exclude: /node_modules/
       }
     ]
@@ -24,12 +24,13 @@ module.exports = {
     },
 
     resolve: {
-      extensions: ['', '.js', '.jsx', 'json']
+      extensions: ['', '.js', '.jsx', 'json'],
+      alias: {
+        react: path.resolve(__dirname, './node_modules/react')
+      }
     },
 
     externals: {
-      react: 'window.React',
-      'react/addons': 'window.React',
       'babel-core/browser': 'window.babel'
     },
     module: {
@@ -43,7 +44,7 @@ module.exports = {
         { test: /\.md$/,  loader: 'babel-loader!' + path.join(__dirname, './docs/loaders/jsx') }
       ])
     }
-    
+
   },
 
   dev: {
