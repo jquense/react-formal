@@ -47,10 +47,7 @@ class Field extends React.Component {
   static _isYupFormField = true
 
   static contextTypes = {
-    schema:     React.PropTypes.func,
-    onChange:   React.PropTypes.func,
-    value:      React.PropTypes.func,
-    noValidate: React.PropTypes.func,
+    registerWithForm:     React.PropTypes.func,
   }
 
   static propTypes = {
@@ -226,19 +223,41 @@ class Field extends React.Component {
   }
 
   componentWillMount() {
-    if ( process.env.NODE_ENV !== 'production' )
-      invariant(
-           this.getContext().noValidate()
-        || !!this.getContext().schema(this.props.name),
-        `There is no corresponding schema defined for this field: "${this.props.name}" ` +
-        `Each Field's \`name\` prop must be a valid path defined by the parent Form schema`)
+    let { name } = this.props
+      , first = true;
+
+    let warn = ()=> {
+      first = false
+      if (process.env.NODE_ENV !== 'production')
+        invariant(this._noValidate || !!this._schema,
+          `There is no corresponding schema defined for this field: "${this.props.name}" ` +
+          `Each Field's \`name\` prop must be a valid path defined by the parent Form schema`)
+    }
+
+    let updateValue = form => {
+      let last = this._value;
+
+      this._value = form.value(name),
+      this._schema = form.schema(name),
+      this._noValidate = form.noValidate
+
+      first && warn()
+
+      if (!first && last !== this._value)
+        this.forceUpdate()
+    }
+
+    this._form = this.getContext().registerWithForm(updateValue)
+  }
+
+  componentWillUnmount(nextProps, nextState) {
+    this._form
+      && this._form.remove()
   }
 
   shouldComponentUpdate(nextProps, nextState, nextContext) {
     //return scu.call(this, nextProps, nextState)
-    let result = this._lastValue !== nextContext.value(nextProps.name)
-      || !shallowEqual(nextProps, this.props)
-
+    let result = !shallowEqual(nextProps, this.props)
     return result
   }
 
@@ -249,16 +268,14 @@ class Field extends React.Component {
       , mapValue
       , name
       , ...props } = this.props
-      , schema = this.getContext().schema(name)
-      , value  = this.getContext().value(name)
+      , schema = this._schema
+      , value  = this._value
       , type   = this.props.type || (schema && schema._type) || ''
       , Widget = type;
 
     Widget = typeof this.props.type === 'function'
       ? ((type = undefined), this.props.type)
       : types[type.toLowerCase()] || Input
-
-    this._lastValue = value;
 
     Widget = (
       <Widget
@@ -271,7 +288,7 @@ class Field extends React.Component {
       />
     )
 
-    if (this.props.noValidate || this.getContext().noValidate())
+    if (this.props.noValidate || this._noValidate)
       return Widget
 
     name = props.alsoValidates == null ? name : [ name ].concat(props.alsoValidates)
@@ -293,7 +310,7 @@ class Field extends React.Component {
   }
 
   _change(...args){
-    this.getContext().onChange(this.props.name, this.props.mapValue, args)
+    this._form.onChange(this.props.name, this.props.mapValue, args)
     this.props.onChange
       && this.props.onChange(...args)
   }

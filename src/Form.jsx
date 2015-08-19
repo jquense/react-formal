@@ -227,16 +227,14 @@ class Form extends React.Component {
   }
 
   static childContextTypes = {
-    schema:     React.PropTypes.func,
-    value:      React.PropTypes.func,
-    onChange:   React.PropTypes.func,
-    onSubmit:   React.PropTypes.func,
-    noValidate: React.PropTypes.func
+    onFormSubmit:   React.PropTypes.func,
+    registerWithForm: React.PropTypes.func
   }
 
   constructor(props, context){
     super(props, context)
 
+    this._handlers = []
     this.submit = this.submit.bind(this);
 
     // silence the real submit
@@ -280,11 +278,14 @@ class Form extends React.Component {
   }
 
   componentWillReceiveProps(nextProps){
-    if ( nextProps.schema !== this.props.schema ){
+    if (nextProps.schema !== this.props.schema){
       this._queueValidation({
         fields: uniq((this._queue || []).concat(Object.keys(nextProps.errors || {})))
       })
     }
+
+    if (nextProps.value !== this.props.value)
+      this._emit(nextProps);
 
     syncErrors(this.validator, nextProps.errors || {})
 
@@ -297,22 +298,25 @@ class Form extends React.Component {
           , this.getChildContext())
       })
     }
-
   }
 
   getChildContext() {
 
     return this._context || (this._context = {
 
-      noValidate: ()=> this.props.noValidate,
+      onFormSubmit: this.submit,
 
-      schema:   path => path && this.props.schema && reach(this.props.schema, path),
+      registerWithForm: listener => {
+        let remove = () => this._handlers.splice(this._handlers.indexOf(listener), 1)
 
-      value:    path => this.props.getter(path, this.props.value),
+        this._handlers.push(listener)
+        listener(this._listenerContext(this.props))
 
-      onChange: (path, updates, args) => this._update(path, args, updates),
-
-      onSubmit: this.submit
+        return {
+          remove,
+          onChange: (path, updates, args) => this._update(path, args, updates),
+        }
+      }
     })
   }
 
@@ -445,6 +449,19 @@ class Form extends React.Component {
 
     requests
       .forEach(r => this._processValidationRequest(r, props))
+  }
+
+  _emit(props) {
+    let context = this._listenerContext(props);
+    this._handlers.forEach(fn => fn(context))
+  }
+
+  _listenerContext(props){
+    return {
+      noValidate: props.noValidate,
+      schema:   path => path && props.schema && reach(props.schema, path),
+      value:    path => props.getter(path, props.value),
+    }
   }
 
   notify(event, arg){

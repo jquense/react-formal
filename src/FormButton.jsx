@@ -11,7 +11,7 @@ class Button extends React.Component {
     /**
      * The `<button/>` type
      */
-    type:  React.PropTypes.oneOf(['button', 'submit']),
+    type: React.PropTypes.oneOf(['button', 'submit']),
 
     /**
      * Specify a group to validate, if empty the entire form will be validated.
@@ -28,7 +28,7 @@ class Button extends React.Component {
   }
 
   static contextTypes = {
-    onSubmit: React.PropTypes.func
+    onFormSubmit: React.PropTypes.func
   }
 
   static defaultProps = {
@@ -49,7 +49,7 @@ class Button extends React.Component {
       'to trigger validation for just the group: `' + group + '` use type="button" instead.')
 
     if (type.toLowerCase() === 'submit')
-      return <button {...props} onClick={this.context.onSubmit}>{ this.props.children }</button>
+      return <button {...props} onClick={this.context.onFormSubmit}>{ this.props.children }</button>
 
     return (
       <Trigger group={group} events={events}>
