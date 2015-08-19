@@ -20,6 +20,8 @@ class Button extends React.Component {
      */
     group: React.PropTypes.string,
 
+    component: React.PropTypes.string,
+
     /**
      * An array of event names that trigger validation.
      */
@@ -33,6 +35,7 @@ class Button extends React.Component {
 
   static defaultProps = {
     type: 'button',
+    component: 'button',
     events: ['onClick']
   }
 
@@ -41,6 +44,7 @@ class Button extends React.Component {
         type
       , group
       , events
+      , component: Component
       , ...props } = this.props
 
     warning(!group || type.toLowerCase() !== 'submit',
@@ -49,11 +53,11 @@ class Button extends React.Component {
       'to trigger validation for just the group: `' + group + '` use type="button" instead.')
 
     if (type.toLowerCase() === 'submit')
-      return <button {...props} onClick={this.context.onFormSubmit}>{ this.props.children }</button>
+      return <Component {...props} onClick={this.context.onFormSubmit}>{ this.props.children }</Component>
 
     return (
       <Trigger group={group} events={events}>
-        <button {...props} type={type}>{ this.props.children }</button>
+        <Component {...props} type={type}>{ this.props.children }</Component>
       </Trigger>
     )
   }
