@@ -2,7 +2,7 @@
 var React = require('react')
 var shallowEqual = require('react-pure-render/shallowEqual')
 //var { shouldComponentUpdate: scu } = require('react-pure-render-debug')
-var invariant = require('scoped-invariant')('react-formal')
+var invariant = require('invariant')
 var types = require('./util/types')
 var paths = require('./util/paths')
 var Input = require('./inputs/Input');

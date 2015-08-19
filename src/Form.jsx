@@ -1,7 +1,8 @@
 'use strict';
 var React     = require('react')
 var scu = require('react-pure-render/function')
-  , invariant = require('scoped-invariant')('react-formal')
+var warning = require('warning')
+  , invariant = require('invariant')
   , reach     = require('yup/lib/util/reach')
   , expr      = require('property-expr')
   , updateIn  = require('./util/update')
@@ -143,7 +144,7 @@ class Form extends React.Component {
      * the `component` prop renders a `<form/>` tag. onSubmit will trigger only if the form is valid.
      *
      * ```js
-     * function onSubmit(e){
+     * function onSubmit(value){
      *   // do something with valid value
      * }
      * ```
@@ -236,11 +237,17 @@ class Form extends React.Component {
   constructor(props, context){
     super(props, context)
 
+    this.submit = this.submit.bind(this);
+
+    // silence the real submit
+    this.onSubmit = e => {
+      e && e.preventDefault && e.preventDefault();
+    }
 
     this.validator = new Validator((path, { props, options }) => {
-      var model   = props.value
-        , schema  = reach(props.schema, path)
-        , value   = props.getter(path, model)
+      var model = props.value
+        , schema = reach(props.schema, path)
+        , value = props.getter(path, model)
         , parent = props.getter(getParent(path), model) || {};
 
       return schema
@@ -303,7 +310,9 @@ class Form extends React.Component {
 
       value:    path => this.props.getter(path, this.props.value),
 
-      onChange: (path, updates, args) => this._update(path, args, updates)
+      onChange: (path, updates, args) => this._update(path, args, updates),
+
+      onSubmit: this.submit
     })
   }
 
@@ -353,7 +362,7 @@ class Form extends React.Component {
         messages={this.props.errors}
         onValidationNeeded={this.props.noValidate ? ()=> {} : e => this._handleValidationRequest(e)}
       >
-        <Element {...props} onSubmit={this._submit.bind(this)}>
+        <Element {...props} onSubmit={this.onSubmit}>
           { this.state.children || this.props.children }
         </Element>
       </Container>
@@ -376,6 +385,12 @@ class Form extends React.Component {
         .validate(fields, { props, options })
         .then(() => {
           var errors = this.validator.errors();
+
+          if (props.debug && process.env.NODE_ENV !== 'production'){
+            warning(!Object.keys(errors).length, '[react-formal] invalid fields: ' +
+              Object.keys(errors).join(', '))
+          }
+
           this.notify('onError', errors)
         })
         .catch(done)
@@ -383,21 +398,25 @@ class Form extends React.Component {
     }, this.props.delay)
   }
 
-  _submit(e){
-    var { schema, value, ...options } = this.props
+  submit() {
+    var { schema, value, debug, ...options } = this.props
 
     options.abortEarly = false
-
-    e.preventDefault()
+    options.strict = false
 
     schema
       .validate(value, options)
-      .then(() => this.notify('onSubmit', e))
+      .then(() => this.notify('onSubmit', [value]))
       .catch(err => {
         var errors = err.inner.reduce((list, e) => {
           list[e.path] = (list[e.path] || (list[e.path] = [])).concat(e.errors)
           return list
         }, {})
+
+        if (debug && process.env.NODE_ENV !== 'production') {
+          warning(!Object.keys(errors).length, '[react-formal] (onSubmit) invalid fields: ' +
+            Object.keys(errors).join(', '))
+        }
 
         this.notify('onError', errors)
       })
@@ -406,7 +425,7 @@ class Form extends React.Component {
   timeout(key, fn, ms){
     this._timers || (this._timers = Object.create(null));
 
-    if ( this._unmounted) return
+    if (this._unmounted) return
 
     clearTimeout(this._timers[key])
     this._timers[key] = setTimeout(fn, ms)
@@ -425,7 +444,7 @@ class Form extends React.Component {
     this._queue = [];
 
     requests
-      .forEach( r => this._processValidationRequest(r, props))
+      .forEach(r => this._processValidationRequest(r, props))
   }
 
   notify(event, arg){
@@ -448,7 +467,7 @@ function uniq(arr){
   return arr.filter((item, i) => arr.indexOf(item) === i)
 }
 
-function syncErrors(validator, errors){
+function syncErrors(validator, errors = {}){
   validator._errors = {}
   Object.keys(errors).forEach(key => {
     if (errors[key] != null)

@@ -80,7 +80,7 @@ var App = React.createClass({
 
     return (
       <div style={{ width: 400 }}>
-        <Form value={this.state.model} schema={schema} className='form-horizontal' onChange={this._change}>
+        <Form debug value={this.state.model} schema={schema} className='form-horizontal' onChange={this._change}>
           <Form.Summary />
           <fieldset>
             <legend>Personal</legend>
