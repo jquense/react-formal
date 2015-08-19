@@ -1,4 +1,5 @@
 let prop = require('property-expr')
+  , paths = require('./paths')
 
 const IS_ARRAY = /^\d+$/;
 
@@ -16,7 +17,7 @@ module.exports = function update(model, path, value) {
 
   for (var idx = 0; idx < parts.length; idx++) {
     islast = idx === (parts.length - 1)
-    part = clean(parts[idx])
+    part = paths.clean(parts[idx])
 
     if ( islast )
       current[part] = value
@@ -37,14 +38,4 @@ function copy(value) {
     : typeof value === 'object' 
       ? Object.assign(new value.constructor(), value)
       : value
-}
-
-function clean(part) {
-  return isQuoted(part) 
-    ? part.substr(1, part.length - 2) : part
-}
-
-function isQuoted(str){
-  return typeof str === 'string' && str 
-      && (str[0] === '"' || str[0] === "'")
 }

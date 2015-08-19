@@ -9,19 +9,20 @@ var metadata = require('react-component-metadata')
 
 
 handlebars.registerHelper('cleanDoclets', function types(desc, options){
+  desc = desc || ''
   var idx = desc.indexOf('@')
   return (idx === -1 ? desc : desc.substr(0, idx )).trim()
 })
 
 handlebars.registerHelper('isRequired', function types(prop, options){
-  var doclets = metadata.parseDoclets(prop.desc) || {};
+  var doclets = metadata.parseDoclets(prop.desc || '') || {};
   return prop.required || !!doclets.required
 })
 
 handlebars.registerHelper('propType', function types(prop, options){
   var type = prop.type
     , name = type.name
-    , doclets = metadata.parseDoclets(prop.desc) || {};
+    , doclets = metadata.parseDoclets(prop.desc || '') || {};
 
   switch (name){
     case 'object':
@@ -32,7 +33,7 @@ handlebars.registerHelper('propType', function types(prop, options){
 
       return name
     case 'union':
-      return type.value.map(function(val){ 
+      return type.value.map(function(val){
         return types({ type: val })
       }).join(', ')
 
@@ -56,8 +57,8 @@ module.exports = function(contents) {
   each(metadata(contents), function(val, key) {
 
     if( val.desc || Object.keys(val.props).length ){
-      var doclets = metadata.parseDoclets(val.desc) || {};
-      
+      var doclets = metadata.parseDoclets(val.desc || '') || {};
+
       markdown = apiFile(assign({ name: doclets.alias || key }, val))
     }
   }, this)

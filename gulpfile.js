@@ -20,15 +20,16 @@ gulp.task('watch-less',  function(){
       .pipe(gulp.dest('./dev/css'));
 })
 
-gulp.task('less', function(){
+
+gulp.task('clean', function(cb){
+  rimraf('./lib', cb);
+})
+
+gulp.task('less', ['clean'], function(){
   gulp.src('./src/less/styles.less')
       .pipe(plumber())
       .pipe(less({ compress: true }))
       .pipe(gulp.dest('./lib/css'));
-})
-
-gulp.task('clean', function(cb){
-  rimraf('./lib', cb);
 })
 
 gulp.task('build', ['clean'], function(){
@@ -37,7 +38,7 @@ gulp.task('build', ['clean'], function(){
       .pipe(gulp.dest('./lib/less')),
 
     gulp.src(['./src/**/*.jsx', './src/**/*.js'])
-      .pipe(plumber())
+     // .pipe(plumber())
       .pipe(babelTransform({ loose: 'all' },'./util/babelHelpers.js'))
       .pipe(rename({ extname: '.js' }))
       .pipe(gulp.dest('./lib'))
@@ -47,7 +48,7 @@ gulp.task('build', ['clean'], function(){
 gulp.task('dev', function() {
 
   gulp.watch('./src/*.less',  ['watch-less']);
-  
+
   new WebpackDevServer(webpack(configs.dev), {
     publicPath: "/dev",
     stats: { colors: true }

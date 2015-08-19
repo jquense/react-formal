@@ -1,11 +1,18 @@
 'use strict';
 var React = require('react')
-  , invariant = require('scoped-invariant')('react-formal')
-  , types = require('./util/types')
-  , Input   = require('./inputs/Input');
+var shallowEqual = require('react-pure-render/shallowEqual')
+//var { shouldComponentUpdate: scu } = require('react-pure-render-debug')
+var invariant = require('invariant')
+var types = require('./util/types')
+var paths = require('./util/paths')
+var Input = require('./inputs/Input');
 
 var has = {}.hasOwnProperty
-  , MessageTrigger = require('react-input-message/lib/MessageTrigger');
+var MessageTrigger = require('react-input-message/lib/MessageTrigger');
+
+var useRealContext = /^0\.14/.test(React.version);
+
+let options = { recursive: undefined }
 
 /**
  * The Field Component renders a form control and handles input value updates and validations.
@@ -138,8 +145,8 @@ class Field extends React.Component {
 
     /**
      * Customize how the Field value maps to the overall Form `value`.
-     * `mapValue` can be a function that returns a value for `name`'d path, allowing
-     * you to set commuted values from the Field.
+     * `mapValue` can be a a string property name or a function that returns a
+     * value for `name`'d path, allowing you to set commuted values from the Field.
      *
      * ```js
      * <Form.Field name='name'
@@ -175,7 +182,8 @@ class Field extends React.Component {
      */
     mapValue: React.PropTypes.oneOfType([
             React.PropTypes.func,
-            React.PropTypes.object,
+            React.PropTypes.string,
+            React.PropTypes.object
           ]),
 
     /**
@@ -185,19 +193,25 @@ class Field extends React.Component {
 
     /**
      * Tells the Field to trigger validation for addition paths as well as its own (`name`).
-     * Useful when used in conjuction with a `mapValue` hash that updates more than one value.
+     * Useful when used in conjuction with a `mapValue` hash that updates more than one value, or
+     * if you want to trigger validation for the parent path as well.
      *
      * ```js
-     * <Form.Field name='name'
-     *   mapValue={{
-     *     'name.first': 'first',
-     *     'name.last':  'surname'
-     *   }}
-     *   alsoValidates={['name.first', 'name.last']}
-     * />
+     * <Form.Field name='name.first' alsoValidates={['name']}/>
+     * <Form.Field name='name.last' alsoValidates={['name']}/>
      * ```
      */
     alsoValidates: React.PropTypes.arrayOf(React.PropTypes.string),
+
+    /**
+     * Specify whether the Field will recursively validate sub paths.
+     * The below example will also validate `name.first` and `name.last`. Generally you won't need to tough this
+     * as `react-formal` makes some intelligent guesses about whether to recurse or not on any given path.
+     * ```js
+     * <Form.Field name='name' recursive={true}/>
+     * ```
+     */
+    recursive: React.PropTypes.string,
 
     /**
      * Disables validation for the Field.
@@ -220,6 +234,14 @@ class Field extends React.Component {
         `Each Field's \`name\` prop must be a valid path defined by the parent Form schema`)
   }
 
+  shouldComponentUpdate(nextProps, nextState, nextContext) {
+    //return scu.call(this, nextProps, nextState)
+    let result = this._lastValue !== nextContext.value(nextProps.name)
+      || !shallowEqual(nextProps, this.props)
+
+    return result
+  }
+
   render() {
     var {
         events
@@ -236,35 +258,52 @@ class Field extends React.Component {
       ? ((type = undefined), this.props.type)
       : types[type.toLowerCase()] || Input
 
+    this._lastValue = value;
+
     Widget = (
-      <Widget 
+      <Widget
+        ref='input'
         name={name}
         type={type}
         value={value}
         {...props}
-        onChange={this._change.bind(this)}/>
+        onChange={this._change.bind(this)}
+      />
     )
 
-    if ( this.props.noValidate || this.getContext().noValidate() )
+    if (this.props.noValidate || this.getContext().noValidate())
       return Widget
 
-    name = props.alsoValidates == null ? name : [name].concat(props.alsoValidates)
+    name = props.alsoValidates == null ? name : [ name ].concat(props.alsoValidates)
+
+    if (options.recursive !== props.recursive)
+      options = { recursive: props.recursive };
 
     return (
-      <MessageTrigger for={name} group={group} events={events} activeClass={props.errorClass}>
+      <MessageTrigger
+        for={name}
+        group={group}
+        events={events}
+        options={options}
+        activeClass={props.errorClass}
+      >
         { Widget }
       </MessageTrigger>
     )
   }
 
   _change(...args){
-    this.getContext().onChange(this.props.name, this.props.mapValue, args[0])
+    this.getContext().onChange(this.props.name, this.props.mapValue, args)
     this.props.onChange
       && this.props.onChange(...args)
   }
 
   getContext(){
-    return this._reactInternalInstance._context
+    return useRealContext ? this.context : this._reactInternalInstance._context
+  }
+
+  inputInstance(){
+    return this.refs.input
   }
 }
 

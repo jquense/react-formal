@@ -6,15 +6,17 @@ var React = require('react/addons')
 var $ = require('react-testutil-query')
 
 describe('Field', ()=> {
-  var schema = yup.object({ 
-    name: yup.string().default('') 
+  var schema = yup.object({
+    name: yup.string().default('')
   })
 
   class TestInput extends React.Component {
     render(){
-      return <input {...this.props}/>
-    } 
+      return <input {...this.props} onChange={ e => this.props.onChange(e, 'hi')}/>
+    }
   }
+
+
 
   it('should pass props to inner type', function(){
     var inst = $(
@@ -28,7 +30,7 @@ describe('Field', ()=> {
   })
 
   it('should fall back to using schema types', function(){
-    var schema = yup.object({ 
+    var schema = yup.object({
       string: yup.string(),
       number: yup.number(),
       date:   yup.date(),
@@ -71,5 +73,74 @@ describe('Field', ()=> {
       </Form>)
 
     inst.single('input').trigger('change')
+  })
+
+  it('maps value from string', function(){
+    var spy = sinon.spy()
+    var inst = $(
+      <Form schema={schema} defaultValue={{}} onChange={spy}>
+        <Form.Field name='name' type={TestInput} mapValue='value' />
+      </Form>)
+
+    inst.single('input').trigger('change', { value: 'john' })
+
+    spy.should.have.been.calledOnce.and.calledWith({ name: 'john' })
+  })
+
+  it('maps value from function', function(){
+    var spy = sinon.spy()
+    var inst = $(
+      <Form schema={schema} defaultValue={{}} onChange={spy}>
+        <Form.Field name='name' type={TestInput} mapValue={e => e.value } />
+      </Form>)
+
+    inst.single('input').trigger('change', { value: 'john' })
+
+    spy.should.have.been.calledOnce.and.calledWith({ name: 'john' })
+  })
+
+  it('maps values from hash', function(){
+    var spy = sinon.spy()
+    var inst = $(
+      <Form schema={schema} defaultValue={{}} onChange={spy}>
+        <Form.Field name='name'
+          type={TestInput}
+          mapValue={{
+            name: e => e.value,
+            text: 'text'
+          }}
+        />
+      </Form>)
+
+    inst.single('input').trigger('change', { value: 'john', text: 'hi' })
+
+    spy.should.have.been.calledOnce.and.calledWith({ name: 'john', text: 'hi' })
+  })
+
+  it('should pass all args to mapValue', function(done){
+    var spy = sinon.spy()
+    var inst = $(
+      <Form schema={schema} defaultValue={{}} onChange={spy}>
+        <Form.Field name='name'
+          type={TestInput}
+          mapValue={(...args)=> {
+            args.length.should.equal(2)
+            args[1].should.equal('hi')
+            done()
+          }}
+        />
+      </Form>)
+
+    inst.single('input').trigger('change')
+  })
+
+  it.only('should expose input instance', function() {
+    var spy = sinon.spy()
+    var inst = $(
+      <Form schema={schema} defaultValue={{}}>
+        <Form.Field name='name' type={TestInput}/>
+      </Form>)
+
+    ;(inst.single(Form.Field)[0].inputInstance() instanceof TestInput).should.be.true
   })
 })
