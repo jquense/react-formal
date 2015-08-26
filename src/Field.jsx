@@ -235,7 +235,8 @@ class Field extends React.Component {
     }
 
     let updateValue = form => {
-      let last = this._value;
+      let last = this._value
+        , oldValidate = this._noValidate;
 
       this._value = form.value(name),
       this._schema = form.schema(name),
@@ -243,7 +244,7 @@ class Field extends React.Component {
 
       first && warn()
 
-      if (!first && last !== this._value)
+      if (!first && (last !== this._value || oldValidate !== form.noValidate))
         this.forceUpdate()
     }
 

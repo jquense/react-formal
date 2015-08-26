@@ -134,7 +134,7 @@ describe('Field', ()=> {
     inst.single('input').trigger('change')
   })
 
-  it.only('should expose input instance', function() {
+  it('should expose input instance', function() {
     var spy = sinon.spy()
     var inst = $(
       <Form schema={schema} defaultValue={{}}>

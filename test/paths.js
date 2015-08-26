@@ -13,6 +13,7 @@ describe('PATH utils', ()=>{
   it('should check if paths contains', ()=>{
 
     paths.inPath('a', 'a.b').should.equal(true)
+    paths.inPath('a', 'b.a').should.equal(false)
 
     paths.inPath('a[0]', 'a[0].b').should.equal(true)
     paths.inPath('a.b', 'a.c').should.equal(false)

@@ -5,10 +5,10 @@ var React = require('react/addons')
 var $ = require('react-testutil-query')
 
 describe('Form', ()=> {
-  var schema = yup.object({ 
+  var schema = yup.object({
     name: yup.object({
       first: yup.string().default(''),
-      last:  yup.string().default('') 
+      last:  yup.string().default('')
     })
   })
 
@@ -26,20 +26,20 @@ describe('Form', ()=> {
 
     change.should.have.been.calledOnce
 
-    value.should.eql({ 
-      name: { 
+    value.should.eql({
+      name: {
         first: 'Jill', last: ''
-      } 
+      }
     })
 
     last = value
 
     inst.last('.field').trigger('change', { target: { value: 'Smith' } })
 
-    value.should.eql({ 
-      name: { 
+    value.should.eql({
+      name: {
         first: 'Jill', last: 'Smith'
-      } 
+      }
     })
 
     value.should.not.equal(last)

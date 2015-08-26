@@ -284,7 +284,8 @@ class Form extends React.Component {
       })
     }
 
-    if (nextProps.value !== this.props.value)
+    if (nextProps.value !== this.props.value
+     || nextProps.noValidate !== this.props.noValidate)
       this._emit(nextProps);
 
     syncErrors(this.validator, nextProps.errors || {})
