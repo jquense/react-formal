@@ -238,8 +238,8 @@ class Field extends React.Component {
       let last = this._value
         , oldValidate = this._noValidate;
 
-      this._value = form.value(name),
-      this._schema = form.schema(name),
+      this._value = form.value(this.props.valueAccessor || this.props.name),
+      this._schema = form.schema(this.props.name),
       this._noValidate = form.noValidate
 
       first && warn()
@@ -326,4 +326,3 @@ class Field extends React.Component {
 }
 
 module.exports = Field;
-

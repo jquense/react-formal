@@ -2,7 +2,7 @@
 var fs = require('fs')
   , gulp = require('gulp')
   , less = require('gulp-less')
-  , babelTransform = require("gulp-babel-helpers")
+  , babelTransform = require("gulp-babel")
   , rimraf  = require('rimraf')
   , rename  = require('gulp-rename')
   , plumber = require('gulp-plumber')
@@ -39,7 +39,7 @@ gulp.task('build', ['clean'], function(){
 
     gulp.src(['./src/**/*.jsx', './src/**/*.js'])
      // .pipe(plumber())
-      .pipe(babelTransform({ loose: 'all' },'./util/babelHelpers.js'))
+      .pipe(babelTransform())
       .pipe(rename({ extname: '.js' }))
       .pipe(gulp.dest('./lib'))
   )

@@ -461,7 +461,9 @@ class Form extends React.Component {
     return {
       noValidate: props.noValidate,
       schema:   path => path && props.schema && reach(props.schema, path),
-      value:    path => props.getter(path, props.value),
+      value:    pathOrAccessor => typeof pathOrAccessor === 'function'
+        ? pathOrAccessor(props.value)
+        : props.getter(pathOrAccessor, props.value),
     }
   }
 

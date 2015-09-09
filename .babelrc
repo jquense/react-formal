@@ -10,5 +10,5 @@
     "es7.comprehensions",
     "es7.exportExtensions"
   ],
-  "plugins": [ "object-assign"]
+  "plugins": ["object-assign"]
 }

@@ -99,6 +99,28 @@ describe('Field', ()=> {
     spy.should.have.been.calledOnce.and.calledWith({ name: 'john' })
   })
 
+  it('gets value from accessor', function(){
+    var spy = sinon.spy(model => model.other)
+    var inst = $(
+      <Form schema={schema} defaultValue={{}} onChange={spy}>
+        <Form.Field
+          name='name'
+          type={TestInput}
+          valueAccessor={spy}
+          mapValue={{
+            other: e => e.value
+          }}
+        />
+      </Form>)
+
+    spy.should.have.been.and.calledWith({})
+
+    inst.single('input').trigger('change', { value: 'john' })
+
+    spy.should.have.been.and.calledWith({ other: 'john' })
+
+  })
+
   it('maps values from hash', function(){
     var spy = sinon.spy()
     var inst = $(

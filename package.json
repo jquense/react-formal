@@ -1,6 +1,6 @@
 {
   "name": "react-formal",
-  "version": "0.10.4",
+  "version": "0.10.5",
   "description": "Classy HTML form management for React",
   "main": "lib/index.js",
   "author": {
@@ -86,7 +86,6 @@
     "through2": "^0.6.5",
     "url-loader": "^0.5.5",
     "webpack": "^1.4.15",
-    "webpack-dev-server": "^1.7.0",
-    "yup": "^0.9.1"
+    "webpack-dev-server": "^1.7.0"
   }
 }
