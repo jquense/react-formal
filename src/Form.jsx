@@ -86,6 +86,13 @@ class Form extends React.Component {
 
     /**
      * Callback that is called when the `value` prop changes.
+     *
+     * ```js
+     * function(
+     * 	value: object,
+     * 	updatedPaths: array<string>
+     * )
+     * ```
      */
     onChange: React.PropTypes.func,
 
@@ -324,7 +331,8 @@ class Form extends React.Component {
   _update(path, args, mapValue){
     var model = this.props.value
       , widgetValue = args[0]
-      , updater = this.props.setter;
+      , updater = this.props.setter
+      , paths = [path];
 
     if ( process.env.NODE_ENV !== 'production' )
       updater = wrapSetter(updater)
@@ -336,13 +344,16 @@ class Form extends React.Component {
       model = updater(path, model, widgetValue[mapValue])
 
     else if (mapValue) {
-      for( var key in mapValue ) if ( mapValue.hasOwnProperty(key))
+      for( var key in mapValue ) if (mapValue.hasOwnProperty(key)) {
+        if (paths.indexOf(key) === -1) paths.push(key)
         model = updater(key, model, getValue(args, key, mapValue))
+      }
+
     }
     else
       model = updater(path, model, widgetValue)
 
-    this.notify('onChange', model, path)
+    this.notify('onChange', model, paths)
 
     function getValue(args, key, map){
       let field = map[key]
