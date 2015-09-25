@@ -280,7 +280,7 @@ class Form extends React.Component {
   componentWillReceiveProps(nextProps){
     if (nextProps.schema !== this.props.schema){
       this._queueValidation({
-        fields: uniq((this._queue || []).concat(Object.keys(nextProps.errors || {})))
+        fields: this._getFieldsToQueue(nextProps)
       })
     }
 
@@ -451,6 +451,18 @@ class Form extends React.Component {
     requests
       .forEach(r => this._processValidationRequest(r, props))
   }
+
+  _getFieldsToQueue(nextProps){
+    let fields = [];
+
+    for (let i = 0; i < this._queue.length; i++) {
+      fields.concat(this._queue[i].fields);
+    }
+
+    fields.concat(Object.keys(nextProps.errors || {}));
+
+    return uniq(fields);
+  };
 
   _emit(props) {
     let context = this._listenerContext(props);
