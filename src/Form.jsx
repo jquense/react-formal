@@ -342,7 +342,7 @@ class Form extends React.Component {
     else
       model = updater(path, model, widgetValue)
 
-    this.notify('onChange', model)
+    this.notify('onChange', model, path)
 
     function getValue(args, key, map){
       let field = map[key]
@@ -479,8 +479,8 @@ class Form extends React.Component {
     }
   }
 
-  notify(event, arg){
-    this.props[event] && this.props[event](arg)
+  notify(event, ...args){
+    this.props[event] && this.props[event](...args)
   }
 }
 
