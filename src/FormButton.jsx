@@ -1,7 +1,7 @@
 var React = require('react')
 var warning = require('warning')
 var Trigger = require('react-input-message/lib/MessageTrigger')
-
+var chain = require('chain-function')
 /**
  * A Form Button, for triggering validations for specific Field groups
  */
@@ -53,7 +53,11 @@ class Button extends React.Component {
       'to trigger validation for just the group: `' + group + '` use type="button" instead.')
 
     if (type.toLowerCase() === 'submit')
-      return <Component {...props} onClick={this.context.onFormSubmit}>{ this.props.children }</Component>
+      return (
+        <Component {...props} onClick={chain(props.onClick, this.context.onFormSubmit)}>
+          { this.props.children }
+        </Component>
+      )
 
     return (
       <Trigger group={group} events={events}>
