@@ -1,6 +1,6 @@
 {
   "name": "react-formal",
-  "version": "0.13.1",
+  "version": "0.14.0",
   "description": "Classy HTML form management for React",
   "main": "lib/index.js",
   "author": {
@@ -35,7 +35,7 @@
     "release": "release"
   },
   "peerDependencies": {
-    "react": ">=0.13.0 || ^0.14.0-beta1"
+    "react": ">=0.13.0"
   },
   "dependencies": {
     "chain-function": "^1.0.0",
@@ -84,7 +84,7 @@
     "react-component-metadata": "^1.3.0",
     "react-formal-inputs": "^1.0.0",
     "react-pure-render-debug": "^1.1.0",
-    "react-router": "^0.13.3",
+    "react-router": "^1.0.0-rc3",
     "react-testutil-query": "^1.0.0",
     "react-widgets": "^2.6.0",
     "release-script": "^0.5.3",
