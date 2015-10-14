@@ -2,7 +2,7 @@
 var fs = require('fs')
   , gulp = require('gulp')
   , less = require('gulp-less')
-  , babelTransform = require("gulp-babel")
+  , babelTransform = require("gulp-babel-helpers")
   , rimraf  = require('rimraf')
   , rename  = require('gulp-rename')
   , plumber = require('gulp-plumber')
@@ -39,7 +39,7 @@ gulp.task('build', ['clean'], function(){
 
     gulp.src(['./src/**/*.jsx', './src/**/*.js'])
      // .pipe(plumber())
-      .pipe(babelTransform())
+      .pipe(babelTransform({}, 'utils/babelHelpers.js'))
       .pipe(rename({ extname: '.js' }))
       .pipe(gulp.dest('./lib'))
   )
@@ -56,18 +56,6 @@ gulp.task('dev', function() {
 })
 
 
-// gulp.task('gen-docs', function(){
-//   return merge(
-//     gulp.src(['./src/**/*.jsx', './src/**/*.js'])
-//       .pipe(require('./docs/gulp/parse-docs')())
-//       .pipe(gulp.dest('./docs/components')),
-//
-//     gulp.src('./docs/pages/*.md')
-//       .pipe(require('./docs/gulp/md-to-jsx')())
-//       .pipe(gulp.dest('./docs/components'))
-//   )
-// })
-
 gulp.task('docs', function(cb){
   webpack(configs.docs, function(err, stat){
     console.log(stat.compilation.errors)
@@ -76,7 +64,7 @@ gulp.task('docs', function(cb){
 })
 
 gulp.task('dev-docs', function() {
-  gulp.watch(['./src/**/*.js*', './docs/pages/*.md'], ['gen-docs'])
+  //gulp.watch(['./src/**/*.js*', './docs/pages/*.md'], ['gen-docs'])
 
   new WebpackDevServer(webpack(configs.docs), {
     publicPath: "/docs",
@@ -85,5 +73,3 @@ gulp.task('dev-docs', function() {
 })
 
 gulp.task('release', ['clean', 'build', 'less'])
-
-gulp.task('publish', ['release'], require('jq-release'))

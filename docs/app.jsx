@@ -4,11 +4,7 @@ var React = require('react')
   , MyDateInput = require('../src/inputs/Date')
   , yup = require('yup')
   , {
-    create: createRouter
-  , DefaultRoute
-  , RouteHandler
-  , Navigation
-  , State
+    Router
   , Route
   , Link } = require('react-router')
 
@@ -62,14 +58,14 @@ class Docs extends React.Component {
         </nav>
       </aside>
       <main className='col-sm-9 col-md-10 doc-page'>
-        <RouteHandler scope={scope} />
+        { React.cloneElement(this.props.children, { scope })}
       </main>
      </div>)
   }
 }
 
 class Main extends React.Component {
-  
+
   render(){
     return (<div>
       <div className="jumbotron">
@@ -87,20 +83,23 @@ class Main extends React.Component {
 
 class App extends React.Component {
   static contextTypes = {
-    router: React.PropTypes.any
+    history: React.PropTypes.object
   }
 
   render(){
-    var home = this.context.router.getCurrentPath() === '/'
-            || this.context.router.isActive('intro')
+    var history = this.context.history;
+    var home //= this.context.router.getCurrentPath() === '/'
+          //  || this.context.router.isActive('intro')
 
     return (<div>
       <nav className='navbar navbar-default navbar-static-top' style={{ marginBottom: 0 }}>
-        
+
         <div className='container'>
-          { !home && 
+          { !home &&
           <span className='navbar-brand'>
-            <Link to='intro'>React&nbsp;<img src='./bow-tie.svg' style={{ width: 30, marginTop: -5 }}/>&nbsp;Formal</Link>
+            <Link to='/getting-started'>
+              React&nbsp;<img src='./bow-tie.svg' style={{ width: 30, marginTop: -5 }}/>&nbsp;Formal
+            </Link>
           </span>
           }
           <ul className='nav navbar-nav navbar-right'>
@@ -109,7 +108,7 @@ class App extends React.Component {
           </ul>
         </div>
       </nav>
-      <RouteHandler scope={scope} />
+      { React.cloneElement(this.props.children, { scope })}
      </div>
    )
   }
@@ -117,13 +116,11 @@ class App extends React.Component {
 
 
 var routes = (
-  <Route name="app" path="/" handler={App}>
-    <DefaultRoute handler={Main} />
-    
-    <Route name="intro" path='getting-started' handler={Main}/>
-    
+  <Route name="app" path="/" component={App}>
+    <IndexRoute component={Main} />
+    <Route path='getting-started' component={Main}/>
 
-    <Route path='api' handler={Docs}>
+    <Route path='api' component={Docs}>
       <DefaultRoute handler={require('!babel-loader!./loaders/jsx!./loaders/metadata!../src/Form')} />
       <Route path='yup'     handler={require('./pages/yup.md')}/>
       <Route path='form'    handler={require('!babel-loader!./loaders/jsx!./loaders/metadata!../src/Form')}/>

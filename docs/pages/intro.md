@@ -4,24 +4,24 @@
     <h2>Strongly Typed</h2>
     <p>
       Schema based forms to handle all the frustrating parsing and serializing of strings to objects automatically.
-    </p> 
+    </p>
   </div>
   <div className='col-sm-4'>
     <h2>Minimal Wiring</h2>
     <p>
-      Requires about as much boilerplate as a single input. 
+      Requires about as much boilerplate as a single input.
       No managing tons of values and onChange handlers.
-    </p> 
+    </p>
   </div>
   <div className='col-sm-4'>
     <h2>Extreme Flexibility</h2>
     <p>
       You have complete control how each field renders. Use any components you want!
-    </p> 
+    </p>
   </div>
 </div>
 
-React Formal is a library for quickly and painlessly handling HTML form validation and serialization. It tries to strike a balance between prescriptive form generators and libraries that require you to manually handle ever input and manage them in state. React Formal, lets you build your form however you want with no restrictions on form markup, or uncessary boilerplate. React Formal leverages a schema validation system, which offers helpful benefits over the traditional "validate the state DOM" approach.
+React Formal is a library for quickly and painlessly handling HTML form validation and serialization. It tries to strike a balance between prescriptive form generators and libraries that require you to manually handle ever input and manage them in state. React Formal, lets you build your form however you want with no restrictions on form markup, or unnecessary boilerplate. React Formal leverages a schema validation system, which offers helpful benefits over the traditional "validate the state DOM" approach.
 
  - Forms can be handled the "React Way", with controlled or uncontrolled values, completely decoupled from DOM state.
  - Working against javascript objects instead of HTML representations of an objects, means no need for `<input type='hidden'/>`; only render inputs that a user actually needs to change!
@@ -32,7 +32,7 @@ React Formal is a library for quickly and painlessly handling HTML form validati
 Lets install both `react-formal` and `yup`.
 
 ```sh
-npm install react-formal yup --save 
+npm install react-formal yup --save
 ```
 
 If you'd like more robust input options like, date and number pickers, multiselect, and comboboxes (like in the documentation) you might want to also install `react-formal-inputs` which is swaps out the native input types for [react-widgets](http://jquense.github.io/react-widgets/docs/#/) (read the docs for complete installation instructions).
@@ -47,7 +47,7 @@ Lets first define the object schema that our form will provide input too. The `y
 var Form = require('react-formal')
   , yup = require('yup')
 
-// if we are using a different set of inputs 
+// if we are using a different set of inputs
 // we can set some defaults once at the beginning
 Form.addInputTypes(
   require('react-formal-inputs'))
@@ -69,7 +69,7 @@ var modelSchema = yup.object({
   });
 
 var form = (
-  <Form 
+  <Form
     schema={modelSchema}
     defaultValue={modelSchema.default()}
   >
