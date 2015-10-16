@@ -13,9 +13,6 @@ var warning = require('warning')
   , getChildren = require('./util/parentContext');
 
 let done = e => setTimeout(() => { throw e })
-
-let useRealContext = /^0\.14/.test(React.version);
-
 let getParent = path => expr.join(expr.split(path).slice(0, -1))
 
 /**
@@ -262,14 +259,6 @@ class Form extends React.Component {
     })
 
     syncErrors(this.validator, props.errors || {})
-
-
-    this.state = useRealContext ? {}
-      : {
-        children: getChildren(
-              this.props.children
-            , this.getChildContext())
-      }
   }
 
   shouldComponentUpdate(nextProps, nextState) {
@@ -298,14 +287,6 @@ class Form extends React.Component {
     syncErrors(this.validator, nextProps.errors || {})
 
     this._flushValidations(nextProps)
-
-    if (!useRealContext){
-      this.setState({
-        children: getChildren(
-            nextProps.children
-          , this.getChildContext())
-      })
-    }
   }
 
   getChildContext() {
