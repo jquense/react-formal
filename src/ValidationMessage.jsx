@@ -1,35 +1,39 @@
-var React = require('react')
-var shouldComponentUpdate = require('react-pure-render/function')
-var Message = require('react-input-message/lib/Message')
-var cn = require('classnames');
-
+import React from'react';
+import shouldComponentUpdate from'react-pure-render/function';
+import Message from'react-input-message/Message';
+import cn from'classnames';
 
 /**
  * Represents a Form validation error message. Only renders when the
  * value that it is `for` is invalid.
+ *
  * @alias Message
  */
 class ValidationMessage extends React.Component {
 
   static propTypes = {
-    /**
-     * Specify what Field or Fields the Message is in charge of displaying.
-     * `for` should correspond to a field `name`.
-     */
+    ...Message.propTypes,
+
     component: React.PropTypes.oneOfType([
       React.PropTypes.func,
-      React.PropTypes.string,
+      React.PropTypes.string
     ]).isRequired,
 
     /**
      * A css class that should be always be applied to the Message container.
      */
     errorClass: React.PropTypes.string,
+
+    /**
+     * Map the passed in message object for the field to a string to display
+     */
+    extract: React.PropTypes.func
   }
 
   static defaultProps = {
     component: 'span',
-    errorClass: 'validation-error'
+    errorClass: 'validation-error',
+    extract: error => error.message || error
   }
 
   shouldComponentUpdate(p, s, c){

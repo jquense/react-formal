@@ -20,6 +20,7 @@ handlebars.registerHelper('isRequired', function types(prop, options){
 })
 
 handlebars.registerHelper('propType', function types(prop, options){
+  !prop.type && console.log(prop)
   var type = prop.type
     , name = type.name
     , doclets = metadata.parseDoclets(prop.desc || '') || {};
@@ -51,7 +52,6 @@ handlebars.registerHelper('propType', function types(prop, options){
 var apiFile = handlebars.compile(fs.readFileSync(__dirname + '/../templates/api.hbs').toString())
 
 module.exports = function(contents) {
-  var result = {}
   var markdown;
 
   each(metadata(contents), function(val, key) {
@@ -73,12 +73,4 @@ function displayObj(obj){
 
 function cleanDocletValue(str){
   return str.replace(/^\{/, '').replace(/\}$/, '')
-}
-
-function replaceExtension(npath, ext) {
-  if (typeof npath !== 'string') return npath;
-  if (npath.length === 0) return npath;
-
-  var nFileName = path.basename(npath, path.extname(npath))+ext;
-  return path.join(path.dirname(npath), nFileName);
 }

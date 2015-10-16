@@ -38,19 +38,16 @@ var schema = yup.object({
       {
         id:     yup.number(),
 
-        first:    emptyString,
-        last:     emptyString,
+        first:    emptyString.required(),
+        last:     emptyString.required(),
 
-        address:  emptyString,
-
-        orgID:    yup.number().when('location', (v, s) => !v ? s.required() : s),
-        location: yup.string().when('orgID', (v, s) => v ? s.forbidden() : s),
+        address:  emptyString.required(),
 
         birthday: yup.date()
           .required('please provide a date of birth')
           .nullable()
           .default(null)
-      }, ['orgID', 'location']),
+      }),
 
       trivia: yup.object({
         isCool:    yup.bool().default(false),
@@ -148,12 +145,8 @@ var App = React.createClass({
   }
 })
 
-perf
+
 React.render(<App/>, document.body, function(){
   console.log('starting')
-  perf.start()
-
+  //perf.start()
 });
-
-
-

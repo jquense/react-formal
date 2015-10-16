@@ -6,6 +6,13 @@
     "node": true,
     "mocha": true
   },
+  "globals": {
+    "sinon": true,
+    "chai": true
+  },
+  "plugins": [
+    "eslint-plugin-react"
+  ],
   "rules": {
     "no-eval": 2,
     "strict": 0,
@@ -20,6 +27,7 @@
     "no-trailing-spaces": 0,
     "no-underscore-dangle": 0,
     "no-multi-spaces": 0,
+    "no-mix-requires": 0,
     "no-unused-expressions": 0,
     "no-unused-vars": [2, {"vars": "all", "args": "after-used"}],
     "no-use-before-define": 0,
@@ -27,6 +35,11 @@
     "return-no-assign": 0,
     "consitent-return": 0,
     "no-shadow": 0,
-    "no-sequences": 0
+    "no-sequences": 0,
+    "react/jsx-no-undef": 1,
+    "react/jsx-uses-react": 1,
+    "react/jsx-uses-vars": 1,
+    "react/react-in-jsx-scope": 1,
+    "react/self-closing-comp": 1
   }
 }

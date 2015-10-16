@@ -1,16 +1,16 @@
-'use strict';
-var React     = require('react')
-var scu = require('react-pure-render/function')
-var warning = require('warning')
-  , invariant = require('invariant')
-  , reach     = require('yup/lib/util/reach')
-  , expr      = require('property-expr')
-  , updateIn  = require('./util/update')
-  , Validator = require('react-input-message/lib/Validator')
-  , Container = require('react-input-message/lib/MessageContainer')
-  , uncontrollable = require('uncontrollable/batching')
-  , paths = require('./util/paths')
-  , getChildren = require('./util/parentContext');
+import React from 'react';
+import scu from 'react-pure-render/function';
+import warning from 'warning';
+import reach from 'yup/lib/util/reach';
+import expr from 'property-expr';
+import Validator from 'react-input-message/Validator';
+import Container from 'react-input-message/MessageContainer';
+import uncontrollable from 'uncontrollable/batching';
+import paths from './util/paths';
+import contextTypes from './util/contextType';
+import { BindingContext as BC } from 'topeka';
+
+let BindingContext = BC.ControlledComponent;
 
 let done = e => setTimeout(() => { throw e })
 let getParent = path => expr.join(expr.split(path).slice(0, -1))
@@ -181,7 +181,7 @@ class Form extends React.Component {
      * ) -> object
      * ```
      */
-    setter: React.PropTypes.func.isRequired,
+    setter: React.PropTypes.func,
 
     /**
      * Time in milliseconds that validations should be debounced. Reduces the amount of validation calls
@@ -226,36 +226,40 @@ class Form extends React.Component {
     component: 'form',
     strict: true,
     delay: 300,
-    getter: (path, model) => path ? expr.getter(path, true)(model || {}) : model,
-    setter: (path, model, val) => updateIn(model, path, val)
+    getter: (path, model) => path ? expr.getter(path, true)(model || {}) : model
   }
 
-  static childContextTypes = {
-    onFormSubmit:   React.PropTypes.func,
-    registerWithForm: React.PropTypes.func
-  }
+  static childContextTypes = contextTypes
 
   constructor(props, context){
     super(props, context)
 
-    this._handlers = []
-    this.submit = this.submit.bind(this);
+    this._queue = []
+    this._pathOptions = Object.create(null)
+    this._handleValidationRequest = this._handleValidationRequest.bind(this)
 
+    this.submit = this.submit.bind(this)
     // silence the real submit
     this.onSubmit = e => {
-      e && e.preventDefault && e.preventDefault();
+      e && e.preventDefault && e.preventDefault()
     }
 
-    this.validator = new Validator((path, { props, options }) => {
+    this._setPathOptions = (path, options) => {
+      this._pathOptions[path] = options;
+    }
+
+    this.validator = new Validator((path, { props }) => {
       var model = props.value
         , schema = reach(props.schema, path)
         , value = props.getter(path, model)
-        , parent = props.getter(getParent(path), model) || {};
+        , parent = props.getter(getParent(path), model) || {}
+        , options = this._pathOptions[path] || {};
+
 
       return schema
         ._validate(value, { ...props, ...options }, { parent, path })
         .then(() => void 0)
-        .catch(err => err.errors)
+        .catch(err => errToJSON(err))
     })
 
     syncErrors(this.validator, props.errors || {})
@@ -276,70 +280,29 @@ class Form extends React.Component {
   componentWillReceiveProps(nextProps){
     if (nextProps.schema !== this.props.schema){
       this._queueValidation({
-        fields: this._getFieldsToQueue(nextProps)
+        fields: Object.keys(nextProps.errors || {})
       })
     }
 
-    if (nextProps.value !== this.props.value
-     || nextProps.noValidate !== this.props.noValidate)
-      this._emit(nextProps);
-
     syncErrors(this.validator, nextProps.errors || {})
-
     this._flushValidations(nextProps)
   }
 
   getChildContext() {
+    let { noValidate, schema } = this.props
+    let context = this._context && this._context.reactFormalContext;
 
-    return this._context || (this._context = {
-
-      onFormSubmit: this.submit,
-
-      registerWithForm: listener => {
-        let remove = () => this._handlers.splice(this._handlers.indexOf(listener), 1)
-
-        this._handlers.push(listener)
-        listener(this._listenerContext(this.props))
-
-        return {
-          remove,
-          onChange: (path, updates, args) => this._update(path, args, updates),
+    if (!context || context.noValidate !== noValidate || context.schema !== schema )
+      this._context = {
+        reactFormalContext: {
+          noValidate,
+          schema,
+          onSubmit: this.submit,
+          onOptions: this._setPathOptions
         }
       }
-    })
-  }
 
-  _update(path, args, mapValue){
-    var model = this.props.value
-      , widgetValue = args[0]
-      , updater = this.props.setter
-      , paths = [path];
-
-    if ( process.env.NODE_ENV !== 'production' )
-      updater = wrapSetter(updater)
-
-    if (typeof mapValue === 'function')
-      model = updater(path, model, mapValue(...args))
-
-    else if (typeof mapValue === 'string')
-      model = updater(path, model, widgetValue[mapValue])
-
-    else if (mapValue) {
-      for( var key in mapValue ) if (mapValue.hasOwnProperty(key)) {
-        if (paths.indexOf(key) === -1) paths.push(key)
-        model = updater(key, model, getValue(args, key, mapValue))
-      }
-
-    }
-    else
-      model = updater(path, model, widgetValue)
-
-    this.notify('onChange', model, paths)
-
-    function getValue(args, key, map){
-      let field = map[key]
-      return typeof field === 'function' ? field(...args) : args[0][field]
-    }
+    return this._context
   }
 
   render() {
@@ -348,51 +311,55 @@ class Form extends React.Component {
       , onChange
       , value
       , component: Element
+      , getter, setter
       , ...props } = this.props;
 
-    if ( Element === 'form')
+    if (Element === 'form')
       props.noValidate = true // disable html5 validation
 
     return (
-      <Container
-        ref={ref => this._container = ref}
-        messages={this.props.errors}
-        onValidationNeeded={this.props.noValidate ? ()=> {} : e => this._handleValidationRequest(e)}
+      <BindingContext
+        value={value}
+        onChange={onChange}
+        getter={getter}
+        setter={setter}
       >
-        <Element {...props} onSubmit={this.onSubmit}>
-          { this.state.children || this.props.children }
-        </Element>
-      </Container>
+        <Container
+          ref={ref => this._container = ref}
+          messages={this.props.errors}
+          onValidationNeeded={this._handleValidationRequest}
+        >
+          <Element {...props} onSubmit={this.onSubmit}>
+            { children }
+          </Element>
+        </Container>
+      </BindingContext>
     );
   }
 
   _handleValidationRequest(e) {
+    if (this.props.noValidate)
+      return
+
     this.notify('onValidate', e)
-    return e.event === 'onChange'
-      ? this._queueValidation(e)
-      : this._processValidationRequest(e, this.props)
+    this._queueValidation(e)
+
+    if (e.type !== 'onChange')
+      this._flushValidations(this.props)
   }
 
-  _processValidationRequest(e, props){
-    var fields = paths.reduce(e.fields)
-      , options = e.target ? e.target.props.options : {};
+  _processValidations(fields, props){
+    this.validator
+      .validate(fields, { props })
+      .then(errors => {
+        if (props.debug && process.env.NODE_ENV !== 'production'){
+          warning(!Object.keys(errors).length, '[react-formal] invalid fields: ' +
+            Object.keys(errors).join(', '))
+        }
 
-    this.timeout(fields.join('-'), () => {
-      this.validator
-        .validate(fields, { props, options })
-        .then(() => {
-          var errors = this.validator.errors();
-
-          if (props.debug && process.env.NODE_ENV !== 'production'){
-            warning(!Object.keys(errors).length, '[react-formal] invalid fields: ' +
-              Object.keys(errors).join(', '))
-          }
-
-          this.notify('onError', errors)
-        })
-        .catch(done)
-
-    }, this.props.delay)
+        this.notify('onError', errors)
+      })
+      .catch(done)
   }
 
   submit() {
@@ -405,10 +372,7 @@ class Form extends React.Component {
       .validate(value, options)
       .then(() => this.notify('onSubmit', value))
       .catch(err => {
-        var errors = err.inner.reduce((list, e) => {
-          list[e.path] = (list[e.path] || (list[e.path] = [])).concat(e.errors)
-          return list
-        }, {})
+        var errors = errToJSON(err)
 
         if (debug && process.env.NODE_ENV !== 'production') {
           warning(!Object.keys(errors).length, '[react-formal] (onSubmit) invalid fields: ' +
@@ -429,46 +393,16 @@ class Form extends React.Component {
   }
 
   _queueValidation(e){
-    var queue = this._queue || (this._queue = [])
-
-    //if ( !queue.some( q => q.path === e.path) )
-    queue.push(e)
+    this._queue = paths.reduce(uniq(this._queue.concat(e.fields)))
   }
 
   _flushValidations(props){
-    var requests = this._queue || [];
-
-    this._queue = [];
-
-    requests
-      .forEach(r => this._processValidationRequest(r, props))
-  }
-
-  _getFieldsToQueue(nextProps){
-    let fields = [];
-
-    for (let i = 0; i < this._queue.length; i++) {
-      fields.concat(this._queue[i].fields);
-    }
-
-    fields.concat(Object.keys(nextProps.errors || {}));
-
-    return uniq(fields);
-  };
-
-  _emit(props) {
-    let context = this._listenerContext(props);
-    this._handlers.forEach(fn => fn(context))
-  }
-
-  _listenerContext(props){
-    return {
-      noValidate: props.noValidate,
-      schema:   path => path && props.schema && reach(props.schema, path),
-      value:    pathOrAccessor => typeof pathOrAccessor === 'function'
-        ? pathOrAccessor(props.value)
-        : props.getter(pathOrAccessor, props.value),
-    }
+    this.timeout('flush-validations', () => {
+      var fields = this._queue;
+      this._queue = [];
+      if (fields.length)
+        this._processValidations(fields, props)
+    }, props.delay)
   }
 
   notify(event, ...args){
@@ -481,17 +415,23 @@ module.exports = uncontrollable(Form,
   ['submit']
 )
 
-function wrapSetter(setter){
-  return (...args) => {
-    var result = setter(...args)
-    invariant(result && typeof result === 'object',
-      '`setter(..)` props must return the form value object after updating a value.')
-    return result
-  }
-}
 
 function uniq(arr){
   return arr.filter((item, i) => arr.indexOf(item) === i)
+}
+
+function errToJSON(error){
+  if (error.inner.length)
+    return error.inner.reduce((list, inner) => {
+      list[inner.path] = (list[inner.path] || []).concat(errToJSON(inner))
+
+      return list
+    }, {})
+
+  return {
+    message: error.message,
+    type: error.type
+  }
 }
 
 function syncErrors(validator, errors = {}){

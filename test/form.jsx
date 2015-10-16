@@ -1,8 +1,8 @@
-var React = require('react/addons')
+var React = require('react')
   , yup = require('yup')
   , Form = require('../src');
 
-var $ = require('react-testutil-query')
+var $ = require('teaspoon')
 
 describe('Form', ()=> {
   var schema = yup.object({
@@ -20,7 +20,7 @@ describe('Form', ()=> {
             <Form.Field name='name.first' className='field'/>
             <Form.Field name='name.last' className='field'/>
           </Form>
-        )
+        ).render()
 
     inst.first('.field').trigger('change', { target: { value: 'Jill' } })
 
@@ -59,7 +59,7 @@ describe('Form', ()=> {
               }}
             />
           </Form>
-        )
+        ).render()
 
     let value = { first: 'Jill', last: 'smith' };
 
@@ -75,7 +75,7 @@ describe('Form', ()=> {
             <Form.Field name='name.first' className='field'/>
             <Form.Field name='name.last' className='field'/>
           </Form>
-        )
+        ).render()
 
       inst.first('.field').trigger('change')
 

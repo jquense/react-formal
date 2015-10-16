@@ -1,7 +1,9 @@
-var React = require('react')
-var warning = require('warning')
-var Trigger = require('react-input-message/lib/MessageTrigger')
-var chain = require('chain-function')
+import React from 'react';
+import warning from 'warning';
+import Trigger from 'react-input-message/MessageTrigger';
+import chain from 'chain-function';
+import contextTypes from './util/contextType';
+
 /**
  * A Form Button, for triggering validations for specific Field groups
  */
@@ -25,13 +27,10 @@ class Button extends React.Component {
     /**
      * An array of event names that trigger validation.
      */
-    events: React.PropTypes.arrayOf(
-              React.PropTypes.string),
+    events: React.PropTypes.arrayOf(React.PropTypes.string)
   }
 
-  static contextTypes = {
-    onFormSubmit: React.PropTypes.func
-  }
+  static contextTypes = contextTypes
 
   static defaultProps = {
     type: 'button',
@@ -47,6 +46,8 @@ class Button extends React.Component {
       , component: Component
       , ...props } = this.props
 
+    let context = this.context.reactFormalContext;
+
     warning(!group || type.toLowerCase() !== 'submit',
       'You have specified a `group` prop with type="submit" on this Form.Button component. ' +
       'submit type buttons will automatically trigger a form wide validation. ' +
@@ -54,7 +55,7 @@ class Button extends React.Component {
 
     if (type.toLowerCase() === 'submit')
       return (
-        <Component {...props} onClick={chain(props.onClick, this.context.onFormSubmit)}>
+        <Component {...props} onClick={chain(props.onClick, context.onSubmit)}>
           { this.props.children }
         </Component>
       )

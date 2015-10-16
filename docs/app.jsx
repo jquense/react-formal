@@ -1,16 +1,21 @@
-var React = require('react')
-  , types = require('react-formal-inputs')
-  , Form = require('../src')
-  , MyDateInput = require('../src/inputs/Date')
-  , yup = require('yup')
-  , {
+import React from 'react';
+import types from 'react-formal-inputs';
+import Form from '../src';
+import MyDateInput from '../src/inputs/Date';
+import yup from 'yup';
+import {
     Router
   , Route
-  , Link } = require('react-router')
+  , IndexRoute
+  , Link } from 'react-router';
 
-require('./style.less')
-require('react-widgets/lib/less/react-widgets.less')
-require('./vendor/jsx')
+import './style.less';
+import 'react-widgets/lib/less/react-widgets.less';
+import './vendor/jsx';
+
+import localizers from 'react-widgets/lib/localizers/globalize'
+
+localizers(require('globalize'))
 
 Form.addInputTypes(types)
 
@@ -88,7 +93,7 @@ class App extends React.Component {
 
   render(){
     var history = this.context.history;
-    var home //= this.context.router.getCurrentPath() === '/'
+    var home = history.location === '/'
           //  || this.context.router.isActive('intro')
 
     return (<div>
@@ -121,20 +126,16 @@ var routes = (
     <Route path='getting-started' component={Main}/>
 
     <Route path='api' component={Docs}>
-      <DefaultRoute handler={require('!babel-loader!./loaders/jsx!./loaders/metadata!../src/Form')} />
-      <Route path='yup'     handler={require('./pages/yup.md')}/>
-      <Route path='form'    handler={require('!babel-loader!./loaders/jsx!./loaders/metadata!../src/Form')}/>
-      <Route path='field'   handler={require('!babel-loader!./loaders/jsx!./loaders/metadata!../src/Field')}/>
-      <Route path='message' handler={require('!babel-loader!./loaders/jsx!./loaders/metadata!../src/ValidationMessage')}/>
-      <Route path='summary' handler={require('!babel-loader!./loaders/jsx!./loaders/metadata!../src/ValidationSummary')}/>
-      <Route path='button'  handler={require('!babel-loader!./loaders/jsx!./loaders/metadata!../src/FormButton')}/>
-      <Route path="/controllables" handler={require('./pages/controllables.md')}/>
+      <IndexRoute component={require('!babel-loader!./loaders/jsx!./loaders/metadata!../src/Form')} />
+      <Route path='yup'     component={require('./pages/yup.md')}/>
+      <Route path='form'    component={require('!babel-loader!./loaders/jsx!./loaders/metadata!../src/Form')}/>
+      <Route path='field'   component={require('!babel-loader!./loaders/jsx!./loaders/metadata!../src/Field')}/>
+      <Route path='message' component={require('!babel-loader!./loaders/jsx!./loaders/metadata!../src/ValidationMessage')}/>
+      <Route path='summary' component={require('!babel-loader!./loaders/jsx!./loaders/metadata!../src/ValidationSummary')}/>
+      <Route path='button'  component={require('!babel-loader!./loaders/jsx!./loaders/metadata!../src/FormButton')}/>
+      <Route path="/controllables" component={require('./pages/controllables.md')}/>
     </Route>
   </Route>
 );
 
-var rootInstance = null;
-
-createRouter({ routes }).run(function (Handler, state) {
-  rootInstance = React.render(<Handler params={state.params}/>, document.getElementById('AppContainer'));
-})
+React.render(<Router>{routes}</Router>, document.getElementById('AppContainer'));

@@ -1,5 +1,4 @@
-'use strict';
-var types =  require('./util/types')
+import types from'./util/types';
 
 let addType = (type, Component) => {
   let compType = typeof Component;
@@ -13,7 +12,7 @@ let addType = (type, Component) => {
   types[type] = Component
 }
 
-module.exports = function(...args){
+export default function(...args){
   if( args.length === 2)
     return addType(...args)
 
