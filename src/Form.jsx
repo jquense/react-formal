@@ -25,29 +25,42 @@ let getParent = path => expr.join(expr.split(path).slice(0, -1))
  *
  * ```editable
  * var defaultStr = yup.string().default('')
- *   , modelSchema = yup.object({
- *       name: yup.object({
- *         first: defaultStr.required('please enter a first name'),
- *         last:  defaultStr.required('please enter a surname'),
- *       }),
  *
- *       dateOfBirth: yup.date()
- *         .max(new Date(), "You can't be born in the future!"),
+ * var customerSchema = yup
+ *   .object({
+ *     name: yup.object({
+ *       first: defaultStr
+ *         .required('please enter a first name'),
  *
- *       colorId: yup.number().nullable()
- *         .required('Please select a color')
- *     });
+ *       last: defaultStr
+ *         .required('please enter a surname'),
+ *     }),
+ *
+ *     dateOfBirth: yup.date()
+ *       .max(new Date(), "Are you a time traveler?!"),
+ *
+ *     colorId: yup.number()
+ *       .nullable()
+ *       .required('Please select a dank color')
+ *   });
  *
  * var form = (
  *   <Form
- *     schema={modelSchema}
- *     defaultValue={modelSchema.default()}
+ *     schema={customerSchema}
+ *     defaultValue={customerSchema.default()}
  *   >
- *     <div> {\/\*'grandchildren' are no problem \*\/}
+ *     <div>
+ *       {\/\*'grandchildren' are no problem \*\/}
  *       <label>Name</label>
  *
- *       <Form.Field name='name.first' placeholder='First name'/>
- *       <Form.Field name='name.last' placeholder='Surname'/>
+ *       <Form.Field
+ *         name='name.first'
+ *         placeholder='First name'
+ *       />
+ *       <Form.Field
+ *         name='name.last'
+ *         placeholder='Surname'
+ *       />
  *
  *       <Form.Message for={['name.first', 'name.last']}/>
  *     </div>
@@ -66,7 +79,9 @@ let getParent = path => expr.join(expr.split(path).slice(0, -1))
  *     </Form.Field>
  *     <Form.Message for='colorId'/>
  *
- *   <Form.Button type='submit'>Submit</Form.Button>
+ *   <Form.Button type='submit'>
+ *     Submit
+ *   </Form.Button>
  * </Form>)
  * React.render(form, mountNode);
  * ```
@@ -86,8 +101,8 @@ class Form extends React.Component {
      *
      * ```js
      * function(
-     * 	value: object,
-     * 	updatedPaths: array<string>
+     *   value: object,
+     *   updatedPaths: array<string>
      * )
      * ```
      */
@@ -136,8 +151,8 @@ class Form extends React.Component {
      * Callback that is called whenever a validation is triggered.
      * It is called _before_ the validation is actually run.
      * ```js
-     * function onError(e){
-     *   { event, field, args, target } = e
+     * function onValidate(event){
+     *   let { type, fields, args } = event
      * }
      * ```
      */
@@ -148,7 +163,7 @@ class Form extends React.Component {
      * the `component` prop renders a `<form/>` tag. onSubmit will trigger only if the form is valid.
      *
      * ```js
-     * function onSubmit(value){
+     * function onSubmit(formValue){
      *   // do something with valid value
      * }
      * ```
@@ -158,6 +173,7 @@ class Form extends React.Component {
     /**
      * A value getter function. `getter` is called with `path` and `value` and
      * should return the plain **javascript** value at the path.
+     *
       * ```js
      * function(
      *  path: string,
@@ -224,7 +240,7 @@ class Form extends React.Component {
 
   static defaultProps = {
     component: 'form',
-    strict: true,
+    strict: false,
     delay: 300,
     getter: (path, model) => path ? expr.getter(path, true)(model || {}) : model
   }
