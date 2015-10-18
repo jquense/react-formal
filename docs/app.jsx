@@ -1,7 +1,9 @@
 import React from 'react';
+import { render } from 'react-dom';
 import types from 'react-formal-inputs';
 import Form from '../src';
-import MyDateInput from '../src/inputs/Date';
+import DateInput from '../src/inputs/Date';
+import Intro from'./pages/intro.md';
 import yup from 'yup';
 import {
     Router
@@ -9,9 +11,8 @@ import {
   , IndexRoute
   , Link } from 'react-router';
 
-import './style.less';
+import './styles/style.less';
 import 'react-widgets/lib/less/react-widgets.less';
-import './vendor/jsx';
 
 import localizers from 'react-widgets/lib/localizers/globalize'
 
@@ -40,10 +41,14 @@ var modelSchema = yup.object({
      .positive('Ages must be a positive number')
 })
 
+let MyDateInput = props => <DateInput {...props} type='datetime-local'/>
 
-var reqMap = { 'react-formal': 'Form', 'react': 'React', 'react/addons': 'React', 'react-formal-inputs': 'types' }
-  , scope = { Form, React, yup, modelSchema, MyDateInput, types, require(name){ return scope[reqMap[name] || name] } }
-  , Intro = require('./pages/intro.md')
+var reqMap = { 'react-formal': 'Form', 'react': 'React', 'react-formal-inputs': 'types' }
+  , scope = {
+    Form, React, yup, modelSchema, MyDateInput, types,
+    require(name){ return scope[reqMap[name] || name] }
+  };
+
 
 class Docs extends React.Component {
 
@@ -92,9 +97,9 @@ class App extends React.Component {
   }
 
   render(){
-    var history = this.context.history;
-    var home = history.location === '/'
-          //  || this.context.router.isActive('intro')
+    var location = this.props.location;
+    var home = location.pathname === '/'
+            || location.pathname.indexOf('/getting-started') === 0
 
     return (<div>
       <nav className='navbar navbar-default navbar-static-top' style={{ marginBottom: 0 }}>
@@ -138,4 +143,4 @@ var routes = (
   </Route>
 );
 
-React.render(<Router>{routes}</Router>, document.getElementById('AppContainer'));
+render(<Router>{routes}</Router>, document.getElementById('AppContainer'));

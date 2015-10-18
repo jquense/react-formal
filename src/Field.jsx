@@ -22,12 +22,19 @@ var options = { recurse: undefined }
  * any props and children to the input so you can easily configure new input types.
  *
  * ```editable
- * <Form noValidate
+ * <Form
+ *   noValidate
  *   schema={modelSchema}
- *   defaultValue={{ name: { first: 'Sally'}, colorID: 0 }}
+ *   defaultValue={{
+ *     name: { first: 'Sally'},
+ *     colorID: 0
+ *   }}
  * >
  *   <label>Name</label>
- *   <Form.Field name='name.first' placeholder='First name'/>
+ *   <Form.Field
+ *     name='name.first'
+ *     placeholder='First name'
+ *   />
  *
  *   <label>Favorite Color</label>
  *   <Form.Field name='colorId' type='select'>
@@ -41,8 +48,6 @@ var options = { recurse: undefined }
  * ```
  */
 class Field extends React.Component {
-
-  static _isYupFormField = true
 
   static contextTypes = contextTypes
 
@@ -72,17 +77,27 @@ class Field extends React.Component {
      * validated together, helpful for multi-part forms.
      *
      * ```editable
-     * <Form schema={modelSchema} defaultValue={modelSchema.default()}>
+     * <Form
+     *   schema={modelSchema}
+     *   defaultValue={modelSchema.default()}
+     * >
      *
-     *   <Form.Field name='name.first' group='name'
-     *     placeholder='first'/>
-     *
-     *   <Form.Field name='name.last' group='name'
-     *     placeholder='surname'/>
-     *
+     *   <Form.Field
+     *     name='name.first'
+     *     group='name'
+     *     placeholder='first'
+     *   />
+     *   <Form.Field
+     *     name='name.last'
+     *     group='name'
+     *     placeholder='surname'
+     *   />
      *   <Form.Message for={['name.first', 'name.last']}/>
      *
-     *   <Form.Field name='dateOfBirth' placeholder='dob'/>
+     *   <Form.Field
+     *     name='dateOfBirth'
+     *     placeholder='dob'
+     *   />
      *
      *   <Form.Button group='name'>
      *     Validate Name
@@ -104,12 +119,15 @@ class Field extends React.Component {
      *   Use the schema to determine type
      *   <Form.Field
      *     name='dateOfBirth'
-     *     placeholder='date'/>
+     *     placeholder='date'
+     *   />
      *
      *   Override it!
-     *   <Form.Field name='dateOfBirth'
-     *       type='time'
-     *       placeholder='time only'/>
+     *   <Form.Field
+     *     name='dateOfBirth'
+     *     type='time'
+     *     placeholder='time only'
+     *   />
      *
      *   Use a custom Component
      *   (need native 'datetime' support to see it)
@@ -143,7 +161,7 @@ class Field extends React.Component {
      *
      * ```js
      * <Form.Field name='name'
-     *   mapValue={ fieldValue => fieldValue.first + ' ' + fieldValue.last }
+     *   mapValue={fieldValue => fieldValue.first + ' ' + fieldValue.last}
      * />
      * ```
      *
@@ -156,14 +174,17 @@ class Field extends React.Component {
      *   defaultValue={modelSchema.default()}
      * >
      *   <label>Name</label>
-     *   <Form.Field name='name.first' placeholder='First name'/>
+     *   <Form.Field
+     *     name='name.first'
+     *     placeholder='First name'
+     *   />
      *
      *   <label>Date of Birth</label>
      *   <Form.Field name='dateOfBirth'
      *     mapValue={{
      *       'dateOfBirth': date => date,
      *       'age': date =>
-     *       (new Date()).getFullYear() - date.getFullYear()
+     *         (new Date()).getFullYear() - date.getFullYear()
      *   }}/>
 
      *   <label>Age</label>
@@ -200,7 +221,7 @@ class Field extends React.Component {
      * Specify whether the Field will recursively validate sub paths.
      * The below example will also validate `name.first` and `name.last`. Generally you won't need to touch this
      * as `react-formal` makes some intelligent choices about whether to recurse or not on any given path.
-     * 
+     *
      * ```js
      * <Form.Field name='name' recursive={true}/>
      * ```

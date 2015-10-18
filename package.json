@@ -89,6 +89,7 @@
     "merge-stream": "^0.1.7",
     "mocha": "~1.21.4",
     "phantomjs": "~1.9.10",
+    "prismjs": "^1.2.0",
     "react": ">=0.14.0",
     "react-component-metadata": "^1.4.0",
     "react-formal-inputs": "^1.0.0",

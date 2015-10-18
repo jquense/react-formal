@@ -2,9 +2,31 @@
 var marked = require('marked')
   , fs = require('fs')
   , handlebars = require('handlebars')
+  , prism = require('prismjs')
   , path = require('path');
 
-function escape(html, encode) {
+require('../vendor/jsx-prism')
+
+// prism.languages.insertBefore('javascript', 'keyword', {
+//   'var': /\b(this)\b/g,
+//   'block-keyword': /\b(if|else|while|for|function)\b/g,
+//   'primitive': /\b(true|false|null|undefined)\b/g,
+//   'function': prism.languages.function
+// });
+//
+// prism.languages.insertBefore('javascript', {
+//   'qualifier': /\b[A-Z][a-z0-9_]+/g
+// });
+
+marked.setOptions({
+  xhtml: true,
+  highlight: function(code) {
+    return prism.highlight(code, prism.languages.jsx);
+  }
+})
+
+
+function escape(html) {
   return html
     .replace(/`/g, '&quot;');
 }
@@ -18,11 +40,11 @@ function unescape(html) {
     .replace(/&#39;/g, "'");
 }
 
-var template = handlebars.compile(fs.readFileSync(__dirname + '/../templates/page-wrapper.hbs').toString())
+var template = handlebars.compile(fs.readFileSync(path.join(__dirname, '/../templates/page-wrapper.hbs')).toString())
 var renderer = new marked.Renderer()
 
 renderer.link = function(href, title, text){
-  return href.indexOf('http') !== -1 
+  return href.indexOf('http') !== -1
     ? marked.Renderer.prototype.link.call(this, href, title, text)
     : '<Link to="' + href + '" title="' + (title || '') + '">' + text + '</Link>'
 }
@@ -33,31 +55,35 @@ renderer.codespan = function(text) {
 
 renderer.code = function(code, lang, escaped) {
 
-  if( lang === 'console' )
-    return '<Playground lang="js" theme="neo" scope={this.props.scope} codeText={`'+ code +'`} es6Console />\n\n'
+  if ( lang === 'editable' )
+    return '<Playground mode="text/jsx" theme="base16-oceanicnext-dark" scope={this.props.scope} codeText={`'
+      + code + '`} ' + (code.indexOf('React.render(') === -1 ? 'noRender' : '') + '/>\n\n'
 
-  return lang === 'editable' 
-    ? '<Playground lang="js" theme="neo" scope={this.props.scope} codeText={`'+ code +'`} ' 
-        + (code.indexOf('React.render(') === -1 ? 'noRender' :'') + '/>\n\n'
-    : '<pre><code className="' + (lang || '') + '">'
-    + "{`" + (escaped ? code : escape(code, true)) + "`}"
-    + '\n</code></pre>\n';
+  if( lang === 'console' )
+    return '<Playground mode="text/jsx" theme="base16-oceanicnext-dark" scope={this.props.scope} codeText={`'
+      + code + '`} es6Console />\n\n'
+
+
+  if (this.options.highlight) {
+    var out = this.options.highlight(code);
+    if (out != null && out !== code) {
+      return '<pre className="language-jsx"><code dangerouslySetInnerHTML={{ __html: `'
+        + out.replace(/"/g, '\\"') + '` }}/></pre>\n';
+    }
+  }
+
+  return '<pre><code className="' + (lang || '') + '">'
+         + (escaped ? code : '{`' + escape(code, true) + '`}')
+       + '\n</code></pre>\n';
 };
+
 
 
 module.exports = function(markdown) {
   if (this && this.cacheable)
     this.cacheable();
 
-  return template({ 
-    body: marked(markdown, { renderer: renderer }) 
+  return template({
+    body: marked(markdown, { renderer: renderer })
   })
-}
-
-function replaceExtension(npath, ext) {
-  if (typeof npath !== 'string') return npath;
-  if (npath.length === 0) return npath;
-
-  var nFileName = path.basename(npath, path.extname(npath))+ext;
-  return path.join(path.dirname(npath), nFileName);
 }
