@@ -110,15 +110,21 @@ class Form extends React.Component {
 
     /**
      * An object hash of field errors for the form. The object should be keyed with paths
-     * with the values being string messages or an array of messages. Errors can be
+     * with the values being an array of messages or message objects. Errors can be
      * left [uncontrolled](/controllables) (use `defaultErrors` to set an initial value)
-     * or managed along with the `onError` callback.
+     * or managed along with the `onError` callback. You can use any object shape you'd like for
+     * messages, as long as you provide the Form.Message component an `extract` prop that
+     * understands how to pull out the strings message. By default it understands strings and objects
+     * with a `'message'` property.
      *
      * ```js
      * <Form errors={{
      *  "name.first": [
      *    'First names are required',
-     *    "Names must be at least 2 characters long"
+     *    {
+     *    	message: "Names must be at least 2 characters long",
+     *    	type: 'min'
+     *    }
      *  ],
      * }}/>
      * ```
@@ -293,7 +299,7 @@ class Form extends React.Component {
       clearTimeout(timers[k])
   }
 
-  componentWillReceiveProps(nextProps){
+  componentWillReceiveProps(nextProps) {
     if (nextProps.schema !== this.props.schema){
       this._queueValidation({
         fields: Object.keys(nextProps.errors || {})
