@@ -1,5 +1,5 @@
-var assert = require('chai').assert
 var paths = require('../src/util/paths')
+var assert = chai.assert
 
 describe('PATH utils', ()=>{
 
@@ -31,4 +31,3 @@ describe('PATH utils', ()=>{
     paths.reduce(['a.b.c', 'a.b', 'a.c']).should.eql(['a.b', 'a.c'])
   })
 })
-

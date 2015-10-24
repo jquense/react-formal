@@ -1,7 +1,7 @@
-var React = require('react')
-var shouldComponentUpdate = require('react-pure-render/function')
-var connectToMessageContainer = require('react-input-message/lib/connectToMessageContainer')
-var cn = require('classnames');
+import React from 'react';
+import shouldComponentUpdate from 'react-pure-render/function';
+import connectToMessageContainer from 'react-input-message/connectToMessageContainer';
+import cn from 'classnames';
 
 let splat  = obj => obj == null ? [] : [].concat(obj)
 
@@ -76,6 +76,7 @@ module.exports =
               component: Component
             , messages
             , active
+            , filter, extract
             , for: fieldFor
             , ...props } = this.props;
 
@@ -89,10 +90,11 @@ module.exports =
             {
               Object.keys(messages)
                 .reduce((list, k) => list.concat(splat(messages[k])), [])
+                .filter(filter)
+                .map(extract)
                 .map(props.formatMessage)
             }
             </Component>
           )
         }
       })
-

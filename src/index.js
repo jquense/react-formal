@@ -1,10 +1,9 @@
-'use strict';
-var Form = require('./Form')
-  , Field = require('./Field')
-  , ValidationMessage = require('./ValidationMessage')
-  , ValidationSummary = require('./ValidationSummary')
-  , FormButton  = require('./FormButton')
-  , addType  = require('./addInputType')
+import Form from './Form';
+import Field from './Field';
+import ValidationMessage from './ValidationMessage';
+import ValidationSummary from './ValidationSummary';
+import FormButton  from './FormButton';
+import addType  from './addInputType';
 
 Form.Field = Field
 Form.Message = ValidationMessage

@@ -1,9 +1,9 @@
-var React = require('react/addons')
+var React = require('react')
   , yup = require('yup')
   , inputs = require('../src/inputs')
   , Form = require('../src');
 
-var $ = require('react-testutil-query')
+var $ = require('teaspoon')
 
 describe('Field', ()=> {
   var schema = yup.object({
@@ -16,15 +16,13 @@ describe('Field', ()=> {
     }
   }
 
-
-
   it('should pass props to inner type', function(){
     var inst = $(
       <Form schema={schema} defaultValue={{}}>
         <Form.Field name='name' type={TestInput} className='test'/>
       </Form>)
 
-    var input = inst.single(TestInput)[0]
+    var input = inst.render().single(TestInput)[0]
 
     input.props.className.should.equal('test')
   })
@@ -45,7 +43,7 @@ describe('Field', ()=> {
         <Form.Field name='date'/>
         <Form.Field name='bool'/>
         <Form.Field name='array'/>
-      </Form>)
+      </Form>).render()
 
     inst.single(inputs.Input)
     inst.single(inputs.Number)
@@ -60,7 +58,7 @@ describe('Field', ()=> {
         <Form.Field name='name'/>
         <Form.Field name='name' type='textarea'/>
         <Form.Field name='name' type={TestInput}/>
-      </Form>)
+      </Form>).render()
 
     inst.single(TestInput)
     inst.find(inputs.Input).length.should.equal(2)
@@ -70,7 +68,7 @@ describe('Field', ()=> {
     var inst = $(
       <Form schema={schema} defaultValue={{}}>
         <Form.Field name='name' type={TestInput} onChange={()=> done()}/>
-      </Form>)
+      </Form>).render()
 
     inst.single('input').trigger('change')
   })
@@ -80,7 +78,7 @@ describe('Field', ()=> {
     var inst = $(
       <Form schema={schema} defaultValue={{}} onChange={spy}>
         <Form.Field name='name' type={TestInput} mapValue='value' />
-      </Form>)
+      </Form>).render()
 
     inst.single('input').trigger('change', { value: 'john' })
 
@@ -92,7 +90,7 @@ describe('Field', ()=> {
     var inst = $(
       <Form schema={schema} defaultValue={{}} onChange={spy}>
         <Form.Field name='name' type={TestInput} mapValue={e => e.value } />
-      </Form>)
+      </Form>).render()
 
     inst.single('input').trigger('change', { value: 'john' })
 
@@ -111,7 +109,7 @@ describe('Field', ()=> {
             other: e => e.value
           }}
         />
-      </Form>)
+      </Form>).render()
 
     spy.should.have.been.and.calledWith({})
 
@@ -132,7 +130,7 @@ describe('Field', ()=> {
             text: 'text'
           }}
         />
-      </Form>)
+      </Form>).render()
 
     inst.single('input').trigger('change', { value: 'john', text: 'hi' })
 
@@ -151,18 +149,17 @@ describe('Field', ()=> {
             done()
           }}
         />
-      </Form>)
+      </Form>).render()
 
     inst.single('input').trigger('change')
   })
 
   it('should expose input instance', function() {
-    var spy = sinon.spy()
     var inst = $(
       <Form schema={schema} defaultValue={{}}>
         <Form.Field name='name' type={TestInput}/>
-      </Form>)
+      </Form>).render()
 
-    ;(inst.single(Form.Field)[0].inputInstance() instanceof TestInput).should.be.true
+    ; (inst.single(Form.Field)[0].inputInstance() instanceof TestInput).should.be.true
   })
 })

@@ -1,5 +1,8 @@
 /*global CodeMirror */
 
+var OPEN = '{'
+  , CLOSE = '}';
+
 function indexOf(string, pattern, from) {
   if (typeof pattern === "string") {
     var found = string.indexOf(pattern, from);
@@ -23,7 +26,6 @@ CodeMirror.defineMode("jsx", function(config, parserConfig) {
   var xmlMode = CodeMirror.getMode(config, { name: "xml", htmlMode: true });
 
   var TAG = /<([\w_:\.-]*)/
-    , OPEN = '{', CLOSE = '}'
     , foundTag = false;
 
   function xmlToken(stream, state){
@@ -31,16 +33,18 @@ CodeMirror.defineMode("jsx", function(config, parserConfig) {
       , found = indexOf(oldContent, OPEN, stream.pos)
       , pos;
 
-    if ( !state.xmlState)
+    if (!state.xmlState)
       state.xmlState = CodeMirror.startState(xmlMode, jsMode.indent ? jsMode.indent(state.jsState, '') : 0)
 
     state.active = 'xml'
 
-    if ( found === stream.pos) {
+    if (found === stream.pos) {
       stream.match(OPEN)
       pos = stream.pos
       state.active = 'js'
       state.inJsExpression = true
+      state.lastPos = null;
+      state.pendingBrackets = 1;
 
       // get past the attr value state
       stream.string = oldContent.slice(found)
@@ -49,14 +53,14 @@ CodeMirror.defineMode("jsx", function(config, parserConfig) {
       stream.pos = pos
       return 'jsx-bracket'
     }
-    else if ( found !== -1)
+    else if (found !== -1)
       stream.string = oldContent.slice(0, found)
 
     var style = xmlMode.token(stream, state.xmlState)
 
-    if ( found !== -1) stream.string = oldContent
+    if (found !== -1) stream.string = oldContent
 
-    if ( !foundTag ) 
+    if (!foundTag)
       foundTag = !!state.xmlState.context
 
     return style
@@ -64,44 +68,54 @@ CodeMirror.defineMode("jsx", function(config, parserConfig) {
 
   function jsToken(stream, state){
     var oldContent = stream.string
-      , found  = state.expressionCloseIndex == null ? -1 : state.expressionCloseIndex;
+      , found = state.expressionEnd
+      , style;
 
-    if ( state.inJsExpression && state.expressionCloseIndex == null ){
-      var opens  = getAllIndexes(oldContent, OPEN, stream.pos).length
-        , closes = getAllIndexes(oldContent, CLOSE, stream.pos)
+    if (!state.inJsExpression)
+      return jsMode.token(stream, state.jsState)
 
-      state.expressionCloseIndex = found = opens > closes 
-        ? -1 
-        : closes[closes.length - 1]
+    if (state.lastPos == null || stream.pos < state.lastPos) {
+      var brackets = getBracketsInRange(stream.string, stream.start);
+
+      state.pendingBrackets += brackets.open.length
+      state.pendingBrackets -= brackets.close.length;
+
+      if (brackets.close.length && state.pendingBrackets <= 0)
+        found = stream.start + brackets.close[brackets.close.length - Math.abs(state.pendingBrackets - 1)]
     }
-      
-    //pendingBrackets++
-    // if ( opens.length === closes.length )
-    //   found = closes.pop()
 
     if (found === stream.pos) {
       stream.match(CLOSE);
       state.active = 'xml'
       state.inJsExpression = false
-      return 'jsx-bracket';
+      state.expressionEnd = -1
+      style = 'jsx-bracket';
     }
-    else if ( found !== -1)
-      stream.string = oldContent.slice(0, found);
+    else {
+      if (found !== -1)
+        stream.string = oldContent.slice(0, found);
 
-    var style = jsMode.token(stream, state.jsState);
+      style = jsMode.token(stream, state.jsState)
 
-    if (found > -1) stream.string = oldContent;
+      if (found !== -1) {
+        stream.string = oldContent;
+        state.expressionEnd = found
+      }
+    }
+
+    state.lastPos = stream.pos;
 
     return style
   }
 
   return {
     startState: function() {
-      return { 
-        xmlState: null, 
+      return {
         jsState:  CodeMirror.startState(jsMode),
+        xmlState:  CodeMirror.startState(xmlMode),
         active: 'js',
-        inJsExpression: false
+        inJsExpression: false,
+        expressionEnd: -1
       }
     },
 
@@ -111,7 +125,9 @@ CodeMirror.defineMode("jsx", function(config, parserConfig) {
         xmlState: CodeMirror.copyState(xmlMode, state.xmlState),
         active: state.active,
         inJsExpression: state.inJsExpression,
-        expressionCloseIndex: null // do not copy over
+        pendingBrackets: state.pendingBrackets,
+        expressionEnd: state.expressionEnd,
+        lastPos: state.lastPos
       }
     },
 
@@ -131,7 +147,7 @@ CodeMirror.defineMode("jsx", function(config, parserConfig) {
           foundTag = false
           style = jsToken(stream, state)
         }
-        else 
+        else
           style = xmlToken(stream, state)
       }
 
@@ -146,6 +162,14 @@ CodeMirror.defineMode("jsx", function(config, parserConfig) {
   }
 });
 
+function getBracketsInRange(string, start, end){
+  let str = string.slice(start, end);
+
+  return {
+    open: getAllIndexes(str, OPEN),
+    close: getAllIndexes(str, CLOSE)
+  }
+}
 
 // CodeMirror.multiplexingMode = function(outer /*, others */) {
 //   // Others should be {open, close, mode [, delimStyle] [, innerStyle]} objects

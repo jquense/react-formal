@@ -1,20 +1,22 @@
-var React = require('react')
-  , types = require('react-formal-inputs')
-  , Form = require('../src')
-  , MyDateInput = require('../src/inputs/Date')
-  , yup = require('yup')
-  , {
-    create: createRouter
-  , DefaultRoute
-  , RouteHandler
-  , Navigation
-  , State
+import React from 'react';
+import { render } from 'react-dom';
+import types from 'react-formal-inputs';
+import Form from '../src';
+import DateInput from '../src/inputs/Date';
+import Intro from'./pages/intro.md';
+import yup from 'yup';
+import {
+    Router
   , Route
-  , Link } = require('react-router')
+  , IndexRoute
+  , Link } from 'react-router';
 
-require('./style.less')
-require('react-widgets/lib/less/react-widgets.less')
-require('./vendor/jsx')
+import './styles/style.less';
+import 'react-widgets/lib/less/react-widgets.less';
+
+import localizers from 'react-widgets/lib/localizers/globalize'
+
+localizers(require('globalize'))
 
 Form.addInputTypes(types)
 
@@ -39,10 +41,14 @@ var modelSchema = yup.object({
      .positive('Ages must be a positive number')
 })
 
+let MyDateInput = props => <DateInput {...props} type='datetime-local'/>
 
-var reqMap = { 'react-formal': 'Form', 'react': 'React', 'react/addons': 'React', 'react-formal-inputs': 'types' }
-  , scope = { Form, React, yup, modelSchema, MyDateInput, types, require(name){ return scope[reqMap[name] || name] } }
-  , Intro = require('./pages/intro.md')
+var reqMap = { 'react-formal': 'Form', 'react': 'React', 'react-formal-inputs': 'types' }
+  , scope = {
+    Form, React, yup, modelSchema, MyDateInput, types,
+    require(name){ return scope[reqMap[name] || name] }
+  };
+
 
 class Docs extends React.Component {
 
@@ -62,14 +68,14 @@ class Docs extends React.Component {
         </nav>
       </aside>
       <main className='col-sm-9 col-md-10 doc-page'>
-        <RouteHandler scope={scope} />
+        { React.cloneElement(this.props.children, { scope })}
       </main>
      </div>)
   }
 }
 
 class Main extends React.Component {
-  
+
   render(){
     return (<div>
       <div className="jumbotron">
@@ -87,20 +93,23 @@ class Main extends React.Component {
 
 class App extends React.Component {
   static contextTypes = {
-    router: React.PropTypes.any
+    history: React.PropTypes.object
   }
 
   render(){
-    var home = this.context.router.getCurrentPath() === '/'
-            || this.context.router.isActive('intro')
+    var location = this.props.location;
+    var home = location.pathname === '/'
+            || location.pathname.indexOf('/getting-started') === 0
 
     return (<div>
       <nav className='navbar navbar-default navbar-static-top' style={{ marginBottom: 0 }}>
-        
+
         <div className='container'>
-          { !home && 
+          { !home &&
           <span className='navbar-brand'>
-            <Link to='intro'>React&nbsp;<img src='./bow-tie.svg' style={{ width: 30, marginTop: -5 }}/>&nbsp;Formal</Link>
+            <Link to='/getting-started'>
+              React&nbsp;<img src='./bow-tie.svg' style={{ width: 30, marginTop: -5 }}/>&nbsp;Formal
+            </Link>
           </span>
           }
           <ul className='nav navbar-nav navbar-right'>
@@ -109,7 +118,7 @@ class App extends React.Component {
           </ul>
         </div>
       </nav>
-      <RouteHandler scope={scope} />
+      { React.cloneElement(this.props.children, { scope })}
      </div>
    )
   }
@@ -117,27 +126,21 @@ class App extends React.Component {
 
 
 var routes = (
-  <Route name="app" path="/" handler={App}>
-    <DefaultRoute handler={Main} />
-    
-    <Route name="intro" path='getting-started' handler={Main}/>
-    
+  <Route name="app" path="/" component={App}>
+    <IndexRoute component={Main} />
+    <Route path='getting-started' component={Main}/>
 
-    <Route path='api' handler={Docs}>
-      <DefaultRoute handler={require('!babel-loader!./loaders/jsx!./loaders/metadata!../src/Form')} />
-      <Route path='yup'     handler={require('./pages/yup.md')}/>
-      <Route path='form'    handler={require('!babel-loader!./loaders/jsx!./loaders/metadata!../src/Form')}/>
-      <Route path='field'   handler={require('!babel-loader!./loaders/jsx!./loaders/metadata!../src/Field')}/>
-      <Route path='message' handler={require('!babel-loader!./loaders/jsx!./loaders/metadata!../src/ValidationMessage')}/>
-      <Route path='summary' handler={require('!babel-loader!./loaders/jsx!./loaders/metadata!../src/ValidationSummary')}/>
-      <Route path='button'  handler={require('!babel-loader!./loaders/jsx!./loaders/metadata!../src/FormButton')}/>
-      <Route path="/controllables" handler={require('./pages/controllables.md')}/>
+    <Route path='api' component={Docs}>
+      <IndexRoute component={require('!babel-loader!./loaders/jsx!./loaders/metadata!../src/Form')} />
+      <Route path='yup'     component={require('./pages/yup.md')}/>
+      <Route path='form'    component={require('!babel-loader!./loaders/jsx!./loaders/metadata!../src/Form')}/>
+      <Route path='field'   component={require('!babel-loader!./loaders/jsx!./loaders/metadata!../src/Field')}/>
+      <Route path='message' component={require('!babel-loader!./loaders/jsx!./loaders/metadata!../src/ValidationMessage')}/>
+      <Route path='summary' component={require('!babel-loader!./loaders/jsx!./loaders/metadata!../src/ValidationSummary')}/>
+      <Route path='button'  component={require('!babel-loader!./loaders/jsx!./loaders/metadata!../src/FormButton')}/>
+      <Route path="/controllables" component={require('./pages/controllables.md')}/>
     </Route>
   </Route>
 );
 
-var rootInstance = null;
-
-createRouter({ routes }).run(function (Handler, state) {
-  rootInstance = React.render(<Handler params={state.params}/>, document.getElementById('AppContainer'));
-})
+render(<Router>{routes}</Router>, document.getElementById('AppContainer'));

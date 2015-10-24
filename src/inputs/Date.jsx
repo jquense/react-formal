@@ -1,5 +1,4 @@
-'use strict';
-var React = require('react');
+import React from 'react';
 
 let pad = n => n < 10 ? ('0' + n) : n
 
@@ -7,15 +6,16 @@ let isValid = date => date && !isNaN(date.getTime())
 
 let toLocal = date => new Date((date = new Date(date)).getTime() + (date.getTimezoneOffset() * 60000))
 
-let parse = (date, org, type) => toLocal(type === 'time' ? (toDateString(org || new Date(), 'date') +'T'+ date) : date)
+let parse = (date, org, type) =>
+  toLocal(type === 'time' ? (toDateString(org || new Date(), 'date') + 'T' + date) : date)
 
-let localISOString = date => 
-      date.getFullYear()     + '-'
-    + pad(date.getMonth()+1) + '-'
-    + pad(date.getDate())    + 'T'
-    + pad(date.getHours())   + ':'
-    + pad(date.getMinutes()) + ':'
-    + pad(date.getSeconds()) + '.000';
+let localISOString = date =>
+      date.getFullYear()       + '-'
+    + pad(date.getMonth() + 1) + '-'
+    + pad(date.getDate())      + 'T'
+    + pad(date.getHours())     + ':'
+    + pad(date.getMinutes())   + ':'
+    + pad(date.getSeconds())   + '.000';
 
 let toDateString = (date, type) => {
   if ( !isValid(date) ) return null
@@ -28,13 +28,13 @@ let toDateString = (date, type) => {
 class DateInput extends React.Component {
 
   render() {
-    var { 
+    var {
         value
       , type='date'
       , ...props } = this.props
 
     return (
-      <input {...props} type={type}
+      <input {...props} type={'date'}
         value={toDateString(value, type)}
         onChange={ e => props.onChange(parse(e.target.value, value, type))}
       />
@@ -44,4 +44,3 @@ class DateInput extends React.Component {
 
 
 module.exports = DateInput;
-
