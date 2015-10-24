@@ -7,16 +7,6 @@ var marked = require('marked')
 
 require('../vendor/jsx-prism')
 
-// prism.languages.insertBefore('javascript', 'keyword', {
-//   'var': /\b(this)\b/g,
-//   'block-keyword': /\b(if|else|while|for|function)\b/g,
-//   'primitive': /\b(true|false|null|undefined)\b/g,
-//   'function': prism.languages.function
-// });
-//
-// prism.languages.insertBefore('javascript', {
-//   'qualifier': /\b[A-Z][a-z0-9_]+/g
-// });
 
 marked.setOptions({
   xhtml: true,
