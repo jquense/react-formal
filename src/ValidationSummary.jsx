@@ -76,6 +76,7 @@ module.exports =
               component: Component
             , messages
             , active
+            , filter, extract
             , for: fieldFor
             , ...props } = this.props;
 
@@ -89,6 +90,8 @@ module.exports =
             {
               Object.keys(messages)
                 .reduce((list, k) => list.concat(splat(messages[k])), [])
+                .filter(filter)
+                .map(extract)
                 .map(props.formatMessage)
             }
             </Component>
