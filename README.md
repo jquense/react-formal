@@ -10,6 +10,7 @@ Built on [yup](https://github.com/jquense/yup) and [react-input-message](https:/
 npm i -S react-formal yup
 ```
 
+__(don't like the yup but like how the form works? Try: [topeka](https://github.com/jquense/topeka))__
 
 ### Use
 
@@ -33,9 +34,9 @@ var modelSchema =  yup.object({
 // ...in a component
 render(){
     return (
-        <Form 
+        <Form
             schema={modelSchema}
-            value={this.state.model} 
+            value={this.state.model}
             onChange={model => this.setState({ model})}
         >
             <fieldset>
