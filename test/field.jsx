@@ -1,7 +1,8 @@
 var React = require('react/addons')
   , yup = require('yup')
   , inputs = require('../src/inputs')
-  , Form = require('../src');
+  , Form = require('../src')
+  , chai = require('chai');
 
 var $ = require('react-testutil-query')
 
@@ -27,6 +28,17 @@ describe('Field', ()=> {
     var input = inst.single(TestInput)[0]
 
     input.props.className.should.equal('test')
+  })
+
+  it('should not pass type prop to inner type', function(){
+    var inst = $(
+      <Form schema={schema} defaultValue={{}}>
+        <Form.Field name='name' type={TestInput} className='test'/>
+      </Form>)
+
+    var input = inst.single(TestInput)[0]
+
+    chai.expect(input.props.type).to.be.undefined
   })
 
   it('should fall back to using schema types', function(){

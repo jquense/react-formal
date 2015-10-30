@@ -282,9 +282,9 @@ class Field extends React.Component {
       <Widget
         ref='input'
         name={name}
-        type={type}
         value={value}
         {...props}
+        type={type}
         onChange={this._change.bind(this)}
       />
     )
