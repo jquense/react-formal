@@ -245,6 +245,7 @@ class Form extends React.Component {
   }
 
   static defaultProps = {
+    ...BindingContext.defaultProps,
     component: 'form',
     strict: false,
     delay: 300,
@@ -431,6 +432,7 @@ class Form extends React.Component {
     this.props[event] && this.props[event](...args)
   }
 }
+
 
 module.exports = uncontrollable(Form,
   { value: 'onChange', errors: 'onError' },
