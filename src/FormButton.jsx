@@ -22,7 +22,10 @@ class Button extends React.Component {
      */
     group: React.PropTypes.string,
 
-    component: React.PropTypes.string,
+    component: React.PropTypes.oneOfType([
+      React.PropTypes.string,
+      React.PropTypes.func
+    ]),
 
     /**
      * An array of event names that trigger validation.
