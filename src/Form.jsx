@@ -252,6 +252,10 @@ class Form extends React.Component {
     getter: (path, model) => path ? expr.getter(path, true)(model || {}) : model
   }
 
+  static contextTypes = {
+    reactFormalContext: React.PropTypes.object
+  }
+
   static childContextTypes = contextTypes
 
   constructor(props, context){
@@ -278,7 +282,6 @@ class Form extends React.Component {
         , parent = props.getter(getParent(path), model) || {}
         , options = this._pathOptions[path] || {};
 
-
       return schema
         ._validate(value, { ...props, ...options }, { parent, path })
         .then(() => void 0)
@@ -290,6 +293,11 @@ class Form extends React.Component {
 
   shouldComponentUpdate(nextProps, nextState) {
     return scu.call(this, nextProps, nextState)
+  }
+
+  componentDidMount(){
+    let { submit } = this.context;
+    submit && submit(this.submit)
   }
 
   componentWillUnmount() {
@@ -321,7 +329,8 @@ class Form extends React.Component {
           noValidate,
           schema,
           onSubmit: this.submit,
-          onOptions: this._setPathOptions
+          onOptions: this._setPathOptions,
+          submit: null
         }
       }
 
