@@ -30,7 +30,7 @@ class FormContext extends React.Component {
     component: React.PropTypes.oneOfType([
       React.PropTypes.func,
       React.PropTypes.string
-    ]).isRequired
+    ])
   }
 
   static childContextTypes = {
