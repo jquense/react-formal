@@ -2,6 +2,7 @@ import React from 'react';
 import shouldComponentUpdate from 'react-pure-render/function';
 import connectToMessageContainer from 'react-input-message/connectToMessageContainer';
 import cn from 'classnames';
+import uniq from './util/uniqMessage';
 
 let splat  = obj => obj == null ? [] : [].concat(obj)
 
@@ -47,7 +48,7 @@ module.exports =
            */
           component: React.PropTypes.oneOfType([
             React.PropTypes.func,
-            React.PropTypes.string,
+            React.PropTypes.string
           ]).isRequired,
 
           /**
@@ -58,12 +59,14 @@ module.exports =
           /**
            * Specify a group to show erros for, if empty all form errors will be shown in the Summary.
            */
-          group: React.PropTypes.string,
+          group: React.PropTypes.string
         }
 
         static defaultProps = {
           component: 'ul',
           errorClass: 'validation-error',
+          filter: uniq,
+          extract: error => error.message || error,
           formatMessage: (message, idx) => <li key={idx}>{message}</li>
         }
 
@@ -86,11 +89,12 @@ module.exports =
           return (
             <Component
               {...props}
-              className={cn(props.className, props.errorClass || 'validation-error')}>
+              className={cn(props.className, props.errorClass)}
+            >
             {
               Object.keys(messages)
                 .reduce((list, k) => list.concat(splat(messages[k])), [])
-                .filter(filter)
+                .filter((v, i, l) => filter(v, i, l, extract))
                 .map(extract)
                 .map(props.formatMessage)
             }

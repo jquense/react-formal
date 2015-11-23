@@ -3,6 +3,8 @@ import shouldComponentUpdate from'react-pure-render/function';
 import Message from'react-input-message/Message';
 import cn from'classnames';
 
+import uniq from './util/uniqMessage';
+
 /**
  * Represents a Form validation error message. Only renders when the
  * value that it is `for` is invalid.
@@ -33,6 +35,7 @@ class ValidationMessage extends React.Component {
   static defaultProps = {
     component: 'span',
     errorClass: 'validation-error',
+    filter: uniq,
     extract: error => error.message || error
   }
 
@@ -41,11 +44,11 @@ class ValidationMessage extends React.Component {
   }
 
   render(){
-    let props = this.props;
+    let { className, errorClass } = this.props;
 
     return <Message
-      {...props}
-      className={cn(props.className, props.errorClass)}
+      {...this.props}
+      className={cn(className, errorClass)}
     />
   }
 }
