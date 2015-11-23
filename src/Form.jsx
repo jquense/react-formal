@@ -386,10 +386,13 @@ class Form extends React.Component {
   }
 
   submit() {
-    var { schema, value, debug, ...options } = this.props
+    var { schema, noValidate, value, debug, ...options } = this.props
 
     options.abortEarly = false
     options.strict = false
+
+    if (noValidate)
+      return this.notify('onSubmit', value)
 
     schema
       .validate(value, options)
