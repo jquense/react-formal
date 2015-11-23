@@ -1,7 +1,7 @@
 
 export default function uniqMessage(msg, i, list) {
   let idx = -1;
-  let extract = item => item.type || item;
+  let extract = item => item.message || item;
 
   msg = extract(msg);
 
