@@ -177,6 +177,18 @@ class Form extends React.Component {
     onSubmit: React.PropTypes.func,
 
     /**
+     * Callback that is fired when the native onSubmit event is triggered. Only relevant when
+     * the `component` prop renders a `<form/>` tag. onInvalidSubmit will trigger only if the form is invalid.
+     *
+     * ```js
+     * function onInvalidSubmit(errors){
+     *   // do something with errors
+     * }
+     * ```
+     */
+    onInvalidSubmit: React.PropTypes.func,
+
+    /**
      * A value getter function. `getter` is called with `path` and `value` and
      * should return the plain **javascript** value at the path.
      *
@@ -405,7 +417,7 @@ class Form extends React.Component {
 
     schema
       .validate(value, options)
-      .then(() => this.notify('onSubmit', value))
+      .then((validatedValue) => this.notify('onSubmit', validatedValue))
       .catch(err => {
         var errors = errToJSON(err)
 
@@ -415,6 +427,7 @@ class Form extends React.Component {
         }
 
         this.notify('onError', errors)
+        this.notify('onInvalidSubmit', errors)
       })
   }
 
