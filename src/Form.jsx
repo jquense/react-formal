@@ -5,7 +5,7 @@ import reach from 'yup/lib/util/reach';
 import expr from 'property-expr';
 import Validator from 'react-input-message/Validator';
 import Container from 'react-input-message/MessageContainer';
-import uncontrollable from 'uncontrollable/batching';
+import uncontrollable from 'uncontrollable';
 import paths from './util/paths';
 import contextTypes from './util/contextType';
 import { BindingContext as BC } from 'topeka';
@@ -316,7 +316,7 @@ class Form extends React.Component {
     var timers = this._timers || {};
 
     this._unmounted = true;
-    for (var k in timers) if ( has(timers, k) )
+    for (var k in timers) if (has(timers, k))
       clearTimeout(timers[k])
   }
 
@@ -328,7 +328,9 @@ class Form extends React.Component {
     }
 
     syncErrors(this.validator, nextProps.errors || {})
-    this._flushValidations(nextProps)
+
+    //if (nextProps.value !== this.props.value)
+    this._flushValidations(nextProps.delay)
   }
 
   getChildContext() {
@@ -389,14 +391,14 @@ class Form extends React.Component {
     this._queueValidation(e)
 
     if (e.type !== 'onChange')
-      this._flushValidations(this.props)
+      this._flushValidations(this.props.delay)
   }
 
   _processValidations(fields, props){
     this.validator
       .validate(fields, { props })
       .then(errors => {
-        if (props.debug && process.env.NODE_ENV !== 'production'){
+        if (props.debug && process.env.NODE_ENV !== 'production') {
           warning(!Object.keys(errors).length, '[react-formal] invalid fields: ' +
             Object.keys(errors).join(', '))
         }
@@ -444,13 +446,13 @@ class Form extends React.Component {
     this._queue = paths.reduce(uniq(this._queue.concat(e.fields)))
   }
 
-  _flushValidations(props){
+  _flushValidations(delay){
     this.timeout('flush-validations', () => {
       var fields = this._queue;
       this._queue = [];
       if (fields.length)
-        this._processValidations(fields, props)
-    }, props.delay)
+        this._processValidations(fields, this.props)
+    }, delay)
   }
 
   notify(event, ...args){
