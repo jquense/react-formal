@@ -234,11 +234,15 @@ class Form extends React.Component {
     noValidate: React.PropTypes.bool,
 
     /**
-     * A tag name or Component class the Form should render as
+     * A tag name or Component class the Form should render.
+     *
+     * If `null` are `false` the form will simply render it's child. In
+     * this instance there must only be one child.
      */
     component: React.PropTypes.oneOfType([
       React.PropTypes.func,
-      React.PropTypes.string
+      React.PropTypes.string,
+      React.PropTypes.oneOf([null, false])
     ]).isRequired,
 
     /**
@@ -363,6 +367,21 @@ class Form extends React.Component {
     if (Element === 'form')
       props.noValidate = true // disable html5 validation
 
+    props.onSubmit = this.onSubmit
+
+    if (Element === null || Element === false) {
+      children = React.cloneElement(
+        React.Children.only(children),
+        props
+      )
+    } else  {
+      children = (
+        <Element {...props}>
+          { children }
+        </Element>
+      )
+    }
+
     return (
       <BindingContext
         value={value}
@@ -375,9 +394,7 @@ class Form extends React.Component {
           messages={this.props.errors}
           onValidationNeeded={this._handleValidationRequest}
         >
-          <Element {...props} onSubmit={this.onSubmit}>
-            { children }
-          </Element>
+          {children}
         </Container>
       </BindingContext>
     );
