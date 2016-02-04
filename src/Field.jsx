@@ -240,7 +240,7 @@ class Field extends React.Component {
     errorClass: 'invalid-field'
   }
 
-  constructor(){
+  constructor() {
     super()
     this._inject = this._inject.bind(this)
   }
@@ -280,17 +280,25 @@ class Field extends React.Component {
       , valueAccessor
       , ...props } = this.props
       , schema = this.schema(name)
+      , typeIsFunc = typeof this.props.type === 'function'
       , type   = this.props.type || (schema && schema._type) || ''
       , Widget = type;
 
-    Widget = typeof this.props.type === 'function'
+    Widget = typeIsFunc
       ? ((type = undefined), this.props.type)
       : types[type.toLowerCase()] || Input
 
     if (valueAccessor && typeof mapValue !== 'object')
       mapValue = { [name]: mapValue}
 
-    Widget = <Widget ref='input' name={name} type={type} {...props}/>
+    Widget = (
+      <Widget 
+        ref='input'
+        name={name}
+        {...props}
+        type={typeIsFunc ? null : props.type}
+      />
+    )
 
     let forProp = props.alsoValidates == null
       ? name : [ name ].concat(props.alsoValidates)
@@ -317,7 +325,7 @@ class Field extends React.Component {
     )
   }
 
-  _inject(child, isActive){
+  _inject(child, isActive) {
     return {
       className: cn(child.props.className, {
         [this.props.errorClass]: isActive
@@ -325,24 +333,24 @@ class Field extends React.Component {
     }
   }
 
-  options(props){
+  options(props) {
     if (options.recursive !== props.recursive)
       options = { recursive: props.recursive };
 
     return options
   }
 
-  schema(path){
+  schema(path) {
     let context = this.context.reactFormalContext;
     return path && context.schema && reach(context.schema, path)
   }
 
-  shouldValidate(){
+  shouldValidate() {
     let context = this.context.reactFormalContext;
     return !(this.props.noValidate || context.noValidate)
   }
 
-  inputInstance(){
+  inputInstance() {
     return this.refs.input
   }
 }
