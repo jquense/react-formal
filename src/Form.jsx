@@ -5,7 +5,7 @@ import reach from 'yup/lib/util/reach';
 import expr from 'property-expr';
 import Validator from 'react-input-message/Validator';
 import Container from 'react-input-message/MessageContainer';
-import uncontrollable from 'uncontrollable/batching';
+import uncontrollable from 'uncontrollable';
 import paths from './util/paths';
 import contextTypes from './util/contextType';
 import { BindingContext as BC } from 'topeka';
@@ -177,6 +177,18 @@ class Form extends React.Component {
     onSubmit: React.PropTypes.func,
 
     /**
+     * Callback that is fired when the native onSubmit event is triggered. Only relevant when
+     * the `component` prop renders a `<form/>` tag. onInvalidSubmit will trigger only if the form is invalid.
+     *
+     * ```js
+     * function onInvalidSubmit(errors){
+     *   // do something with errors
+     * }
+     * ```
+     */
+    onInvalidSubmit: React.PropTypes.func,
+
+    /**
      * A value getter function. `getter` is called with `path` and `value` and
      * should return the plain **javascript** value at the path.
      *
@@ -222,11 +234,15 @@ class Form extends React.Component {
     noValidate: React.PropTypes.bool,
 
     /**
-     * A tag name or Component class the Form should render as
+     * A tag name or Component class the Form should render.
+     *
+     * If `null` are `false` the form will simply render it's child. In
+     * this instance there must only be one child.
      */
     component: React.PropTypes.oneOfType([
       React.PropTypes.func,
-      React.PropTypes.string
+      React.PropTypes.string,
+      React.PropTypes.oneOf([null, false])
     ]).isRequired,
 
     /**
@@ -245,10 +261,15 @@ class Form extends React.Component {
   }
 
   static defaultProps = {
+    ...BindingContext.defaultProps,
     component: 'form',
     strict: false,
     delay: 300,
     getter: (path, model) => path ? expr.getter(path, true)(model || {}) : model
+  }
+
+  static contextTypes = {
+    reactFormalContext: React.PropTypes.object
   }
 
   static childContextTypes = contextTypes
@@ -277,7 +298,6 @@ class Form extends React.Component {
         , parent = props.getter(getParent(path), model) || {}
         , options = this._pathOptions[path] || {};
 
-
       return schema
         ._validate(value, { ...props, ...options }, { parent, path })
         .then(() => void 0)
@@ -291,11 +311,16 @@ class Form extends React.Component {
     return scu.call(this, nextProps, nextState)
   }
 
+  componentDidMount(){
+    let { submit } = this.context;
+    submit && submit(this.submit)
+  }
+
   componentWillUnmount() {
     var timers = this._timers || {};
 
     this._unmounted = true;
-    for (var k in timers) if ( has(timers, k) )
+    for (var k in timers) if (has(timers, k))
       clearTimeout(timers[k])
   }
 
@@ -307,7 +332,9 @@ class Form extends React.Component {
     }
 
     syncErrors(this.validator, nextProps.errors || {})
-    this._flushValidations(nextProps)
+
+    //if (nextProps.value !== this.props.value)
+    this._flushValidations(nextProps.delay)
   }
 
   getChildContext() {
@@ -320,7 +347,8 @@ class Form extends React.Component {
           noValidate,
           schema,
           onSubmit: this.submit,
-          onOptions: this._setPathOptions
+          onOptions: this._setPathOptions,
+          submit: null
         }
       }
 
@@ -339,6 +367,21 @@ class Form extends React.Component {
     if (Element === 'form')
       props.noValidate = true // disable html5 validation
 
+    props.onSubmit = this.onSubmit
+
+    if (Element === null || Element === false) {
+      children = React.cloneElement(
+        React.Children.only(children),
+        props
+      )
+    } else  {
+      children = (
+        <Element {...props}>
+          { children }
+        </Element>
+      )
+    }
+
     return (
       <BindingContext
         value={value}
@@ -351,9 +394,7 @@ class Form extends React.Component {
           messages={this.props.errors}
           onValidationNeeded={this._handleValidationRequest}
         >
-          <Element {...props} onSubmit={this.onSubmit}>
-            { children }
-          </Element>
+          {children}
         </Container>
       </BindingContext>
     );
@@ -367,14 +408,14 @@ class Form extends React.Component {
     this._queueValidation(e)
 
     if (e.type !== 'onChange')
-      this._flushValidations(this.props)
+      this._flushValidations(this.props.delay)
   }
 
   _processValidations(fields, props){
     this.validator
       .validate(fields, { props })
       .then(errors => {
-        if (props.debug && process.env.NODE_ENV !== 'production'){
+        if (props.debug && process.env.NODE_ENV !== 'production') {
           warning(!Object.keys(errors).length, '[react-formal] invalid fields: ' +
             Object.keys(errors).join(', '))
         }
@@ -385,14 +426,17 @@ class Form extends React.Component {
   }
 
   submit() {
-    var { schema, value, debug, ...options } = this.props
+    var { schema, noValidate, value, debug, ...options } = this.props
 
     options.abortEarly = false
     options.strict = false
 
+    if (noValidate)
+      return this.notify('onSubmit', value)
+
     schema
       .validate(value, options)
-      .then(() => this.notify('onSubmit', value))
+      .then((validatedValue) => this.notify('onSubmit', validatedValue))
       .catch(err => {
         var errors = errToJSON(err)
 
@@ -402,6 +446,7 @@ class Form extends React.Component {
         }
 
         this.notify('onError', errors)
+        this.notify('onInvalidSubmit', errors)
       })
   }
 
@@ -418,19 +463,20 @@ class Form extends React.Component {
     this._queue = paths.reduce(uniq(this._queue.concat(e.fields)))
   }
 
-  _flushValidations(props){
+  _flushValidations(delay){
     this.timeout('flush-validations', () => {
       var fields = this._queue;
       this._queue = [];
       if (fields.length)
-        this._processValidations(fields, props)
-    }, props.delay)
+        this._processValidations(fields, this.props)
+    }, delay)
   }
 
   notify(event, ...args){
     this.props[event] && this.props[event](...args)
   }
 }
+
 
 module.exports = uncontrollable(Form,
   { value: 'onChange', errors: 'onError' },
