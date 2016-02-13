@@ -13,7 +13,7 @@ import React from 'react';
  * <Form.Context>
  *   <MyForm />
  *
- *   <Form.Submit />
+ *   <Form.Button type='submit' />
  * </Form.Context>
  * ```
  *
