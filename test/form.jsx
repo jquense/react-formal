@@ -2,7 +2,17 @@ var React = require('react')
   , yup = require('yup')
   , Form = require('../src');
 
-var $ = require('teaspoon')
+var tsp = require('teaspoon')
+
+
+let LeakySubmit = (props, context) => (
+  <button type='submit' onClick={context.reactFormalContext.onSubmit}>
+    Submit
+  </button>
+)
+LeakySubmit.contextTypes = {
+  reactFormalContext: React.PropTypes.object
+}
 
 describe('Form', ()=> {
   var schema = yup.object({
@@ -15,7 +25,7 @@ describe('Form', ()=> {
   it('should update the form value', function(){
     var value, last
       , change = sinon.spy(v => value = v)
-      , inst = $(
+      , inst = tsp(
           <Form schema={schema} defaultValue={schema.default()} onChange={change}>
             <Form.Field name='name.first' className='field'/>
             <Form.Field name='name.last' className='field'/>
@@ -34,7 +44,9 @@ describe('Form', ()=> {
 
     last = value
 
-    inst.last('.field').trigger('change', { target: { value: 'Smith' } })
+    inst
+      .last('.field')
+      .trigger('change', { target: { value: 'Smith' } })
 
     value.should.eql({
       name: {
@@ -48,7 +60,7 @@ describe('Form', ()=> {
   it('should pass updated paths', function(){
     var paths
       , change = sinon.spy((_, p) => paths = p)
-      , inst = $(
+      , inst = tsp(
           <Form schema={schema} defaultValue={schema.default()} onChange={change}>
             <Form.Field
               name='name.first'
@@ -63,14 +75,17 @@ describe('Form', ()=> {
 
     let value = { first: 'Jill', last: 'smith' };
 
-    inst.first('.field').trigger('change', { target: { value } })
+    inst
+      .first('.field')
+      .trigger('change', { target: { value } })
+
     paths.should.eql(['name.first', 'name.last'])
   })
 
-  it('should respect noValidate', done => {
+  it('should respect noValidate', () => {
     var value, last
       , change = sinon.spy()
-      , inst = $(
+      , inst = tsp(
           <Form noValidate schema={schema} defaultValue={schema.default()} onValidate={change}>
             <Form.Field name='name.first' className='field'/>
             <Form.Field name='name.last' className='field'/>
@@ -81,12 +96,55 @@ describe('Form', ()=> {
 
       change.should.not.have.been.called
 
-      inst[0].setProps({ noValidate: false }, () => {
+      inst
+        .props({ noValidate: false })
+        .first('.field')
+        .trigger('change')
 
-        inst.first('.field').trigger('change')
+      change.should.have.been.called
+  })
 
-        change.should.have.been.called
-        done()
-      })
+  it.only('should let native submits trigger onSubmit', function (done) {
+    var spy = sinon.spy(() => done())
+    var inst = tsp(
+      <Form
+        onSubmit={spy}
+        schema={schema}
+        defaultValue={{}}
+      >
+        <Form.Field name='name' type='text' className='test'/>
+        <button type='submit'>Submit</button>
+      </Form>
+    )
+
+    inst
+      .render()
+      .single('button')
+      .dom()
+      .click()
+  })
+
+  it.only('should deduplicate form submissions', function (done) {
+    var spy = sinon.spy()
+    var inst = tsp(
+      <Form
+        onSubmit={spy}
+        schema={schema}
+        defaultValue={{}}
+      >
+        <Form.Field name='name' type='text' className='test'/>
+        <LeakySubmit />
+      </Form>
+    ).render()
+
+    inst
+      .single(LeakySubmit)
+      .dom()
+      .click()
+
+    setTimeout(() => {
+      spy.should.have.been.calledOnce
+      done()
+    }, 10)
   })
 })

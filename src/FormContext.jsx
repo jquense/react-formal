@@ -40,9 +40,10 @@ class FormContext extends React.Component {
   getChildContext(){
     return this._context || (this._context = {
       reactFormalContext: {
-        submit: (fn) => this.submit = fn,
+        registerSubmit: fn => this.submit = fn,
         onSubmit: ()=> {
-          (this.submit || (()=>{}))();
+          if (this.submit)
+            this.submit();
         }
       }
     })
