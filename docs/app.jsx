@@ -60,6 +60,7 @@ class Docs extends React.Component {
             <li className='side-heading '>API</li>
             <li><Link to='/api/form'>Form</Link></li>
             <li><Link to='/api/field'>Form.Field</Link></li>
+            <li><Link to='/api/context'>Form.Context</Link></li>
             <li><Link to='/api/message'>Form.Message</Link></li>
             <li><Link to='/api/summary'>Form.Summary</Link></li>
             <li><Link to='/api/button'>Form.Button</Link></li>
@@ -138,6 +139,7 @@ var routes = (
       <Route path='message' component={require('!babel-loader!./loaders/jsx!./loaders/metadata!../src/ValidationMessage')}/>
       <Route path='summary' component={require('!babel-loader!./loaders/jsx!./loaders/metadata!../src/ValidationSummary')}/>
       <Route path='button'  component={require('!babel-loader!./loaders/jsx!./loaders/metadata!../src/FormButton')}/>
+      <Route path='context' component={require('!babel-loader!./loaders/jsx!./loaders/metadata!../src/FormContext')}/>
       <Route path="/controllables" component={require('./pages/controllables.md')}/>
     </Route>
   </Route>

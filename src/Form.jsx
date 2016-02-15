@@ -283,8 +283,14 @@ class Form extends React.Component {
 
     this.submit = this.submit.bind(this)
     // silence the real submit
+    let timer;
     this.onSubmit = e => {
-      e && e.preventDefault && e.preventDefault()
+
+      if (e && e.preventDefault)
+        e.preventDefault()
+
+      clearTimeout(timer)
+      timer = setTimeout(()=> this.submit(), 0)
     }
 
     this._setPathOptions = (path, options) => {
@@ -311,9 +317,8 @@ class Form extends React.Component {
     return scu.call(this, nextProps, nextState)
   }
 
-  componentDidMount(){
-    let { submit } = this.context;
-    submit && submit(this.submit)
+  componentDidMount() {
+    this._registerWithContext();
   }
 
   componentWillUnmount() {
@@ -324,7 +329,9 @@ class Form extends React.Component {
       clearTimeout(timers[k])
   }
 
-  componentWillReceiveProps(nextProps) {
+  componentWillReceiveProps(nextProps, nextContext) {
+    this._registerWithContext(nextContext);
+
     if (nextProps.schema !== this.props.schema){
       this._queueValidation({
         fields: Object.keys(nextProps.errors || {})
@@ -346,7 +353,7 @@ class Form extends React.Component {
         reactFormalContext: {
           noValidate,
           schema,
-          onSubmit: this.submit,
+          onSubmit: this.onSubmit,
           onOptions: this._setPathOptions,
           submit: null
         }
@@ -470,6 +477,15 @@ class Form extends React.Component {
       if (fields.length)
         this._processValidations(fields, this.props)
     }, delay)
+  }
+
+  _registerWithContext(context = this.context) {
+    if (context.reactFormalContext) {
+      let { registerSubmit } = context.reactFormalContext;
+
+      if (registerSubmit)
+        registerSubmit(this.submit)
+    }
   }
 
   notify(event, ...args){
