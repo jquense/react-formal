@@ -10,6 +10,7 @@ let LeakySubmit = (props, context) => (
     Submit
   </button>
 )
+
 LeakySubmit.contextTypes = {
   reactFormalContext: React.PropTypes.object
 }
@@ -104,7 +105,7 @@ describe('Form', ()=> {
       change.should.have.been.called
   })
 
-  it.only('should let native submits trigger onSubmit', function (done) {
+  it('should let native submits trigger onSubmit', function (done) {
     var spy = sinon.spy(() => done())
     var inst = tsp(
       <Form
@@ -124,7 +125,7 @@ describe('Form', ()=> {
       .click()
   })
 
-  it.only('should deduplicate form submissions', function (done) {
+  it('should deduplicate form submissions', function (done) {
     var spy = sinon.spy()
     var inst = tsp(
       <Form
@@ -145,6 +146,6 @@ describe('Form', ()=> {
     setTimeout(() => {
       spy.should.have.been.calledOnce
       done()
-    }, 10)
+    }, 100)
   })
 })
