@@ -149,10 +149,12 @@ class Field extends React.Component {
           ]),
 
     /**
-     * An array of event names that the Field should trigger a validation.
+     * Event name or array of event names that the Field should trigger a validation.
      */
-    events: React.PropTypes.arrayOf(
-              React.PropTypes.string),
+    events: React.PropTypes.oneOfType([
+      React.PropTypes.string,
+      React.PropTypes.arrayOf(React.PropTypes.string)
+    ]),
 
     /**
      * Customize how the Field value maps to the overall Form `value`.
@@ -327,9 +329,7 @@ class Field extends React.Component {
 
   _inject(child, isActive) {
     return {
-      className: cn(child.props.className, {
-        [this.props.errorClass]: isActive
-      })
+      className: cn(child.props.className, isActive && this.props.errorClass)
     }
   }
 
