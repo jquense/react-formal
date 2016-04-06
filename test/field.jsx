@@ -7,12 +7,19 @@ var $ = require('teaspoon')
 
 describe('Field', ()=> {
   var schema = yup.object({
-    name: yup.string().default('')
+    name: yup.string().default(''),
+    more: yup.object().when('name', {
+      is: 'jason',
+      then: yup.object({
+        isCool: yup.bool()
+      })
+    })
   })
+
 
   class TestInput extends React.Component {
     render(){
-      return <input {...this.props} onChange={ e => this.props.onChange(e, 'hi')}/>
+      return <input {...this.props} onChange={e => this.props.onChange(e, 'hi')}/>
     }
   }
 
@@ -161,5 +168,15 @@ describe('Field', ()=> {
       </Form>).render()
 
     ; (inst.single(Form.Field)[0].inputInstance() instanceof TestInput).should.be.true
+  })
+
+  it('should work with conditional schema', function() {
+    let render = (name) => $(
+      <Form schema={schema} defaultValue={{ ...schema.default(), name }}>
+        <Form.Field name='more.isCool' />
+      </Form>).render()
+
+    ; (() => render('jason')).should.not.throw()
+    ; (() => render('john')).should.throw()
   })
 })

@@ -294,7 +294,7 @@ class Field extends React.Component {
       mapValue = { [name]: mapValue}
 
     Widget = (
-      <Widget 
+      <Widget
         ref='input'
         name={name}
         {...props}
@@ -342,7 +342,13 @@ class Field extends React.Component {
 
   schema(path) {
     let context = this.context.reactFormalContext;
-    return path && context.schema && reach(context.schema, path)
+    let schema;
+    try {
+      schema = path && context.schema && context.schema(path)
+    }
+    catch (err) {} // eslint-disable-line no-empty
+
+    return schema
   }
 
   shouldValidate() {

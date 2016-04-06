@@ -281,6 +281,7 @@ class Form extends React.Component {
     this._pathOptions = Object.create(null)
     this._handleValidationRequest = this._handleValidationRequest.bind(this)
 
+    this._schema = this._schema.bind(this)
     this.submit = this.submit.bind(this)
     // silence the real submit
     let timer;
@@ -299,7 +300,7 @@ class Form extends React.Component {
 
     this.validator = new Validator((path, { props }) => {
       var model = props.value
-        , schema = reach(props.schema, path)
+        , schema = this._schema(path)
         , value = props.getter(path, model)
         , parent = props.getter(getParent(path), model) || {}
         , options = this._pathOptions[path] || {};
@@ -352,7 +353,7 @@ class Form extends React.Component {
       this._context = {
         reactFormalContext: {
           noValidate,
-          schema,
+          schema: this._schema,
           onSubmit: this.onSubmit,
           onOptions: this._setPathOptions,
           submit: null
@@ -418,9 +419,9 @@ class Form extends React.Component {
       this._flushValidations(this.props.delay)
   }
 
-  _processValidations(fields, props){
-    this.validator
-      .validate(fields, { props })
+  _processValidations(fields, props) {
+    return this
+      ._validate(fields, props)
       .then(errors => {
         if (props.debug && process.env.NODE_ENV !== 'production') {
           warning(!Object.keys(errors).length, '[react-formal] invalid fields: ' +
@@ -430,6 +431,21 @@ class Form extends React.Component {
         this.notify('onError', errors)
       })
       .catch(done)
+  }
+
+  _validate(fields, props = this.props) {
+    return this.validator
+      .validate(fields, { props })
+  }
+
+  validate(fields) {
+    return this._validate(fields)
+  }
+
+  validateGroup(groups) {
+    let fields = this._container.fieldsForGroup(groups);
+
+    return this._validate(fields)
   }
 
   submit() {
@@ -466,6 +482,12 @@ class Form extends React.Component {
     this._timers[key] = setTimeout(fn, ms)
   }
 
+  _schema(path) {
+    let { schema, value, context } = this.props;
+    
+    return schema && path && reach(schema, path, value, context)
+  }
+
   _queueValidation(e){
     this._queue = paths.reduce(uniq(this._queue.concat(e.fields)))
   }
@@ -496,7 +518,7 @@ class Form extends React.Component {
 
 module.exports = uncontrollable(Form,
   { value: 'onChange', errors: 'onError' },
-  ['submit']
+  ['submit', 'validateGroup', 'validate']
 )
 
 

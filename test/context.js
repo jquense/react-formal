@@ -1,6 +1,5 @@
 var React = require('react')
   , yup = require('yup')
-  , inputs = require('../src/inputs')
   , Form = require('../src');
 
 var tsp = require('teaspoon')
