@@ -54,9 +54,25 @@ describe('Field', ()=> {
 
     inst.single(inputs.Input)
     inst.single(inputs.Number)
-    inst.single(inputs.Date)
     inst.single(inputs.Bool)
     inst.single(inputs.Select)
+    inst.single(inputs.Date)
+  })
+
+  it('should use schema metadata', function(){
+    var schema = yup.object({
+      string: yup.string().meta({
+        reactFormalType: 'number'
+      })
+    })
+
+    var inst = $(
+      <Form schema={schema} defaultValue={{}}>
+        <Form.Field name='string'/>
+      </Form>).render()
+
+    inst.none(inputs.Input)
+    inst.single(inputs.Number)
   })
 
   it('should use type override', function(){

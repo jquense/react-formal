@@ -39,5 +39,4 @@ types.textarea   = wrapWithDefaults(Input, { tagName: 'textarea' })
 
 types.select     = SelectInput
 
-
-module.exports = types
+export default types

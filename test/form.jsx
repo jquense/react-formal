@@ -84,8 +84,7 @@ describe('Form', ()=> {
   })
 
   it('should respect noValidate', () => {
-    var value, last
-      , change = sinon.spy()
+    var change = sinon.spy()
       , inst = tsp(
           <Form noValidate schema={schema} defaultValue={schema.default()} onValidate={change}>
             <Form.Field name='name.first' className='field'/>

@@ -4,10 +4,10 @@ import MessageTrigger from 'react-input-message/MessageTrigger';
 import invariant from 'invariant';
 import types from './util/types';
 import contextTypes from './util/contextType';
+import config from './config';
 import Input from './inputs/Input';
 
 import cn from 'classnames';
-import reach from 'yup/lib/util/reach';
 import { Binding } from 'topeka';
 
 var options = { recurse: undefined }
@@ -237,9 +237,7 @@ class Field extends React.Component {
   }
 
   static defaultProps = {
-    type: '',
-    events: ['onChange', 'onBlur'],
-    errorClass: 'invalid-field'
+    type: ''
   }
 
   constructor() {
@@ -274,33 +272,20 @@ class Field extends React.Component {
   }
 
   render() {
-    var {
+    let {
         events
       , group
       , mapValue
       , name
+      , type
       , valueAccessor
-      , ...props } = this.props
-      , schema = this.schema(name)
-      , typeIsFunc = typeof this.props.type === 'function'
-      , type   = this.props.type || (schema && schema._type) || ''
-      , Widget = type;
+      , ...props } = this.props;
 
-    Widget = typeIsFunc
-      ? ((type = undefined), this.props.type)
-      : types[type.toLowerCase()] || Input
+    let schema = this.schema(name)
+      , Widget = this.getComponent(type, schema, props);
 
     if (valueAccessor && typeof mapValue !== 'object')
       mapValue = { [name]: mapValue}
-
-    Widget = (
-      <Widget
-        ref='input'
-        name={name}
-        {...props}
-        type={typeIsFunc ? null : props.type}
-      />
-    )
 
     let forProp = props.alsoValidates == null
       ? name : [ name ].concat(props.alsoValidates)
@@ -316,7 +301,7 @@ class Field extends React.Component {
             <MessageTrigger
               for={forProp}
               group={group}
-              events={events}
+              events={events || config.events}
               inject={this._inject}
             >
               { bind(Widget) }
@@ -328,8 +313,11 @@ class Field extends React.Component {
   }
 
   _inject(child, isActive) {
+    let errorClass = this.props.errorClass !== undefined
+      ? this.props.errorClass : config.errorClass;
+    
     return {
-      className: cn(child.props.className, isActive && this.props.errorClass)
+      className: cn(child.props.className, isActive && errorClass)
     }
   }
 
@@ -338,6 +326,29 @@ class Field extends React.Component {
       options = { recursive: props.recursive };
 
     return options
+  }
+
+  getComponent(type, schema, props) {
+    if (!type && schema) {
+      let meta = (schema.meta && schema.meta()) || {};
+      type = meta[config.metadataField] || schema._type
+    }
+
+    let typeIsString = typeof type === 'string'
+      , Widget = type
+
+    if (typeIsString) {
+      Widget = types[type.toLowerCase()] || Input
+      props.type = type
+    }
+
+    return (
+      <Widget
+        ref='input'
+        {...props}
+        name={this.props.name}
+      />
+    )
   }
 
   schema(path) {
