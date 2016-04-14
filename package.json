@@ -50,7 +50,7 @@
     "topeka": "^0.3.0",
     "uncontrollable": "^3.1.0",
     "warning": "^2.0.0",
-    "yup": "^0.16.0"
+    "yup": "^0.17.0"
   },
   "devDependencies": {
     "@jquense/component-playground": "jquense/component-playground",
