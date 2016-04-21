@@ -1,5 +1,6 @@
-'use strict';
-var React = require('react');
+import React from 'react';
+import { findDOMNode } from 'react-dom';
+import Input from './Input';
 
 let childAt = (children, idx) => {
   var child;
@@ -14,23 +15,28 @@ class Select extends React.Component {
     var { children, ...props } = this.props;
 
     return (
-      <select {...props} onChange={e => this.change(e)}>
+      <Input
+        {...props}
+        tagName='select'
+        onChange={() => this.change()}
+      >
         { children }
-      </select>
+      </Input>
     );
   }
 
-  change(e){
-    var children = this.props.children
+  change() {
+    var node = findDOMNode(this)
+      , { onChange, children } = this.props
       , values = [];
 
     if (!this.props.multiple)
-      return this.props.onChange(childAt(children, e.target.selectedIndex).props.value)
+      return this.props.onChange(childAt(children, node.selectedIndex).props.value)
 
-    ; [].forEach.call(e.target.options, 
+    ; [].forEach.call(node.options,
         (option, i) => option.selected && values.push(childAt(children, i).props.value))
 
-    this.props.onChange(values)
+    onChange(values)
   }
 }
 

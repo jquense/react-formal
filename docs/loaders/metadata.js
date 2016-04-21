@@ -1,25 +1,24 @@
 var metadata = require('react-component-metadata')
   , handlebars = require('handlebars')
-  , assign = require('react/lib/Object.assign')
+  , assign = require('lodash/object/assign')
   , each = require('lodash/collection/each')
   , transform = require('lodash/object/transform')
-  , fs = require('fs')
-  , path = require('path');
+  , fs = require('fs');
 
 
 
-handlebars.registerHelper('cleanDoclets', function types(desc, options){
+handlebars.registerHelper('cleanDoclets', function types(desc){
   desc = desc || ''
   var idx = desc.indexOf('@')
   return (idx === -1 ? desc : desc.substr(0, idx )).trim()
 })
 
-handlebars.registerHelper('isRequired', function types(prop, options){
+handlebars.registerHelper('isRequired', function types(prop){
   var doclets = metadata.parseDoclets(prop.desc || '') || {};
   return prop.required || !!doclets.required
 })
 
-handlebars.registerHelper('propType', function types(prop, options){
+handlebars.registerHelper('propType', function types(prop) {
   !prop.type && console.log(prop)
   var type = prop.type
     , name = type.name

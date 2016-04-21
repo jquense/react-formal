@@ -47,7 +47,7 @@ renderer.code = function(code, lang, escaped) {
 
   if ( lang === 'editable' )
     return '<Playground mode="text/jsx" theme="base16-oceanicnext-dark" scope={this.props.scope} codeText={`'
-      + code + '`} ' + (code.indexOf('React.render(') === -1 ? 'noRender' : '') + '/>\n\n'
+      + code + '`} ' + (code.indexOf('ReactDOM.render(') === -1 ? 'noRender' : '') + '/>\n\n'
 
   if( lang === 'console' )
     return '<Playground mode="text/jsx" theme="base16-oceanicnext-dark" scope={this.props.scope} codeText={`'

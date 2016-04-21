@@ -1,5 +1,5 @@
 import React from 'react';
-import { render } from 'react-dom';
+import ReactDOM, { render } from 'react-dom';
 import types from 'react-formal-inputs';
 import Form from '../src';
 import DateInput from '../src/inputs/Date';
@@ -45,7 +45,7 @@ let MyDateInput = props => <DateInput {...props} type='datetime-local'/>
 
 var reqMap = { 'react-formal': 'Form', 'react': 'React', 'react-formal-inputs': 'types' }
   , scope = {
-    Form, React, yup, modelSchema, MyDateInput, types,
+    Form, React, ReactDOM, yup, modelSchema, MyDateInput, types,
     require(name){ return scope[reqMap[name] || name] }
   };
 

@@ -1,5 +1,5 @@
-'use strict';
-var React = require('react');
+import React from 'react';
+import Input from './Input';
 
 let isValid = num => typeof num === 'number' && !isNaN(num)
 
@@ -13,30 +13,34 @@ class NumberInput extends React.Component {
   state = {}
 
   componentWillReceiveProps(nextProps) {
-    this.setState({ value: ''+ nextProps.value})
+    this.setState({ value: '' + nextProps.value})
   }
 
   render() {
-    var props = this.props
-      , value = this.state.value || props.value
+    var { value, ...props } = this.props
+
+    value = this.state.value || value
 
     return (
-      <input {...props} type='number' value={value} onChange={e => this._change(e)}/>
+      <Input {...props}
+        type='number'
+        value={value}
+        onChange={e => this._change(e)}
+      />
     )
   }
 
-  _change(e){
-    var val = e.target.value
-      , current = this.props.value
-      , number = parseFloat(val)
+  _change(value) {
+    var current = this.props.value
+      , number = parseFloat(value)
 
-    if( val == null || val.trim() === '' || !isValid(number) )
+    if (value == null || value.trim() === '' || !isValid(number) )
       return this.props.onChange(null)
 
-    if(isValid(number) && number !== current && !isAtDelimiter(number, val))
+    if (isValid(number) && number !== current && !isAtDelimiter(number, value))
       return this.props.onChange(number)
 
-    this.setState({ value: val })
+    this.setState({ value })
   }
 }
 

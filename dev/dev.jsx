@@ -146,7 +146,7 @@ var App = React.createClass({
 })
 
 
-React.render(<App/>, document.body, function(){
+ReactDOM.render(<App/>, document.body, function(){
   console.log('starting')
   //perf.start()
 });

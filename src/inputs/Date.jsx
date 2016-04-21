@@ -1,4 +1,5 @@
 import React from 'react';
+import Input from './Input';
 
 let pad = n => n < 10 ? ('0' + n) : n
 
@@ -30,13 +31,15 @@ class DateInput extends React.Component {
   render() {
     var {
         value
-      , type='date'
+      , type = 'date'
       , ...props } = this.props
 
     return (
-      <input {...props} type={'date'}
+      <Input 
+        {...props}
+        type={type}
         value={toDateString(value, type)}
-        onChange={ e => props.onChange(parse(e.target.value, value, type))}
+        onChange={e => props.onChange(parse(e.target.value, value, type))}
       />
     );
   }

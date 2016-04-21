@@ -50,9 +50,12 @@ describe('Field', ()=> {
         <Form.Field name='date'/>
         <Form.Field name='bool'/>
         <Form.Field name='array'/>
-      </Form>).render()
+      </Form>)
+      .render()
 
-    inst.single(inputs.Input)
+
+    inst.single($.s`${inputs.Input}[name='string']`)
+
     inst.single(inputs.Number)
     inst.single(inputs.Bool)
     inst.single(inputs.Select)
@@ -71,7 +74,6 @@ describe('Field', ()=> {
         <Form.Field name='string'/>
       </Form>).render()
 
-    inst.none(inputs.Input)
     inst.single(inputs.Number)
   })
 

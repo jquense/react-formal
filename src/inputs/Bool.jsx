@@ -1,14 +1,16 @@
-'use strict';
-var React = require('react');
+import React from 'react';
+import Input from './Input';
 
 class BoolInput extends React.Component {
   render() {
     var props = this.props
 
     return (
-      <input {...props} type={'checkbox'} 
+      <Input
+        {...props}
+        type={'checkbox'}
         checked={props.value}
-        onChange={e => props.onChange(e.target.checked)}
+        onChange={() => props.onChange(!props.value)}
       />
     );
   }

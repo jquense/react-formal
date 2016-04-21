@@ -83,7 +83,7 @@ let getParent = path => expr.join(expr.split(path).slice(0, -1))
  *     Submit
  *   </Form.Button>
  * </Form>)
- * React.render(form, mountNode);
+ * ReactDOM.render(form, mountNode);
  * ```
  */
 class Form extends React.Component {
