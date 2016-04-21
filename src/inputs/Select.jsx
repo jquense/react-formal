@@ -12,12 +12,12 @@ let childAt = (children, idx) => {
 class Select extends React.Component {
 
   render() {
-    var { children, ...props } = this.props;
+    var { children, tagName = 'select', ...props } = this.props;
 
     return (
       <Input
         {...props}
-        tagName='select'
+        tagName={tagName}
         onChange={() => this.change()}
       >
         { children }
