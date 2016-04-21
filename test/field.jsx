@@ -87,6 +87,20 @@ describe('Field', ()=> {
     inst.find(inputs.Input).length.should.equal(2)
   })
 
+  it('should not warn about refs on stateless components', function(){
+    sinon.spy(console, 'error');
+
+    $(
+      <Form schema={schema} defaultValue={{}}>
+        <Form.Field name='name' type={()=> null}/>
+      </Form>
+    )
+    .render()
+
+    console.error.should.not.have.been.called
+    console.error.restore();
+  })
+
   it('should fire onChange', function(done){
     var inst = $(
       <Form schema={schema} defaultValue={{}}>

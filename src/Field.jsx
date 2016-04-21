@@ -6,7 +6,7 @@ import types from './util/types';
 import contextTypes from './util/contextType';
 import config from './config';
 import Input from './inputs/Input';
-
+import isReactComponent from './util/isReactComponent';
 import cn from 'classnames';
 import { Binding } from 'topeka';
 
@@ -315,7 +315,7 @@ class Field extends React.Component {
   _inject(child, isActive) {
     let errorClass = this.props.errorClass !== undefined
       ? this.props.errorClass : config.errorClass;
-    
+
     return {
       className: cn(child.props.className, isActive && errorClass)
     }
@@ -344,7 +344,7 @@ class Field extends React.Component {
 
     return (
       <Widget
-        ref='input'
+        ref={isReactComponent(Widget) ? 'input' : null}
         {...props}
         name={this.props.name}
       />
