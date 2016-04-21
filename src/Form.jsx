@@ -253,8 +253,11 @@ class Form extends React.Component {
     schema(props, name, componentName) {
       var err = !props.noValidate && React.PropTypes.any.isRequired(props, name, componentName)
 
-      if (props[name] && !props[name].__isYupSchema__)
-        err = new Error('`schema` must be a proper yup schema: (' + componentName + ')')
+      if (props[name]) {
+        let schema = props[name];
+        if (!schema.__isYupSchema__ && !(schema.resolve && schema.validate))
+          err = new Error('`schema` must be a proper yup schema: (' + componentName + ')')
+      }
 
       return err
     }
@@ -484,7 +487,7 @@ class Form extends React.Component {
 
   _schema(path) {
     let { schema, value, context } = this.props;
-    
+
     return schema && path && reach(schema, path, value, context)
   }
 
