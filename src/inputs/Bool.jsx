@@ -2,6 +2,10 @@ import React from 'react';
 import Input from './Input';
 
 class BoolInput extends React.Component {
+  static propTypes = {
+    value: React.PropTypes.bool
+  }
+  
   render() {
     var props = this.props
 
@@ -9,7 +13,7 @@ class BoolInput extends React.Component {
       <Input
         {...props}
         type={'checkbox'}
-        checked={props.value}
+        checked={!!props.value}
         onChange={() => props.onChange(!props.value)}
       />
     );

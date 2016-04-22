@@ -9,11 +9,19 @@ let isAtDelimiter = (num, str) =>{
 }
 
 class NumberInput extends React.Component {
+  static propTypes = {
+    value: React.PropTypes.number
+  }
 
   state = {}
 
   componentWillReceiveProps(nextProps) {
-    this.setState({ value: '' + nextProps.value})
+    let value = nextProps.value;
+
+    value = (value == null || isNaN(value))
+      ? '' : '' + value
+
+    this.setState({ value })
   }
 
   render() {
@@ -22,7 +30,7 @@ class NumberInput extends React.Component {
     value = this.state.value || value
 
     return (
-      <Input {...props} 
+      <Input {...props}
         type='number'
         value={value}
         onChange={e => this._change(e)}

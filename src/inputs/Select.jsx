@@ -4,8 +4,10 @@ import Input from './Input';
 
 let childAt = (children, idx) => {
   var child;
-  if (children.lengh !== undefined ) child = children[idx]
-  else React.Children.forEach(children, (c, i) => !child && i === idx && (child = c))
+  if (children.length !== undefined )
+    child = children[idx]
+  else
+    React.Children.forEach(children, (c, i) => !child && i === idx && (child = c))
   return child
 }
 

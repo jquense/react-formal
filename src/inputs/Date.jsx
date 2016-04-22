@@ -27,6 +27,9 @@ let toDateString = (date, type) => {
 }
 
 class DateInput extends React.Component {
+  static propTypes = {
+    value: React.PropTypes.instanceOf(Date)
+  }
 
   render() {
     var {
@@ -35,7 +38,7 @@ class DateInput extends React.Component {
       , ...props } = this.props
 
     return (
-      <Input 
+      <Input
         {...props}
         type={type}
         value={toDateString(value, type)}
