@@ -147,4 +147,26 @@ describe('Form', ()=> {
       done()
     }, 100)
   })
+
+  it('return hash of errors from a single error', () => {
+    Form.toErrors(new yup.ValidationError('hello!', {}, 'path'))
+      .should.to.eql({
+        'path': [{
+          message: 'hello!',
+          values: undefined,
+          type: undefined
+        }]
+      });
+  })
+
+  it('return hash of errors from aggregate error', () => {
+    Form.toErrors(new yup.ValidationError([
+      new yup.ValidationError('foo', null, 'bar'),
+      new yup.ValidationError('bar', null, 'foo')
+    ]))
+      .should.to.eql({
+        'foo': [{ message: 'bar', values: undefined, type: undefined }],
+        'bar': [{ message: 'foo', values: undefined, type: undefined }]
+      });
+  })
 })

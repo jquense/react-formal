@@ -8,6 +8,7 @@ import Container from 'react-input-message/MessageContainer';
 import uncontrollable from 'uncontrollable';
 import paths from './util/paths';
 import contextTypes from './util/contextType';
+import errToJSON from './util/errToJSON';
 import { BindingContext as BC } from 'topeka';
 
 let BindingContext = BC.ControlledComponent;
@@ -529,19 +530,7 @@ function uniq(arr){
   return arr.filter((item, i) => arr.indexOf(item) === i)
 }
 
-function errToJSON(error){
-  if (error.inner.length)
-    return error.inner.reduce((list, inner) => {
-      list[inner.path] = (list[inner.path] || []).concat(errToJSON(inner))
 
-      return list
-    }, {})
-
-  return {
-    message: error.message,
-    type: error.type
-  }
-}
 
 function syncErrors(validator, errors = {}){
   validator._errors = {}
