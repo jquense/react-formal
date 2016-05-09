@@ -16,6 +16,8 @@ let BindingContext = BC.ControlledComponent;
 let done = e => setTimeout(() => { throw e })
 let getParent = path => expr.join(expr.split(path).slice(0, -1))
 
+let isValidationError = err => err && err.name === 'ValidationError';
+
 /**
  * Form component renders a `value` to be updated and validated by child Fields.
  * Forms can be thought of as `<input/>`s for complex values, or models. A Form aggregates
@@ -290,12 +292,11 @@ class Form extends React.Component {
     // silence the real submit
     let timer;
     this.onSubmit = e => {
-
       if (e && e.preventDefault)
         e.preventDefault()
 
       clearTimeout(timer)
-      timer = setTimeout(()=> this.submit(), 0)
+      timer = setTimeout(()=> this.submit().catch(done), 0)
     }
 
     this._setPathOptions = (path, options) => {
@@ -312,7 +313,11 @@ class Form extends React.Component {
       return schema
         ._validate(value, { ...props, ...options }, { parent, path })
         .then(() => void 0)
-        .catch(err => errToJSON(err))
+        .catch(err => {
+          if (isValidationError(err))
+            return errToJSON(err)
+          throw err;
+        })
     })
 
     syncErrors(this.validator, props.errors || {})
@@ -427,11 +432,7 @@ class Form extends React.Component {
     return this
       ._validate(fields, props)
       .then(errors => {
-        if (props.debug && process.env.NODE_ENV !== 'production') {
-          warning(!Object.keys(errors).length, '[react-formal] invalid fields: ' +
-            Object.keys(errors).join(', '))
-        }
-
+        this._maybeWarnDebug(props.debug, errors, 'field validation')
         this.notify('onError', errors)
       })
       .catch(done)
@@ -461,20 +462,25 @@ class Form extends React.Component {
     if (noValidate)
       return this.notify('onSubmit', value)
 
-    schema
+    let handleSubmit = validatedValue =>
+      this.notify('onSubmit', validatedValue)
+
+    let handleError = err => {
+      if (!isValidationError(err))
+        throw err;
+
+      var errors = errToJSON(err)
+
+      this._maybeWarnDebug(debug, errors, 'onSubmit')
+
+      this.notify('onError', errors)
+      this.notify('onInvalidSubmit', errors)
+    }
+
+    return schema
       .validate(value, options)
-      .then((validatedValue) => this.notify('onSubmit', validatedValue))
-      .catch(err => {
-        var errors = errToJSON(err)
-
-        if (debug && process.env.NODE_ENV !== 'production') {
-          warning(!Object.keys(errors).length, '[react-formal] (onSubmit) invalid fields: ' +
-            Object.keys(errors).join(', '))
-        }
-
-        this.notify('onError', errors)
-        this.notify('onInvalidSubmit', errors)
-      })
+      // no catch, we aren't interested in errors from onSubmit handlers
+      .then(handleSubmit, handleError)
   }
 
   timeout(key, fn, ms){
@@ -511,6 +517,16 @@ class Form extends React.Component {
 
       if (registerSubmit)
         registerSubmit(this.submit)
+    }
+  }
+
+  _maybeWarnDebug(debug, errors, target) {
+    if (!debug) return;
+
+    if (process.env.NODE_ENV !== 'production') {
+      let keys = Object.keys(errors)
+      warning(!keys.length,
+        `[react-formal] (${target}) invalid fields: ${keys.join(', ')}`)
     }
   }
 

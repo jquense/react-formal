@@ -148,6 +148,26 @@ describe('Form', ()=> {
     }, 100)
   })
 
+  it('should only report ValidationErrors', () => {
+    var spy = sinon.spy()
+    var inst = tsp(
+      <Form
+        onSubmit={()=> { throw 'foo!' }}
+        onError={spy}
+        schema={schema}
+        defaultValue={{}}
+      >
+        <Form.Field name='name' type='text' className='test'/>
+        <LeakySubmit />
+      </Form>
+    ).render()
+
+    return inst.unwrap().submit().catch(err => {
+      err.should.equal('foo!');
+      spy.should.not.have.been.called;
+    })
+  })
+
   it('return hash of errors from a single error', () => {
     Form.toErrors(new yup.ValidationError('hello!', {}, 'path'))
       .should.to.eql({
