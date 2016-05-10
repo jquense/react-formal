@@ -311,7 +311,7 @@ class Form extends React.Component {
         , options = this._pathOptions[path] || {};
 
       return schema
-        ._validate(value, { ...props, ...options }, { parent, path })
+        .validate(value, { ...props, ...options, parent, path })
         .then(() => void 0)
         .catch(err => {
           if (isValidationError(err))
