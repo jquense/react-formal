@@ -1,13 +1,12 @@
 var paths = require('../src/util/paths')
-var assert = chai.assert
 
 describe('PATH utils', ()=>{
 
   it('should clean part', ()=>{
-    paths.clean("'hi'").should.equal("hi")
-    paths.clean("hi").should.equal("hi")
-    paths.clean('"hi"').should.equal("hi")
-    paths.clean('hi').should.equal("hi")
+    paths.clean("'hi'").should.equal('hi')
+    paths.clean('hi').should.equal('hi')
+    paths.clean('"hi"').should.equal('hi')
+    paths.clean('hi').should.equal('hi')
   })
 
   it('should check if paths contains', ()=>{

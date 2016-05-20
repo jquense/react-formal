@@ -282,7 +282,7 @@ class Field extends React.Component {
       , ...props } = this.props;
 
     let schema = this.schema(name)
-      , Widget = this.getComponent(type, schema, props);
+      , widget = this.getComponent(type, schema, props);
 
     if (valueAccessor && typeof mapValue !== 'object')
       mapValue = { [name]: mapValue}
@@ -295,16 +295,16 @@ class Field extends React.Component {
         bindTo={valueAccessor || name}
         mapValue={mapValue}
       >
-        { bind => !this.shouldValidate()
-          ? bind(Widget)
-          : (
+        {!this.shouldValidate()
+          ? widget
+          : bind => (
             <MessageTrigger
               for={forProp}
               group={group}
               events={events || config.events}
               inject={this._inject}
             >
-              { bind(Widget) }
+              { bind(widget) }
             </MessageTrigger>
           )
         }
@@ -317,7 +317,10 @@ class Field extends React.Component {
       ? this.props.errorClass : config.errorClass;
 
     return {
-      className: cn(child.props.className, isActive && errorClass)
+      className: cn(
+        child.props.className,
+        isActive && errorClass
+      )
     }
   }
 
