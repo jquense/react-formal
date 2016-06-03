@@ -15,6 +15,17 @@ class ValidationMessage extends React.Component {
 
   static propTypes = {
     ...Message.propTypes,
+    /**
+     * A function that maps an array of message strings
+     * and returns a renderable string or ReactElement.
+     *
+     * ```js
+     * <Message>
+     *  {messages => messages.join(', ')}
+     * </Message>
+     * ```
+     */
+    children: React.PropTypes.func,
 
     component: React.PropTypes.oneOfType([
       React.PropTypes.func,
@@ -36,7 +47,8 @@ class ValidationMessage extends React.Component {
     component: 'span',
     errorClass: 'validation-error',
     filter: uniq,
-    extract: error => error.message || error
+    extract: error => error.message || error,
+    children: messages => messages.join(', ')
   }
 
   shouldComponentUpdate(p, s, c){
@@ -44,12 +56,22 @@ class ValidationMessage extends React.Component {
   }
 
   render(){
-    let { className, errorClass } = this.props;
+    let {
+        className, errorClass
+      , children, extract, filter } = this.props;
 
-    return <Message
-      {...this.props}
-      className={cn(className, errorClass)}
-    />
+    return (
+      <Message
+        {...this.props}
+        className={cn(className, errorClass)}
+      >
+        {messages => children(
+          messages
+            .filter((...args) => filter(...args, extract))
+            .map(extract)
+        )}
+      </Message>
+    )
   }
 }
 
