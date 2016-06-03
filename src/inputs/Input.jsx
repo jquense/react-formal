@@ -3,12 +3,20 @@ var React = require('react');
 
 class Input extends React.Component {
   render() {
-    var { 
+    let {
         tagName: Tag = 'input'
+      , value
       , ...props } = this.props
 
+    if (value === null)
+      value = '';
+      
     return (
-      <Tag {...props} onChange={ e => props.onChange(e.target.value)}/>
+      <Tag
+        {...props}
+        value={value}
+        onChange={ e => props.onChange(e.target.value)}
+      />
     );
   }
 }

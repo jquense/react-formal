@@ -5,10 +5,20 @@ let pad = n => n < 10 ? ('0' + n) : n
 
 let isValid = date => date && !isNaN(date.getTime())
 
-let toLocal = date => new Date((date = new Date(date)).getTime() + (date.getTimezoneOffset() * 60000))
+let toLocal = date => {
+  if (!date) return null
 
-let parse = (date, org, type) =>
-  toLocal(type === 'time' ? (toDateString(org || new Date(), 'date') + 'T' + date) : date)
+  date = new Date(date)
+  return new Date(
+    date.getTime() + (date.getTimezoneOffset() * 60000)
+  )
+}
+
+let parse = (date, org, part) => toLocal(
+  part === 'time'
+    ? (toDateString(org || new Date(), 'date') + 'T' + date)
+    : date
+)
 
 let localISOString = date =>
       date.getFullYear()       + '-'
@@ -18,11 +28,11 @@ let localISOString = date =>
     + pad(date.getMinutes())   + ':'
     + pad(date.getSeconds())   + '.000';
 
-let toDateString = (date, type) => {
-  if ( !isValid(date) ) return null
+let toDateString = (date, part) => {
+  if (!isValid(date)) return ''
   date = localISOString(date)
-  if( type === 'date') date = date.substr(0, 10)
-  if( type === 'time') date = date.substr(11)
+  if (part === 'date') date = date.substr(0, 10)
+  if (part === 'time') date = date.substr(11)
   return date
 }
 
@@ -42,7 +52,9 @@ class DateInput extends React.Component {
         {...props}
         type={type}
         value={toDateString(value, type)}
-        onChange={e => props.onChange(parse(e.target.value, value, type))}
+        onChange={e => props.onChange(
+          parse(e.target.value, value, type)
+        )}
       />
     );
   }
