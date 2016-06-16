@@ -1,14 +1,11 @@
 {
-  "stage": 0,
-  "loose": [
-    "all"
+  "passPerPreset": true,
+  "presets": [
+    "react",
+    "es2015",
+    "stage-0"
   ],
-  "blacklist": [
-    "es6.tailCall",
-    "es6.forOf",
-    "es7.trailingFunctionCommas",
-    "es7.comprehensions",
-    "es7.exportExtensions"
-  ],
-  "plugins": ["object-assign"]
+  "plugins": [
+    "transform-runtime"
+  ]
 }
