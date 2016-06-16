@@ -54,6 +54,7 @@
   },
   "devDependencies": {
     "@monastic.panic/component-playground": "^2.0.0",
+    "babel-cli": "^6.10.1",
     "babel-core": "^6.9.1",
     "babel-eslint": "^6.0.4",
     "babel-loader": "^6.2.4",
