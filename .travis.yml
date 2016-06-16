@@ -1,0 +1,19 @@
+sudo: false
+git:
+  depth: 10
+
+# remove the dist branch and dist tags from travis builds
+branches:
+  except:
+    - dist
+    - /^v(\d+\.)?(\d+\.)?(\*|\d+)$/
+
+language: node_js
+node_js:
+  - "5"
+  - "node"
+
+# enable this once we have reliable builds
+cache:
+  directories:
+    - node_modules
