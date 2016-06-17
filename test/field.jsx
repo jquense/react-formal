@@ -6,6 +6,7 @@ var React = require('react')
 var $ = require('teaspoon')
 
 describe('Field', ()=> {
+
   var schema = yup.object({
     name: yup.string().default(''),
     more: yup.object().when('name', {
@@ -19,7 +20,12 @@ describe('Field', ()=> {
 
   class TestInput extends React.Component {
     render(){
-      return <input {...this.props} onChange={e => this.props.onChange(e, 'hi')}/>
+      return (
+        <input {...this.props}
+          value={this.props.value || ''}
+          onChange={e => this.props.onChange(e, 'hi')}
+        />
+      )
     }
   }
 
@@ -112,14 +118,30 @@ describe('Field', ()=> {
     inst.single('input').trigger('change')
   })
 
+  it('ensures values are never undefined', function(){
+    var inst = $(
+      <Form schema={schema} defaultValue={{}}>
+        <Form.Field name='name' />
+      </Form>).render()
+
+    expect(
+      inst
+        .single('Input')
+        .props('value')
+    )
+    .to.equal(null)
+  })
+
   it('maps value from string', function(){
     var spy = sinon.spy()
     var inst = $(
       <Form schema={schema} defaultValue={{}} onChange={spy}>
-        <Form.Field name='name' type={TestInput} mapValue='value' />
+        <Form.Field name='name' type={TestInput} mapFromValue='value' />
       </Form>).render()
 
-    inst.single('input').trigger('change', { value: 'john' })
+    inst
+      .single('input')
+      .trigger('change', { value: 'john' })
 
     spy.should.have.been.calledOnce.and.calledWith({ name: 'john' })
   })
@@ -128,7 +150,7 @@ describe('Field', ()=> {
     var spy = sinon.spy()
     var inst = $(
       <Form schema={schema} defaultValue={{}} onChange={spy}>
-        <Form.Field name='name' type={TestInput} mapValue={e => e.value } />
+        <Form.Field name='name' type={TestInput} mapFromValue={e => e.value} />
       </Form>).render()
 
     inst.single('input').trigger('change', { value: 'john' })
@@ -143,8 +165,8 @@ describe('Field', ()=> {
         <Form.Field
           name='name'
           type={TestInput}
-          valueAccessor={spy}
-          mapValue={{
+          mapToValue={spy}
+          mapFromValue={{
             other: e => e.value
           }}
         />
@@ -164,7 +186,7 @@ describe('Field', ()=> {
       <Form schema={schema} defaultValue={{}} onChange={spy}>
         <Form.Field name='name'
           type={TestInput}
-          mapValue={{
+          mapFromValue={{
             name: e => e.value,
             text: 'text'
           }}
@@ -176,13 +198,13 @@ describe('Field', ()=> {
     spy.should.have.been.calledOnce.and.calledWith({ name: 'john', text: 'hi' })
   })
 
-  it('should pass all args to mapValue', function(done){
+  it('should pass all args to mapFromValue', function(done){
     var spy = sinon.spy()
     var inst = $(
       <Form schema={schema} defaultValue={{}} onChange={spy}>
         <Form.Field name='name'
           type={TestInput}
-          mapValue={(...args)=> {
+          mapFromValue={(...args)=> {
             args.length.should.equal(2)
             args[1].should.equal('hi')
             done()
@@ -192,6 +214,137 @@ describe('Field', ()=> {
 
     inst.single('input').trigger('change')
   })
+
+  describe('inclusive active matching', () => {
+
+    it('should count path matches', function() {
+      $(
+        <Form
+          schema={schema}
+          defaultValue={{}}
+          defaultErrors={{ 'name': 'foo' }}
+        >
+          <Form.Field
+            name='name'
+            errorClass="invalid"
+          />
+        </Form>
+      )
+      .render()
+      .single('input.invalid')
+    })
+
+    it('should use inclusive active checking', function() {
+      $(
+        <Form
+          schema={schema}
+          defaultValue={{}}
+          defaultErrors={{ 'name.first': 'foo' }}
+        >
+          <Form.Field
+            name='name'
+            errorClass="invalid"
+          />
+        </Form>
+      )
+      .render()
+      .single('input.invalid')
+    })
+
+    it('should respect `exclusive`', function() {
+      $(
+        <Form
+          schema={schema}
+          defaultValue={{}}
+          defaultErrors={{ 'name.first': 'foo' }}
+        >
+          <Form.Field
+            exclusive
+            name='name'
+            errorClass="invalid"
+          />
+        </Form>
+      )
+      .render()
+      .none('input.invalid')
+    })
+
+    it('should respect `exclusive` and still have errors', () => {
+      $(
+        <Form
+          schema={schema}
+          defaultValue={{}}
+          defaultErrors={{ 'name': 'foo' }}
+        >
+          <Form.Field
+            exclusive
+            name='name'
+            errorClass="invalid"
+          />
+        </Form>
+      )
+      .render()
+      .single('input.invalid')
+    })
+  })
+
+  describe('form fields', () => {
+    it('should inject onError', () => {
+      $(
+        <Form schema={schema} defaultValue={{}}>
+          <Form.Field name='name' />
+        </Form>
+      )
+      .render()
+      .find('input')
+      .props('onError').should.be.a('function');
+    })
+
+    // skip for now since name is still required.
+    xit('should not inject onError for nameless fields', () => {
+      $(
+        <Form schema={schema} defaultValue={{}}>
+          <Form.Field />
+        </Form>
+      )
+      .render()
+      .find('input')
+      .props('onError').should.be.a('function');
+    })
+
+    it('should propagate onError to form', () => {
+      let spy = sinon.spy();
+
+      $(
+        <Form schema={schema} defaultValue={{}} onError={spy}>
+          <Form.Field name='name' />
+        </Form>
+      )
+      .render()
+      .find('input')
+      .props('onError')({ foo: 'bar' });
+
+      spy.should.have.been.calledOnce.and.calledWith({
+        'name.foo': 'bar'
+      });
+
+    });
+
+    it('should properly prefix nested errors', () => {
+      let onError = $(
+        <Form schema={schema} defaultValue={{}}>
+          <Form.Field name='name' />
+        </Form>
+      )
+      .render()
+      .find('input')
+      .props('onError');
+
+      onError({ foo: 'bar' }).should.eql({ 'name.foo': 'bar' })
+      onError({ '[1].foo': 'bar' }).should.eql({ 'name[1].foo': 'bar' })
+      onError({ '[1].baz.foo': 'bar' }).should.eql({ 'name[1].baz.foo': 'bar' })
+    });
+  });
 
   it('should expose input instance', function() {
     var inst = $(

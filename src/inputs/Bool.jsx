@@ -5,16 +5,16 @@ class BoolInput extends React.Component {
   static propTypes = {
     value: React.PropTypes.bool
   }
-  
+
   render() {
-    var props = this.props
+    let { value, ...props } = this.props
 
     return (
       <Input
         {...props}
         type={'checkbox'}
-        checked={!!props.value}
-        onChange={() => props.onChange(!props.value)}
+        checked={!!value}
+        onChange={() => props.onChange(!value)}
       />
     );
   }
