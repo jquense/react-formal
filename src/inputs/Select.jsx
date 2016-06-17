@@ -4,10 +4,11 @@ import Input from './Input';
 
 let childAt = (children, idx) => {
   var child;
-  if (children.length !== undefined )
+  if (children && children.length !== undefined )
     child = children[idx]
   else
-    React.Children.forEach(children, (c, i) => !child && i === idx && (child = c))
+    React.Children.forEach(children,
+      (c, i) => !child && i === idx && (child = c))
   return child
 }
 
@@ -20,6 +21,7 @@ class Select extends React.Component {
       <Input
         {...props}
         tagName={tagName}
+        value={props.value || []}
         onChange={() => this.change()}
       >
         { children }
@@ -33,10 +35,13 @@ class Select extends React.Component {
       , values = [];
 
     if (!this.props.multiple)
-      return this.props.onChange(childAt(children, node.selectedIndex).props.value)
+      return this.props.onChange(
+        childAt(children, node.selectedIndex).props.value)
 
     ; [].forEach.call(node.options,
-        (option, i) => option.selected && values.push(childAt(children, i).props.value))
+        (option, i) => option.selected && values.push(
+          childAt(children, i).props.value)
+      )
 
     onChange(values)
   }

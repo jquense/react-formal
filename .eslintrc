@@ -8,7 +8,8 @@
   },
   "globals": {
     "sinon": true,
-    "chai": true
+    "chai": true,
+    "expect": true,
   },
   "plugins": [
     "eslint-plugin-react"

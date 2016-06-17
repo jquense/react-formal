@@ -1,7 +1,10 @@
 import React from 'react';
 import shallowEqual from 'react-pure-render/shallowEqual';
 import MessageTrigger from 'react-input-message/MessageTrigger';
+import deprecated from 'react-prop-types/lib/deprecated';
 import invariant from 'invariant';
+import warning from 'warning';
+
 import types from './util/types';
 import contextTypes from './util/contextType';
 import config from './config';
@@ -9,8 +12,28 @@ import Input from './inputs/Input';
 import isReactComponent from './util/isReactComponent';
 import cn from 'classnames';
 import { Binding } from 'topeka';
+import { inPath } from './util/paths';
+
 
 var options = { recurse: undefined }
+
+function inclusiveMapMessages(messages, names) {
+  let activeMessages = {};
+
+  if (!names.length) return activeMessages;
+
+  let paths = Object.keys(messages);
+
+  names.forEach(name => {
+    paths.forEach(path => {
+      if (messages[path] && inPath(name, path)) {
+        activeMessages[path] = messages[path]
+      }
+    })
+  })
+
+  return activeMessages;
+}
 
 /**
  * The Field Component renders a form control and handles input value updates and validations.
@@ -158,12 +181,12 @@ class Field extends React.Component {
 
     /**
      * Customize how the Field value maps to the overall Form `value`.
-     * `mapValue` can be a a string property name or a function that returns a
+     * `mapFromValue` can be a a string property name or a function that returns a
      * value for `name`'d path, allowing you to set commuted values from the Field.
      *
      * ```js
      * <Form.Field name='name'
-     *   mapValue={fieldValue => fieldValue.first + ' ' + fieldValue.last}
+     *   mapFromValue={fieldValue => fieldValue.first + ' ' + fieldValue.last}
      * />
      * ```
      *
@@ -183,7 +206,7 @@ class Field extends React.Component {
      *
      *   <label>Date of Birth</label>
      *   <Form.Field name='dateOfBirth'
-     *     mapValue={{
+     *     mapFromValue={{
      *       'dateOfBirth': date => date,
      *       'age': date =>
      *         (new Date()).getFullYear() - date.getFullYear()
@@ -196,11 +219,37 @@ class Field extends React.Component {
      * </Form>
      * ```
      */
-    mapValue: React.PropTypes.oneOfType([
-            React.PropTypes.func,
-            React.PropTypes.string,
-            React.PropTypes.object
-          ]),
+    mapFromValue: React.PropTypes.oneOfType([
+      React.PropTypes.func,
+      React.PropTypes.string,
+      React.PropTypes.object
+    ]),
+
+
+    mapValue: deprecated(React.PropTypes.oneOfType([
+      React.PropTypes.func,
+      React.PropTypes.string,
+      React.PropTypes.object
+    ]), '`mapValue` has been renamed: `mapFromValue`'),
+
+    /**
+     * Map the Form value to the Field value. By default
+     * the `name` of the Field is used to extract the relevant
+     * property from the Form value.
+     *
+     * ```js
+     * <Form.Field
+     *   name='location'
+     *   type="dropdownlist"
+     *   mapToValue={model=> pick(model, 'location', 'locationId')}
+     * />
+     * ```
+     */
+    mapToValue: React.PropTypes.func,
+
+    valueAccessor: deprecated(
+      React.PropTypes.func,
+      '`valueAccessor` has been renamed: `mapToValue`'),
 
     /**
      * The css class added to the Field Input when it fails validation
@@ -209,7 +258,7 @@ class Field extends React.Component {
 
     /**
      * Tells the Field to trigger validation for addition paths as well as its own (`name`).
-     * Useful when used in conjuction with a `mapValue` hash that updates more than one value, or
+     * Useful when used in conjuction with a `mapFromValue` hash that updates more than one value, or
      * if you want to trigger validation for the parent path as well.
      *
      * ```js
@@ -231,18 +280,28 @@ class Field extends React.Component {
     recursive: React.PropTypes.string,
 
     /**
+     * Indicates whether child fields of the named field
+     * affect the active state ofthe field.
+     *
+     * ```js
+     * -> 'names'
+     * -> 'names.first'
+     * -> 'names.last'
+     * ```
+     *
+     * Are all considered "part" of a field named `'names'` by default.
+     */
+    exclusive: React.PropTypes.bool,
+
+    /**
      * Disables validation for the Field.
      */
     noValidate: React.PropTypes.bool
   }
 
   static defaultProps = {
-    type: ''
-  }
-
-  constructor() {
-    super()
-    this._inject = this._inject.bind(this)
+    type: '',
+    exclusive: false
   }
 
   componentWillMount() {
@@ -264,7 +323,6 @@ class Field extends React.Component {
   }
 
   shouldComponentUpdate(nextProps, _, nextContext) {
-    //return scu.call(this, nextProps, nextState)
     let result = !shallowEqual(nextProps, this.props)
               || !shallowEqual(nextContext, this.context);
 
@@ -276,24 +334,28 @@ class Field extends React.Component {
         events
       , group
       , mapValue
+      , mapFromValue
       , name
       , type
+      , exclusive
       , valueAccessor
       , ...props } = this.props;
 
     let schema = this.schema(name)
       , widget = this.getComponent(type, schema, props);
 
-    if (valueAccessor && typeof mapValue !== 'object')
-      mapValue = { [name]: mapValue}
+    mapFromValue =  mapFromValue || mapValue;
+
+    if (typeof mapFromValue !== 'object')
+      mapFromValue = { [name]: mapFromValue }
 
     let forProp = props.alsoValidates == null
       ? name : [ name ].concat(props.alsoValidates)
 
     return (
       <Binding
-        bindTo={valueAccessor || name}
-        mapValue={mapValue}
+        bindTo={this.bindTo}
+        mapValue={mapFromValue}
       >
         {!this.shouldValidate()
           ? widget
@@ -302,7 +364,8 @@ class Field extends React.Component {
               for={forProp}
               group={group}
               events={events || config.events}
-              inject={this._inject}
+              mapMessages={!exclusive ? inclusiveMapMessages : undefined}
+              inject={this.inject}
             >
               { bind(widget) }
             </MessageTrigger>
@@ -312,11 +375,25 @@ class Field extends React.Component {
     )
   }
 
-  _inject(child, isActive) {
-    let errorClass = this.props.errorClass !== undefined
-      ? this.props.errorClass : config.errorClass;
+  bindTo = (value, getter) => {
+    let { valueAccessor, mapToValue, name } = this.props;
+    let getValue = mapToValue || valueAccessor || getter.bind(null, name);
+
+    value = getValue(value);
+
+    // ensure that no inputs are left uncontrolled
+    if (value === undefined)
+     value = null;
+
+    return value;
+  }
+
+  inject = (child, errors) => {
+    let { name, errorClass = config.errorClass } = this.props;
+    let isActive = !!Object.keys(errors).length;
 
     return {
+      errors,
       className: cn(
         child.props.className,
         isActive && errorClass
@@ -347,8 +424,8 @@ class Field extends React.Component {
 
     return (
       <Widget
-        ref={isReactComponent(Widget) ? 'input' : null}
         {...props}
+        ref={isReactComponent(Widget) ? 'input' : null}
         name={this.props.name}
       />
     )

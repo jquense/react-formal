@@ -66,7 +66,7 @@ describe('Form', ()=> {
             <Form.Field
               name='name.first'
               className='field'
-              mapValue={{
+              mapFromValue={{
                 'name.first': v => v.first,
                 'name.last': v => v.last
               }}
