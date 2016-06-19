@@ -1,10 +1,11 @@
 'use strict';
-var React = require('react/addons')
+import React from 'react';
+import { render } from 'react-dom';
 var Form = require('../src')
 
 require('../src/less/styles.less');
 var yup = require('yup');
-var perf = window.perf = React.addons.Perf;
+// var perf = window.perf = React.addons.Perf;
 
 var people = [
   { id: 0, first: 'John', surname: 'Smith'},
@@ -39,24 +40,8 @@ var schema = yup.object({
         id:     yup.number(),
 
         first:    emptyString.required(),
-        last:     emptyString.required(),
-
-        address:  emptyString.required(),
-
-        birthday: yup.date()
-          .required('please provide a date of birth')
-          .nullable()
-          .default(null)
-      }),
-
-      trivia: yup.object({
-        isCool:    yup.bool().default(false),
-        favNumber: yup.number()
-          .required()
-          .default(0)
-          .min(0, 'your favorite number cannot be negative')
+        last:     emptyString.required()
       })
-
     });
 
 
@@ -73,66 +58,24 @@ var App = React.createClass({
   },
 
   render(){
-    var model = this.state.model; // the data to bind to the form
-
     return (
       <div style={{ width: 400 }}>
-        <Form debug value={this.state.model} schema={schema} className='form-horizontal' onChange={this._change}>
-          <Form.Summary />
+        <Form debug
+          value={this.state.model}
+          schema={schema}
+          className='form-horizontal'
+          onChange={this._change}
+        >
           <fieldset>
             <legend>Personal</legend>
             <div className='form-group'>
               <label className='control-label col-sm-3'>name</label>
               <div className='col-sm-8'>
-                <Form.Field name='personal.first' type='select' className='form-control'/>
-                <Form.Message for='personal.first'/>
+                <Form.Field name='personal.first' className='form-control'/>
+                {/*/<Form.Message for='personal.first'/>*/}
+              </div>
+            </div>
 
-                <Form.Field name='personal.last' type='select' className='form-control'/>
-                <Form.Message for='personal.first'/>
-              </div>
-            </div>
-            <div className='form-group'>
-              <label className='control-label col-sm-3'>Employer</label>
-              <div className='col-sm-8'>
-
-                <Form.Message for={['personal.orgID', 'personal.location']}/>
-              </div>
-            </div>
-            <div className='form-group'>
-              <label className='control-label col-sm-3'>birthday</label>
-              <div className='col-sm-8'>
-                <Form.Field type='textarea' name='personal.address' className='form-control'/>
-                <Form.Message for='personal.address'/>
-              </div>
-            </div>
-            <div className='form-group'>
-              <label className='control-label col-sm-3'>birthday</label>
-              <div className='col-sm-8'>
-                <Form.Field type='datetime-local' name='personal.birthday' group='personal' className='form-control'/>
-                <Form.Message for='personal.birthday'/>
-              </div>
-            </div>
-          </fieldset>
-          <fieldset>
-            <legend>Trivia</legend>
-            <div className='form-group'>
-              <label className='control-label col-sm-3'>favorite number</label>
-              <div className='col-sm-8'>
-                <Form.Field name='trivia.favNumber' className='form-control'/>
-                <Form.Message for='trivia.favNumber'/>
-              </div>
-            </div>
-            <div className='form-group'>
-
-              <div className='col-sm-8 col-sm-offset-3'>
-                <div className='checkbox'>
-                  <label className='checkbox'>
-                    <Form.Field name='trivia.isCool'/> Cool?
-                  </label>
-                  <Form.Message for='trivia.isCool'/>
-                </div>
-              </div>
-            </div>
             <div className='form-group'>
               <div className='col-sm-offset-3 col-sm-8'>
                 <Form.Button type='submit' className='btn btn-primary'>Submit</Form.Button>
@@ -146,7 +89,7 @@ var App = React.createClass({
 })
 
 
-ReactDOM.render(<App/>, document.body, function(){
+render(<App/>, document.body, function(){
   console.log('starting')
   //perf.start()
 });
