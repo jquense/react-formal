@@ -15,14 +15,18 @@ let childAt = (children, idx) => {
 class Select extends React.Component {
 
   render() {
-    var { children, tagName = 'select', ...props } = this.props;
+    let { children, tagName = 'select', ...props } = this.props;
+    let defaultValue = props.multiple ? [] : '';
 
     return (
       <Input
         {...props}
         tagName={tagName}
-        value={props.value || []}
         onChange={() => this.change()}
+        value={props.value === null
+          ? defaultValue
+          : props.value
+        }
       >
         { children }
       </Input>
@@ -47,4 +51,4 @@ class Select extends React.Component {
   }
 }
 
-module.exports = Select;
+export default Select;

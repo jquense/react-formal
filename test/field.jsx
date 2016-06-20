@@ -288,7 +288,7 @@ describe('Field', ()=> {
     })
   })
 
-  describe('form fields', () => {
+  xdescribe('form fields', () => {
     it('should inject onError', () => {
       $(
         <Form schema={schema} defaultValue={{}}>

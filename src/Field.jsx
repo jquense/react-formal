@@ -388,8 +388,12 @@ class Field extends React.Component {
     return value;
   }
 
+  mapValue = (value) => {
+
+  }
+
   inject = (child, errors) => {
-    let { name, errorClass = config.errorClass } = this.props;
+    let { errorClass = config.errorClass } = this.props;
     let isActive = !!Object.keys(errors).length;
 
     return {
