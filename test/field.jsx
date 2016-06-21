@@ -37,7 +37,7 @@ describe('Field', ()=> {
 
     var input = inst.render().single(TestInput)[0]
 
-    input.props.className.should.equal('test')
+    input.props.className.should.include('test') // test invalid-field
   })
 
   it('should fall back to using schema types', function(){
