@@ -20,4 +20,4 @@ class BoolInput extends React.Component {
   }
 }
 
-module.exports = BoolInput;
+export default BoolInput;

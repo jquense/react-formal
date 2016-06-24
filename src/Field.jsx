@@ -3,7 +3,6 @@ import shallowEqual from 'react-pure-render/shallowEqual';
 import MessageTrigger from 'react-input-message/MessageTrigger';
 import deprecated from 'react-prop-types/lib/deprecated';
 import invariant from 'invariant';
-import warning from 'warning';
 
 import types from './util/types';
 import contextTypes from './util/contextType';
@@ -338,7 +337,7 @@ class Field extends React.Component {
       , name
       , type
       , exclusive
-      , valueAccessor
+      , valueAccessor // eslint-disable-line
       , ...props } = this.props;
 
     let schema = this.schema(name)
@@ -386,10 +385,6 @@ class Field extends React.Component {
      value = null;
 
     return value;
-  }
-
-  mapValue = (value) => {
-
   }
 
   inject = (child, errors) => {

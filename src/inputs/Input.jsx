@@ -10,7 +10,7 @@ class Input extends React.Component {
 
     if (value === null)
       value = '';
-      
+
     return (
       <Tag
         {...props}
@@ -21,4 +21,4 @@ class Input extends React.Component {
   }
 }
 
-module.exports = Input;
+export default Input;
