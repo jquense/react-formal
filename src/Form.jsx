@@ -289,6 +289,8 @@ class Form extends React.Component {
 
     this._schema = this._schema.bind(this)
     this.submit = this.submit.bind(this)
+    this.onError = errors => this.notify('onError', errors)
+
     // silence the real submit
     let timer;
     this.onSubmit = e => {
@@ -363,6 +365,7 @@ class Form extends React.Component {
         reactFormalContext: {
           noValidate,
           schema: this._schema,
+          onError: this.onError,
           onSubmit: this.onSubmit,
           onOptions: this._setPathOptions,
           submit: null
