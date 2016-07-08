@@ -307,7 +307,7 @@ class Form extends React.Component {
 
     this.validator = new Validator((path, { props }) => {
       var model = props.value
-        , schema = this._schema(path)
+        , schema = this._schema(path, props)
         , value = props.getter(path, model)
         , parent = props.getter(getParent(path), model) || {}
         , options = this._pathOptions[path] || {};
@@ -495,13 +495,13 @@ class Form extends React.Component {
     this._timers[key] = setTimeout(fn, ms)
   }
 
-  _schema(path) {
-    let { schema, value, context } = this.props;
+  _schema(path, props = this.props) {
+    let { schema, value, context } = props;
 
     return schema && path && reach(schema, path, value, context)
   }
 
-  _queueValidation(e){
+  _queueValidation(e) {
     this._queue = paths.reduce(uniq(this._queue.concat(e.fields)))
   }
 
