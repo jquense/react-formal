@@ -337,7 +337,9 @@ class Field extends React.Component {
       , name
       , type
       , exclusive
-      , valueAccessor // eslint-disable-line
+      //consume non-input props
+      //eslint-disable-next-line no-unused-vars
+      , valueAccessor, mapToValue, errorClass, alsoValidates, recursive
       , ...props } = this.props;
 
     let schema = this.schema(name)
