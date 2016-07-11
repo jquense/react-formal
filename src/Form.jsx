@@ -383,7 +383,8 @@ class Form extends React.Component {
       , component: Element
       , getter, setter
       // consume non-form vars
-      , schema, errors, strict, delay // eslint-disable-line no-unused-vars
+      // eslint-disable-next-line no-unused-vars
+      , defaultValue, errors, defaultErrors, onError, onValidate, onInvalidSubmit, delay, strict, schema
       , ...props } = this.props;
 
     if (Element === 'form')

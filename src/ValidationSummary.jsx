@@ -52,7 +52,7 @@ class ValidationSummary extends React.Component {
     errorClass: React.PropTypes.string,
 
     /**
-     * Specify a group to show erros for, if empty all form errors will be shown in the Summary.
+     * Specify a group to show errors for, if empty all form errors will be shown in the Summary.
      */
     group: React.PropTypes.string
   }
