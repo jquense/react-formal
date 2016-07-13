@@ -68,15 +68,11 @@ class ValidationSummary extends React.Component {
 
   render() {
     let {
-        messages
-      , formatMessage
-      , for: fieldFor
+        formatMessage
       , ...props } = this.props;
 
     return (
-      <ValidationMessage
-        {...props}
-      >
+      <ValidationMessage {...props}>
         {messages => messages.map(formatMessage)}
       </ValidationMessage>
     )

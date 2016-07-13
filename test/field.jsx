@@ -21,7 +21,7 @@ describe('Field', ()=> {
   class TestInput extends React.Component {
     render(){
       return (
-        <input {...this.props}
+        <input
           value={this.props.value || ''}
           onChange={e => this.props.onChange(e, 'hi')}
         />
@@ -178,6 +178,30 @@ describe('Field', ()=> {
 
     spy.should.have.been.and.calledWith({ other: 'john' })
 
+  })
+
+  it('gets value from map accessor', function() {
+    $(
+      <Form
+        schema={schema}
+        defaultValue={{ name: 'foo', lastName: 'bar'}}
+      >
+        <Form.Field
+          name='name'
+          type={TestInput}
+          mapToValue={{
+            first: 'name',
+            last: 'lastName'
+          }}
+        />
+      </Form>
+    )
+    .render()
+    .single(TestInput)
+    .props('value').should.eql({
+      first: 'foo',
+      last: 'bar'
+    })
   })
 
   it('maps values from hash', function(){

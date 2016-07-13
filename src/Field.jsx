@@ -16,6 +16,20 @@ import { inPath } from './util/paths';
 
 var options = { recurse: undefined }
 
+function getValue(value, bindTo, getter) {
+  if (typeof bindTo === 'function') {
+    return bindTo(value, getter)
+  }
+  if (typeof bindTo === 'string') {
+    return getter(bindTo, value)
+  }
+
+  return Object.keys(bindTo).reduce((obj, key) => {
+    obj[key] = getter(bindTo[key], value);
+    return obj
+  }, {})
+}
+
 function inclusiveMapMessages(messages, names) {
   let activeMessages = {};
 
@@ -244,7 +258,10 @@ class Field extends React.Component {
      * />
      * ```
      */
-    mapToValue: React.PropTypes.func,
+    mapToValue: React.PropTypes.oneOfType([
+      React.PropTypes.func,
+      React.PropTypes.object
+    ]),
 
     valueAccessor: deprecated(
       React.PropTypes.func,
@@ -310,7 +327,8 @@ class Field extends React.Component {
     if (process.env.NODE_ENV !== 'production')
       invariant(context.noValidate || !name || this.schema(name),
         `There is no corresponding schema defined for this field: "${name}" ` +
-        `Each Field's \`name\` prop must be a valid path defined by the parent Form schema`)
+        `Each Field's \`name\` prop must be a valid path defined by the parent Form schema`
+      )
 
     context.onOptions(this.props.name, this.options(this.props))
   }
@@ -337,7 +355,8 @@ class Field extends React.Component {
       , name
       , type
       , exclusive
-      , valueAccessor // eslint-disable-line
+      // eslint-disable-next-line
+      , valueAccessor, mapToValue, errorClass, alsoValidates, recursive
       , ...props } = this.props;
 
     let schema = this.schema(name)
@@ -376,9 +395,9 @@ class Field extends React.Component {
 
   bindTo = (value, getter) => {
     let { valueAccessor, mapToValue, name } = this.props;
-    let getValue = mapToValue || valueAccessor || getter.bind(null, name);
+    let mapper = mapToValue || valueAccessor || name;
 
-    value = getValue(value);
+    value = getValue(value, mapper, getter);
 
     // ensure that no inputs are left uncontrolled
     if (value === undefined)

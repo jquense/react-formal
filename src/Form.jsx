@@ -1,4 +1,5 @@
 import React from 'react';
+import pickAttributes from 'pick-attributes';
 import scu from 'react-pure-render/function';
 import warning from 'warning';
 import reach from 'yup/lib/util/reach';
@@ -246,7 +247,7 @@ class Form extends React.Component {
       React.PropTypes.func,
       React.PropTypes.string,
       React.PropTypes.oneOf([null, false])
-    ]).isRequired,
+    ]),
 
     /**
      * A Yup schema  that validates the Form `value` prop. Used to validate the form input values
@@ -381,10 +382,11 @@ class Form extends React.Component {
       , onChange
       , value
       , component: Element
-      , getter, setter
-      // consume non-form vars
-      , schema, errors, strict, delay // eslint-disable-line no-unused-vars
-      , ...props } = this.props;
+      , getter
+      , setter
+      , __messageContainer: containerProps } = this.props;
+
+    let props = pickAttributes(this.props);
 
     if (Element === 'form')
       props.noValidate = true // disable html5 validation
@@ -414,6 +416,7 @@ class Form extends React.Component {
         <Container
           ref={ref => this._container = ref}
           messages={this.props.errors}
+          {...containerProps}
           onValidationNeeded={this._handleValidationRequest}
         >
           {children}

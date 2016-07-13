@@ -57,12 +57,16 @@ class ValidationMessage extends React.Component {
 
   render(){
     let {
-        className, errorClass
-      , children, extract, filter } = this.props;
+        className
+      , errorClass
+      , children
+      , extract
+      , filter
+      , ...props } = this.props;
 
     return (
       <Message
-        {...this.props}
+        {...props}
         className={cn(className, errorClass)}
       >
         {messages => children(

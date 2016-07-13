@@ -29,7 +29,12 @@
     "no-multi-spaces": 0,
     "no-mix-requires": 0,
     "no-unused-expressions": 0,
-    "no-unused-vars": [2, {"vars": "all", "args": "after-used"}],
+    "no-unused-vars": [2, {
+      "vars": "all",
+      "args": "after-used",
+      "varsIgnorePattern": "^_$",
+      "argsIgnorePattern": "^_$",
+    }],
     "no-use-before-define": 0,
     "key-spacing": 0,
     "return-no-assign": 0,

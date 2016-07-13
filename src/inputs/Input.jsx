@@ -1,11 +1,11 @@
-'use strict';
-var React = require('react');
+import React from 'react';
 
 class Input extends React.Component {
   render() {
     let {
         tagName: Tag = 'input'
       , value
+      , errors: _
       , ...props } = this.props
 
     if (value === null)
