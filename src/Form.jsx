@@ -10,6 +10,9 @@ import uncontrollable from 'uncontrollable';
 import paths from './util/paths';
 import contextTypes from './util/contextType';
 import errToJSON from './util/errToJSON';
+import createTimeoutManager from './util/timeoutManager';
+import registerWithContext from './util/registerWithContext';
+
 import { BindingContext as BC } from 'topeka';
 
 let BindingContext = BC.ControlledComponent;
@@ -18,6 +21,16 @@ let done = e => setTimeout(() => { throw e })
 let getParent = path => expr.join(expr.split(path).slice(0, -1))
 
 let isValidationError = err => err && err.name === 'ValidationError';
+
+function maybeWarn(debug, errors, target) {
+  if (!debug) return;
+
+  if (process.env.NODE_ENV !== 'production') {
+    let keys = Object.keys(errors)
+    warning(!keys.length,
+      `[react-formal] (${target}) invalid fields: ${keys.join(', ')}`)
+  }
+}
 
 /**
  * Form component renders a `value` to be updated and validated by child Fields.
@@ -284,45 +297,12 @@ class Form extends React.Component {
   constructor(props, context){
     super(props, context)
 
-    this._queue = []
-    this._pathOptions = Object.create(null)
-    this._handleValidationRequest = this._handleValidationRequest.bind(this)
+    this.queue = []
+    this.pathOptions = Object.create(null)
+    this.timeouts = createTimeoutManager(this);
+    this.validator = new Validator(this.handleValidate)
 
-    this._schema = this._schema.bind(this)
-    this.submit = this.submit.bind(this)
-    this.onError = errors => this.notify('onError', errors)
-
-    // silence the real submit
-    let timer;
-    this.onSubmit = e => {
-      if (e && e.preventDefault)
-        e.preventDefault()
-
-      clearTimeout(timer)
-      timer = setTimeout(()=> this.submit().catch(done), 0)
-    }
-
-    this._setPathOptions = (path, options) => {
-      this._pathOptions[path] = options;
-    }
-
-    this.validator = new Validator((path, { props }) => {
-      var model = props.value
-        , schema = this._schema(path, props)
-        , value = props.getter(path, model)
-        , parent = props.getter(getParent(path), model) || {}
-        , options = this._pathOptions[path] || {};
-
-      return schema
-        .validate(value, { ...props, ...options, parent, path })
-        .then(() => void 0)
-        .catch(err => {
-          if (isValidationError(err))
-            return errToJSON(err)
-          throw err;
-        })
-    })
-
+    registerWithContext(this, this.submit);
     syncErrors(this.validator, props.errors || {})
   }
 
@@ -330,50 +310,160 @@ class Form extends React.Component {
     return scu.call(this, nextProps, nextState)
   }
 
-  componentDidMount() {
-    this._registerWithContext();
-  }
-
-  componentWillUnmount() {
-    var timers = this._timers || {};
-
-    this._unmounted = true;
-    for (var k in timers) if (has(timers, k))
-      clearTimeout(timers[k])
-  }
-
-  componentWillReceiveProps(nextProps, nextContext) {
-    this._registerWithContext(nextContext);
-
+  componentWillReceiveProps(nextProps) {
     if (nextProps.schema !== this.props.schema){
-      this._queueValidation({
-        fields: Object.keys(nextProps.errors || {})
-      })
+      this.enqueue(Object.keys(nextProps.errors || {}))
     }
-
     syncErrors(this.validator, nextProps.errors || {})
-
-    //if (nextProps.value !== this.props.value)
-    this._flushValidations(nextProps.delay)
+    this.flush(nextProps.delay)
   }
 
   getChildContext() {
-    let { noValidate, schema } = this.props
+    let { noValidate, schema, ...options } = this.props
     let context = this._context && this._context.reactFormalContext;
 
-    if (!context || context.noValidate !== noValidate || context.schema !== schema )
+    if (
+      !context ||
+      context.schema !== schema ||
+      context.noValidate !== noValidate
+    ) {
       this._context = {
         reactFormalContext: {
+          options,
           noValidate,
-          schema: this._schema,
-          onError: this.onError,
-          onSubmit: this.onSubmit,
-          onOptions: this._setPathOptions,
-          submit: null
+          submit: null,
+          schema: this.getSchemaForPath,
+          onError: this.handleError,
+          onSubmit: this.handleSubmit,
+          onOptions: this.handlePathOptions,
         }
       }
+    }
 
-    return this._context
+    return this._context;
+  }
+
+  handlePathOptions = (path, options) => {
+    this.pathOptions[path] = options;
+  }
+
+  handleValidate = (path, { props }) => {
+    var model = props.value
+      , options = this.pathOptions[path] || {}
+      , schema = this.getSchemaForPath(path, props)
+      , value = props.getter(path, model)
+      , parent = props.getter(getParent(path), model) || {};
+
+    return schema
+      .validate(value, {
+        ...props,
+        ...options,
+        parent,
+        path
+      })
+      .then(() => undefined)
+      .catch(err => {
+        if (isValidationError(err))
+          return errToJSON(err)
+        throw err;
+      })
+  }
+
+  handleValidationRequest = (e) => {
+    let { noValidate, delay } = this.props;
+
+    if (noValidate)
+      return
+
+    this.notify('onValidate', e)
+    this.enqueue(e.fields)
+
+    if (e.type !== 'onChange')
+      this.flush(delay)
+  }
+
+  handleError = errors => {
+    this.notify('onError', errors)
+  }
+
+  handleNativeSubmit = e => {
+    if (e && e.preventDefault)
+      e.preventDefault()
+
+    clearTimeout(this.submitTimer)
+    this.submitTimer = setTimeout(()=> this.submit().catch(done), 0)
+  }
+
+  enqueue(fields) {
+    this.queue = paths.reduce(uniq(this.queue.concat(fields)))
+  }
+
+  flush(delay) {
+    this.timeouts.set('flush-validations', () => {
+      let fields = this.queue;
+      let props = this.props;
+
+      if (!fields.length)
+        return;
+
+      this.queue = [];
+      this
+        ._validate(fields, this.props)
+        .then(errors => {
+          maybeWarn(props.debug, errors, 'field validation')
+          this.notify('onError', errors)
+        })
+        .catch(done)
+    }, delay)
+  }
+
+  getSchemaForPath = (path, props = this.props) => {
+    let { schema, value, context } = props;
+
+    return schema && path && reach(schema, path, value, context)
+  }
+
+  submit = () => {
+    var { schema, noValidate, value, debug, ...options } = this.props
+
+    options.abortEarly = false
+    options.strict = false
+
+    if (noValidate)
+      return this.notify('onSubmit', value)
+
+    let handleSuccess = validatedValue =>
+      this.notify('onSubmit', validatedValue)
+
+    let handleError = err => {
+      if (!isValidationError(err))
+        throw err;
+
+      var errors = errToJSON(err)
+
+      maybeWarn(debug, errors, 'onSubmit')
+
+      this.notify('onError', errors)
+      this.notify('onInvalidSubmit', errors)
+    }
+
+    return schema
+      .validate(value, options)
+      // no catch, we aren't interested in errors from onSubmit handlers
+      .then(handleSuccess, handleError)
+  }
+
+  _validate(fields, props = this.props) {
+    return this.validator.validate(fields, { props })
+  }
+
+  validate(fields) {
+    return this._validate(fields)
+  }
+
+  validateGroup(groups) {
+    let fields = this._container.fieldsForGroup(groups);
+    return this.validate(fields)
   }
 
   render() {
@@ -384,14 +474,15 @@ class Form extends React.Component {
       , component: Element
       , getter
       , setter
-      , __messageContainer: containerProps } = this.props;
+      , errors
+      , __messageContainer: containerProps = {} } = this.props;
 
     let props = pickAttributes(this.props);
 
     if (Element === 'form')
       props.noValidate = true // disable html5 validation
 
-    props.onSubmit = this.onSubmit
+    props.onSubmit = this.handleNativeSubmit
 
     if (Element === null || Element === false) {
       children = React.cloneElement(
@@ -406,6 +497,10 @@ class Form extends React.Component {
       )
     }
 
+    if (!containerProps.passthrough) {
+      containerProps.messages = errors
+    }
+
     return (
       <BindingContext
         value={value}
@@ -415,127 +510,13 @@ class Form extends React.Component {
       >
         <Container
           ref={ref => this._container = ref}
-          messages={this.props.errors}
           {...containerProps}
-          onValidationNeeded={this._handleValidationRequest}
+          onValidationNeeded={this.handleValidationRequest}
         >
           {children}
         </Container>
       </BindingContext>
     );
-  }
-
-  _handleValidationRequest(e) {
-    if (this.props.noValidate)
-      return
-
-    this.notify('onValidate', e)
-    this._queueValidation(e)
-
-    if (e.type !== 'onChange')
-      this._flushValidations(this.props.delay)
-  }
-
-  _processValidations(fields, props) {
-    return this
-      ._validate(fields, props)
-      .then(errors => {
-        this._maybeWarnDebug(props.debug, errors, 'field validation')
-        this.notify('onError', errors)
-      })
-      .catch(done)
-  }
-
-  _validate(fields, props = this.props) {
-    return this.validator
-      .validate(fields, { props })
-  }
-
-  validate(fields) {
-    return this._validate(fields)
-  }
-
-  validateGroup(groups) {
-    let fields = this._container.fieldsForGroup(groups);
-
-    return this._validate(fields)
-  }
-
-  submit() {
-    var { schema, noValidate, value, debug, ...options } = this.props
-
-    options.abortEarly = false
-    options.strict = false
-
-    if (noValidate)
-      return this.notify('onSubmit', value)
-
-    let handleSubmit = validatedValue =>
-      this.notify('onSubmit', validatedValue)
-
-    let handleError = err => {
-      if (!isValidationError(err))
-        throw err;
-
-      var errors = errToJSON(err)
-
-      this._maybeWarnDebug(debug, errors, 'onSubmit')
-
-      this.notify('onError', errors)
-      this.notify('onInvalidSubmit', errors)
-    }
-
-    return schema
-      .validate(value, options)
-      // no catch, we aren't interested in errors from onSubmit handlers
-      .then(handleSubmit, handleError)
-  }
-
-  timeout(key, fn, ms){
-    this._timers || (this._timers = Object.create(null));
-
-    if (this._unmounted) return
-
-    clearTimeout(this._timers[key])
-    this._timers[key] = setTimeout(fn, ms)
-  }
-
-  _schema(path, props = this.props) {
-    let { schema, value, context } = props;
-
-    return schema && path && reach(schema, path, value, context)
-  }
-
-  _queueValidation(e) {
-    this._queue = paths.reduce(uniq(this._queue.concat(e.fields)))
-  }
-
-  _flushValidations(delay){
-    this.timeout('flush-validations', () => {
-      var fields = this._queue;
-      this._queue = [];
-      if (fields.length)
-        this._processValidations(fields, this.props)
-    }, delay)
-  }
-
-  _registerWithContext(context = this.context) {
-    if (context.reactFormalContext) {
-      let { registerSubmit } = context.reactFormalContext;
-
-      if (registerSubmit)
-        registerSubmit(this.submit)
-    }
-  }
-
-  _maybeWarnDebug(debug, errors, target) {
-    if (!debug) return;
-
-    if (process.env.NODE_ENV !== 'production') {
-      let keys = Object.keys(errors)
-      warning(!keys.length,
-        `[react-formal] (${target}) invalid fields: ${keys.join(', ')}`)
-    }
   }
 
   notify(event, ...args){

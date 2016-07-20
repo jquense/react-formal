@@ -50,6 +50,7 @@
     "react-input-message": "^0.13.1",
     "react-prop-types": "^0.3.2",
     "react-pure-render": "^1.0.2",
+    "spy-on-component": "^1.0.0",
     "topeka": "^0.3.5",
     "uncontrollable": "^3.1.0",
     "warning": "^2.0.0",
