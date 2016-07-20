@@ -386,7 +386,7 @@ class Form extends React.Component {
     this.notify('onError', errors)
   }
 
-  handleNativeSubmit = e => {
+  handleSubmit = e => {
     if (e && e.preventDefault)
       e.preventDefault()
 
@@ -482,7 +482,7 @@ class Form extends React.Component {
     if (Element === 'form')
       props.noValidate = true // disable html5 validation
 
-    props.onSubmit = this.handleNativeSubmit
+    props.onSubmit = this.handleSubmit
 
     if (Element === null || Element === false) {
       children = React.cloneElement(
