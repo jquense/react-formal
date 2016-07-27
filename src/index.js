@@ -17,6 +17,9 @@ Form.Button = FormButton
 Form.Context = Context;
 Form.Trigger = Trigger;
 
+Form.setter = Form.ControlledComponent.defaultProps.setter;
+Form.getter = Form.ControlledComponent.defaultProps.getter;
+
 Form.toErrors = (err) => {
   invariant(err && err.name === 'ValidationError',
     '`toErrors()` only works with ValidationErrors.')

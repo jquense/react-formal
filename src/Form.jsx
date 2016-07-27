@@ -536,15 +536,10 @@ function uniq(arr){
 }
 
 
-
 function syncErrors(validator, errors = {}){
   validator._errors = {}
   Object.keys(errors).forEach(key => {
     if (errors[key] != null)
       validator._errors[key] = [].concat(errors[key])
   })
-}
-
-function has(o, k){
-  return o ? Object.prototype.hasOwnProperty.call(o, k) : false
 }

@@ -23,6 +23,14 @@ describe('Form', ()=> {
     })
   })
 
+  it('should expose setter', () => {
+    Form.setter('foo', {}, 5).should.eql({ foo: 5 })
+  })
+
+  it('should expose setter', () => {
+    Form.getter('foo', { foo: 5 }).should.equal(5)
+  })
+
   it('should update the form value', function(){
     var value, last
       , change = sinon.spy(v => value = v)
