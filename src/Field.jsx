@@ -355,8 +355,9 @@ class Field extends React.Component {
       , name
       , type
       , exclusive
+      , alsoValidates
       // eslint-disable-next-line
-      , valueAccessor, mapToValue, errorClass, alsoValidates, recursive
+      , valueAccessor, mapToValue, errorClass,  recursive
       , ...props } = this.props;
 
     let schema = this.schema(name)
@@ -368,7 +369,7 @@ class Field extends React.Component {
       mapFromValue = { [name]: mapFromValue }
 
     let forProp = props.alsoValidates == null
-      ? name : [ name ].concat(props.alsoValidates)
+      ? name : [ name ].concat(alsoValidates)
 
     return (
       <Binding
