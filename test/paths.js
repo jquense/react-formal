@@ -29,4 +29,26 @@ describe('PATH utils', ()=>{
 
     paths.reduce(['a.b.c', 'a.b', 'a.c']).should.eql(['a.b', 'a.c'])
   })
+
+  it('should trim paths', ()=>{
+    let errors = {
+      'name': ['invalid'],
+      'name.first': ['invalid'],
+      'id': ['invalid']
+    }
+
+    paths.trim('name', errors).should.not.equal(errors)
+    paths.trim('name', errors).should.eql({
+      'id': ['invalid']
+    })
+  })
+
+  it('should return same object when unchanged', ()=>{
+    let errors = {
+      'name': ['invalid'],
+      'name.first': ['invalid'],
+      'id': ['invalid']
+    }
+    paths.trim('foo', errors).should.equal(errors)
+  })
 })

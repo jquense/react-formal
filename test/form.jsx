@@ -1,9 +1,9 @@
-var React = require('react')
-  , yup = require('yup')
-  , Form = require('../src');
+import React from 'react'
+import yup from 'yup'
+import tsp from 'teaspoon'
 
-var tsp = require('teaspoon')
-
+import Form from '../src'
+import errorManager from '../src/errorManager';
 
 let LeakySubmit = (props, context) => (
   <button type='submit' onClick={context.reactFormalContext.onSubmit}>
@@ -192,9 +192,89 @@ describe('Form', ()=> {
       new yup.ValidationError('foo', null, 'bar'),
       new yup.ValidationError('bar', null, 'foo')
     ]))
-      .should.to.eql({
-        'foo': [{ message: 'bar', values: undefined, type: undefined }],
-        'bar': [{ message: 'foo', values: undefined, type: undefined }]
-      });
+    .should.to.eql({
+      'foo': [{ message: 'bar', values: undefined, type: undefined }],
+      'bar': [{ message: 'foo', values: undefined, type: undefined }]
+    });
+  })
+
+  describe('Field validation', () => {
+    let schema;
+
+    beforeEach(() => {
+      schema = yup.object({
+        name: yup.object({
+          meta: yup.object(),
+          first: yup.string(),
+          last: yup.string(),
+        })
+      })
+    })
+
+    it('remove errors for branches', (done) => {
+      let spy = errors => {
+        errors.should.not.have.key('name.first')
+        done()
+      }
+
+      tsp(
+        <Form
+          onError={spy}
+          schema={schema}
+          errors={{ 'name.first': ['invalid'] }}
+          defaultValue={{}}
+        >
+          <Form.Field name='name' />
+          <Form.Field name='name.first' />
+        </Form>
+      )
+      .render()
+      .find('input[name="name"]')
+      .trigger('change')
+    })
+
+    it('should deduplicate validation paths', () => {
+      let paths = [];
+
+      return errorManager(path => {
+        paths.push(path)
+      })
+      .collect(['name', 'name.meta', 'name.first'])
+      .then(() => {
+        paths.should.eql(['name'])
+      })
+    })
+
+    it('should remove paths', () => {
+      let errors = {
+        'name': ['invalid'],
+        'name.meta': ['invalid'],
+        'name.first': ['invalid'],
+        'id': ['invalid']
+      }
+
+      return errorManager(()=> {})
+        .collect('name', errors)
+        .then((errors) => {
+          errors.should.eql({
+            'id': ['invalid']
+          })
+        })
+    })
+
+    it('should return same object when unchanged', ()=>{
+      let errors = {
+        'name': ['invalid'],
+        'name.meta': ['invalid'],
+        'name.first': ['invalid'],
+        'id': ['invalid']
+      }
+
+      return errorManager(()=> {})
+        .collect('foo', errors)
+        .then((newErrors) => {
+          errors.should.equal(newErrors)
+        })
+    })
   })
 })

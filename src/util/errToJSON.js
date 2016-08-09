@@ -1,15 +1,25 @@
 
-export default function errToJSON(error){
-  if (error.inner.length)
-    return error.inner.reduce((list, inner) => {
-      list[inner.path] = (list[inner.path] || []).concat(errToJSON(inner))
+export default function errToJSON(error, target = {}) {
+  if (error.inner.length) {
+    error.inner.forEach(inner => {
+      errToJSON(inner, target, inner.path)
+    })
 
-      return list
-    }, {})
+    return target;
+  }
 
-  return {
+  let path = error.path || ''
+  let existing = target[path]
+
+  let json = {
     message: error.message,
     values: error.params,
     type: error.type
   }
+
+  target[path] = existing
+    ? [...existing, json]
+    : [json];
+
+  return target
 }

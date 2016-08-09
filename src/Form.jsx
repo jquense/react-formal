@@ -1,12 +1,14 @@
-import React from 'react';
+import pick from 'lodash/object/pick';
 import pickAttributes from 'pick-attributes';
-import scu from 'react-pure-render/function';
-import warning from 'warning';
-import reach from 'yup/lib/util/reach';
 import expr from 'property-expr';
-import Validator from 'react-input-message/Validator';
+import React from 'react';
+import scu from 'react-pure-render/function';
 import Container from 'react-input-message/MessageContainer';
 import uncontrollable from 'uncontrollable';
+import warning from 'warning';
+import reach from 'yup/lib/util/reach';
+
+import errorManager from './errorManager';
 import paths from './util/paths';
 import contextTypes from './util/contextType';
 import errToJSON from './util/errToJSON';
@@ -18,9 +20,15 @@ import { BindingContext as BC } from 'topeka';
 let BindingContext = BC.ControlledComponent;
 
 let done = e => setTimeout(() => { throw e })
-let getParent = path => expr.join(expr.split(path).slice(0, -1))
+let splitPath = path => {
+  let parts = expr.split(path);
+  let tail = parts.pop()
+  return [expr.join(parts), tail]
+}
 
 let isValidationError = err => err && err.name === 'ValidationError';
+
+const YUP_OPTIONS = ['context', 'stripUnknown', 'recursive', 'abortEarly', 'strict'];
 
 function maybeWarn(debug, errors, target) {
   if (!debug) return;
@@ -300,10 +308,9 @@ class Form extends React.Component {
     this.queue = []
     this.pathOptions = Object.create(null)
     this.timeouts = createTimeoutManager(this);
-    this.validator = new Validator(this.handleValidate)
+    this.errors = errorManager(this.handleValidate)
 
     registerWithContext(this, this.submit);
-    syncErrors(this.validator, props.errors || {})
   }
 
   shouldComponentUpdate(nextProps, nextState) {
@@ -314,7 +321,6 @@ class Form extends React.Component {
     if (nextProps.schema !== this.props.schema){
       this.enqueue(Object.keys(nextProps.errors || {}))
     }
-    syncErrors(this.validator, nextProps.errors || {})
     this.flush(nextProps.delay)
   }
 
@@ -348,25 +354,22 @@ class Form extends React.Component {
   }
 
   handleValidate = (path, { props }) => {
-    var model = props.value
-      , options = this.pathOptions[path] || {}
-      , schema = this.getSchemaForPath(path, props)
-      , value = props.getter(path, model)
-      , parent = props.getter(getParent(path), model) || {};
+    let options = pick(props, YUP_OPTIONS)
+    let abortEarly = options.abortEarly == null ? false : options.abortEarly
+
+    options = { ...options, abortEarly, parent, path }
+
+    let { value, getter } = props
+    let schema = this.getSchemaForPath(path, props)
+
+    let [parentPath, currentPath] = splitPath(path)
+    let parent = getter(parentPath, value) || {}
+    let pathValue = parent[currentPath] || value
 
     return schema
-      .validate(value, {
-        ...props,
-        ...options,
-        parent,
-        path
-      })
-      .then(() => undefined)
-      .catch(err => {
-        if (isValidationError(err))
-          return errToJSON(err)
-        throw err;
-      })
+      .validate(pathValue, options)
+      .then(() => null)
+      .catch(err => err)
   }
 
   handleValidationRequest = (e) => {
@@ -395,7 +398,7 @@ class Form extends React.Component {
   }
 
   enqueue(fields) {
-    this.queue = paths.reduce(uniq(this.queue.concat(fields)))
+    this.queue = this.queue.concat(fields)
   }
 
   flush(delay) {
@@ -407,11 +410,12 @@ class Form extends React.Component {
         return;
 
       this.queue = [];
-      this
-        ._validate(fields, this.props)
+      this._validate(fields, this.props)
         .then(errors => {
-          maybeWarn(props.debug, errors, 'field validation')
-          this.notify('onError', errors)
+          if (errors !== this.props.errors) {
+            maybeWarn(props.debug, errors, 'field validation')
+            this.notify('onError', errors)
+          }
         })
         .catch(done)
     }, delay)
@@ -454,7 +458,11 @@ class Form extends React.Component {
   }
 
   _validate(fields, props = this.props) {
-    return this.validator.validate(fields, { props })
+    return this.errors.collect(
+      fields,
+      props.errors,
+      { props }
+    )
   }
 
   validate(fields) {
@@ -524,22 +532,7 @@ class Form extends React.Component {
   }
 }
 
-
-module.exports = uncontrollable(Form,
+export default uncontrollable(Form,
   { value: 'onChange', errors: 'onError' },
   ['submit', 'validateGroup', 'validate']
 )
-
-
-function uniq(arr){
-  return arr.filter((item, i) => arr.indexOf(item) === i)
-}
-
-
-function syncErrors(validator, errors = {}){
-  validator._errors = {}
-  Object.keys(errors).forEach(key => {
-    if (errors[key] != null)
-      validator._errors[key] = [].concat(errors[key])
-  })
-}

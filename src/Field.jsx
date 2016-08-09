@@ -13,9 +13,6 @@ import cn from 'classnames';
 import { Binding } from 'topeka';
 import { inPath } from './util/paths';
 
-
-var options = { recurse: undefined }
-
 function getValue(value, bindTo, getter) {
   if (typeof bindTo === 'function') {
     return bindTo(value, getter)
@@ -285,17 +282,6 @@ class Field extends React.Component {
     alsoValidates: React.PropTypes.arrayOf(React.PropTypes.string),
 
     /**
-     * Specify whether the Field will recursively validate sub paths.
-     * The below example will also validate `name.first` and `name.last`. Generally you won't need to touch this
-     * as `react-formal` makes some intelligent choices about whether to recurse or not on any given path.
-     *
-     * ```js
-     * <Form.Field name='name' recursive={true}/>
-     * ```
-     */
-    recursive: React.PropTypes.string,
-
-    /**
      * Indicates whether child fields of the named field
      * affect the active state ofthe field.
      *
@@ -357,7 +343,7 @@ class Field extends React.Component {
       , exclusive
       , alsoValidates
       // eslint-disable-next-line
-      , valueAccessor, mapToValue, errorClass,  recursive
+      , valueAccessor, mapToValue, errorClass
       , ...props } = this.props;
 
     let schema = this.schema(name)
@@ -420,11 +406,8 @@ class Field extends React.Component {
     }
   }
 
-  options(props) {
-    if (options.recursive !== props.recursive)
-      options = { recursive: props.recursive };
-
-    return options
+  options() {
+    return null
   }
 
   getComponent(type, schema, props) {

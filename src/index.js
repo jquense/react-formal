@@ -1,7 +1,7 @@
+import Trigger from 'react-input-message/MessageTrigger';
 import Form from './Form';
 import Field from './Field';
 import Context from './FormContext';
-import Trigger from 'react-input-message/MessageTrigger';
 import ValidationMessage from './ValidationMessage';
 import ValidationSummary from './ValidationSummary';
 import errToJSON from './util/errToJSON';
@@ -24,12 +24,7 @@ Form.toErrors = (err) => {
   invariant(err && err.name === 'ValidationError',
     '`toErrors()` only works with ValidationErrors.')
 
-  let json = errToJSON(err)
-
-  if (!err.inner.length)
-    json = { [err.path || '']: [json] }
-
-  return json
+  return errToJSON(err)
 }
 
 Form.addInputTypes = addType
