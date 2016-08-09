@@ -364,7 +364,7 @@ class Form extends React.Component {
 
     let [parentPath, currentPath] = splitPath(path)
     let parent = getter(parentPath, value) || {}
-    let pathValue = parent[currentPath] || value
+    let pathValue = parent != null ? parent[currentPath] : value
 
     return schema
       .validate(pathValue, options)
