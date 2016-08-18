@@ -368,7 +368,7 @@ class Field extends React.Component {
             <MessageTrigger
               for={forProp}
               group={group}
-              events={events || config.events}
+              events={events === undefined ? config.events : events}
               mapMessages={!exclusive ? inclusiveMapMessages : undefined}
               inject={this.inject}
             >
