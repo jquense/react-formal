@@ -53,6 +53,7 @@
     "spy-on-component": "^1.0.0",
     "topeka": "^0.3.5",
     "uncontrollable": "^3.1.0",
+    "universal-promise": "^1.1.0",
     "warning": "^2.0.0",
     "yup": ">=0.17.0"
   },
@@ -106,7 +107,6 @@
     "sinon-chai": "^2.8.0",
     "style-loader": "^0.13.1",
     "teaspoon": "^6.4.0",
-    "universal-promise": "^1.1.0",
     "url-loader": "^0.5.7",
     "webpack": "^1.13.1",
     "webpack-dev-server": "^1.14.1"
