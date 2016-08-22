@@ -204,6 +204,30 @@ describe('Field', ()=> {
     })
   })
 
+  it('gets value from map accessor functions', function() {
+    $(
+      <Form
+        schema={schema}
+        defaultValue={{ name: 'foo', lastName: 'bar'}}
+      >
+        <Form.Field
+          name='name'
+          type={TestInput}
+          mapToValue={{
+            first: v => v.name,
+            last: v => v.lastName,
+          }}
+        />
+      </Form>
+    )
+    .render()
+    .single(TestInput)
+    .props('value').should.eql({
+      first: 'foo',
+      last: 'bar'
+    })
+  })
+
   it('maps values from hash', function(){
     var spy = sinon.spy()
     var inst = $(

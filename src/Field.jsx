@@ -22,7 +22,7 @@ function getValue(value, bindTo, getter) {
   }
 
   return Object.keys(bindTo).reduce((obj, key) => {
-    obj[key] = getter(bindTo[key], value);
+    obj[key] = getValue(value, bindTo[key], getter);
     return obj
   }, {})
 }
@@ -372,7 +372,7 @@ class Field extends React.Component {
               mapMessages={!exclusive ? inclusiveMapMessages : undefined}
               inject={this.inject}
             >
-              { bind(widget) }
+              {bind(widget)}
             </MessageTrigger>
           )
         }
