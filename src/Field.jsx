@@ -138,16 +138,18 @@ class Field extends React.Component {
     let {
       name,
       type,
+      children,
       className,
       events = config.events,
       errorClass = config.errorClass,
     } = this.props;
 
     let props = {
+      name,
       ...omit(this.props, Object.keys(Field.propTypes)),
       ...bindingProps,
       ...triggerProps,
-      ...chainEvents(events, this.props, bindingProps, triggerProps)
+      ...chainEvents(events, this.props, bindingProps, triggerProps),
     }
 
     if (this.shouldValidate()) {
@@ -161,12 +163,17 @@ class Field extends React.Component {
       delete props.messages
     }
 
+    // Escape hatch for more complex Field types.
+    if (type === null && typeof children === 'function') {
+      props.schema = this.schema(name);
+      return children(props)
+    }
+
     let [Component, resolvedType] = resolveFieldComponent(type, this.schema(name))
 
     return (
       <Component
         {...props}
-        name={name}
         type={isNativeType(resolvedType) ? resolvedType : undefined}
         ref={isReactComponent(Component)
           ? r => this.input = r
@@ -336,9 +343,9 @@ Field.propTypes = {
    * `addInputType()` api.
    */
   type: React.PropTypes.oneOfType([
-          React.PropTypes.func,
-          React.PropTypes.string
-        ]),
+    React.PropTypes.func,
+    React.PropTypes.string
+  ]),
 
   /**
    * Event name or array of event names that the Field should trigger a validation.
