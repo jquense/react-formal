@@ -52,8 +52,8 @@ class DateInput extends React.Component {
         {...props}
         type={type}
         value={toDateString(value, type)}
-        onChange={e => props.onChange(
-          parse(e.target.value, value, type)
+        onChange={stringValue => props.onChange(
+          parse(stringValue, value, type)
         )}
       />
     );
