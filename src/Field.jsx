@@ -16,7 +16,10 @@ import { inPath } from './util/paths';
 
 
 function chainEvents(events, props, bindingProps, triggerProps) {
+  if (!events) return;
+  
   let result = {};
+
   events.forEach(event => {
     result[event] = chain(
       props[event],
