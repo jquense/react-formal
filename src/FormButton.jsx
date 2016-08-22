@@ -59,13 +59,15 @@ class Button extends React.Component {
     if (type.toLowerCase() === 'submit')
       return (
         <Component {...props} onClick={chain(props.onClick, context.onSubmit)}>
-          { this.props.children }
+          {this.props.children}
         </Component>
       )
 
     return (
       <Trigger group={group} events={events}>
-        <Component {...props} type={type}>{ this.props.children }</Component>
+        {({ messages: _, ...props }) =>
+          <Component {...props} type={type}>{ this.props.children }</Component>
+        }
       </Trigger>
     )
   }

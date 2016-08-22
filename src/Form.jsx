@@ -516,8 +516,8 @@ class Form extends React.Component {
         setter={setter}
       >
         <Container
-          ref={ref => this._container = ref}
           {...containerProps}
+          ref={ref => this._container = ref}
           onValidationNeeded={this.handleValidationRequest}
         >
           {children}
@@ -532,6 +532,9 @@ class Form extends React.Component {
 }
 
 export default uncontrollable(Form,
-  { value: 'onChange', errors: 'onError' },
+  {
+    value: 'onChange',
+    errors: 'onError' 
+  },
   ['submit', 'validateGroup', 'validate']
 )

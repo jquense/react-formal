@@ -24,21 +24,7 @@ class NumberInput extends React.Component {
     this.setState({ value })
   }
 
-  render() {
-    var { value, ...props } = this.props
-
-    value = this.state.value || value
-
-    return (
-      <Input {...props}
-        type='number'
-        value={value}
-        onChange={e => this._change(e)}
-      />
-    )
-  }
-
-  _change(value) {
+  handleChange = (value) => {
     var current = this.props.value
       , number = parseFloat(value)
 
@@ -49,6 +35,20 @@ class NumberInput extends React.Component {
       return this.props.onChange(number)
 
     this.setState({ value })
+  }
+
+  render() {
+    var { value, ...props } = this.props
+
+    value = this.state.value || value
+
+    return (
+      <Input {...props}
+        type='number'
+        value={value}
+        onChange={this.handleChange}
+      />
+    )
   }
 }
 
