@@ -1,12 +1,15 @@
 import React from 'react';
 
+
 class Input extends React.Component {
   render() {
     let {
         tagName: Tag = 'input'
       , value
-      , errors: _
       , ...props } = this.props
+
+    delete props.errors;
+    delete props.invalid;
 
     if (value === null)
       value = '';

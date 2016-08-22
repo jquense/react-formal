@@ -9,7 +9,6 @@ import warning from 'warning';
 import reach from 'yup/lib/util/reach';
 
 import errorManager from './errorManager';
-import paths from './util/paths';
 import contextTypes from './util/contextType';
 import errToJSON from './util/errToJSON';
 import createTimeoutManager from './util/timeoutManager';
