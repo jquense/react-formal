@@ -1,16 +1,21 @@
-'use strict';
-
-let React = require('react')
-  , Input   = require('../inputs/Input')
-  , DateInput = require('../inputs/Date')
-  , NumberInput = require('../inputs/Number')
-  , BoolInput = require('../inputs/Bool')
-  , SelectInput = require('../inputs/Select')
+import React from 'react';
+import Input from '../inputs/Input';
+import DateInput from '../inputs/Date';
+import NumberInput from '../inputs/Number';
+import BoolInput from '../inputs/Bool';
+import SelectInput from '../inputs/Select';
 
 let localDt = 'datetime-local'
 
 let wrapWithDefaults =
   (Component, defaults) => class extends React.Component {
+    static propTypes = {
+      type: React.PropTypes.oneOfType([
+        React.PropTypes.string,
+        React.PropTypes.func,
+      ]),
+    };
+
     render() {
       return React.createElement(Component, {
         ...defaults,

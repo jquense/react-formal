@@ -27,15 +27,13 @@ module.exports = {
 
     module: {
       loaders: loaders.concat([
-        { test: /\.md$/,  loader: 'babel-loader!' + path.join(__dirname, './docs/util/md-to-jsx') }
-        //{ test: /\.doc$/, loader: 'babel-loader!' + path.join(__dirname, './docs/util/metadata-loader') }
+        {
+          test: /\.md$/,
+          loader: 'babel-loader!' + path.join(__dirname, './docs/util/md-to-jsx')
+        }
       ])
     },
-    plugins: [
-      // new webpack.DefinePlugin({
-      //   "process.env": { NODE_ENV: JSON.stringify("production") }
-      // })
-    ]
+
   },
 
   test: {

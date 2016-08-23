@@ -17,7 +17,7 @@ import { inPath } from './util/paths';
 
 function chainEvents(events, props, bindingProps, triggerProps) {
   if (!events) return;
-  
+
   let result = {};
 
   events.forEach(event => {
@@ -147,7 +147,7 @@ class Field extends React.Component {
       errorClass = config.errorClass,
     } = this.props;
 
-    let props = {
+    let fieldProps = {
       name,
       ...omit(this.props, Object.keys(Field.propTypes)),
       ...bindingProps,
@@ -156,27 +156,27 @@ class Field extends React.Component {
     }
 
     if (this.shouldValidate()) {
-      let { messages } = props
+      let { messages } = fieldProps
       let invalid = messages && !!Object.keys(messages).length
 
-      props.errors = messages
-      props.invalid = invalid
-      props.className = cn(className, invalid && errorClass)
+      fieldProps.errors = messages
+      fieldProps.invalid = invalid
+      fieldProps.className = cn(className, invalid && errorClass)
 
-      delete props.messages
+      delete fieldProps.messages
     }
 
     // Escape hatch for more complex Field types.
     if (type === null && typeof children === 'function') {
-      props.schema = this.schema(name);
-      return children(props)
+      fieldProps.schema = this.schema(name);
+      return children(fieldProps)
     }
 
     let [Component, resolvedType] = resolveFieldComponent(type, this.schema(name))
 
     return (
       <Component
-        {...props}
+        {...fieldProps}
         type={isNativeType(resolvedType) ? resolvedType : undefined}
         ref={isReactComponent(Component)
           ? r => this.input = r
@@ -459,4 +459,4 @@ Field.propTypes = {
   noValidate: React.PropTypes.bool
 }
 
-module.exports = Field;
+export default Field;

@@ -79,4 +79,4 @@ class ValidationMessage extends React.Component {
   }
 }
 
-module.exports = ValidationMessage
+export default ValidationMessage

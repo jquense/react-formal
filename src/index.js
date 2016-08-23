@@ -33,3 +33,4 @@ Form.setDefaults = (defaults = {}) => {
 }
 
 module.exports = Form
+export default Form

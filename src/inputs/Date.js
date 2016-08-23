@@ -38,7 +38,9 @@ let toDateString = (date, part) => {
 
 class DateInput extends React.Component {
   static propTypes = {
-    value: React.PropTypes.instanceOf(Date)
+    value: React.PropTypes.instanceOf(Date),
+    onChange: React.PropTypes.func,
+    type: React.PropTypes.string,
   }
 
   render() {

@@ -3,7 +3,8 @@ import Input from './Input';
 
 class BoolInput extends React.Component {
   static propTypes = {
-    value: React.PropTypes.bool
+    value: React.PropTypes.bool,
+    onChange: React.PropTypes.func,
   }
 
   render() {

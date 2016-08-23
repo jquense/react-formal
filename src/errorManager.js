@@ -1,7 +1,7 @@
 import Promise from 'universal-promise';
 
 import errToJSON from './util/errToJSON';
-import pathUtils from './util/paths';
+import { reduce, trim } from './util/paths';
 
 let isValidationError = err => err && err.name === 'ValidationError';
 
@@ -24,14 +24,14 @@ export default function errorManager(handleValidation) {
 
   return {
     collect(paths, pristineErrors = {}, options) {
-      paths = pathUtils.reduce([].concat(paths))
+      paths = reduce([].concat(paths))
 
       let errors = { ...pristineErrors }
       let nextErrors = errors
       let workDone = false
 
       let validations = paths.map(path => {
-        nextErrors = pathUtils.trim(path, nextErrors)
+        nextErrors = trim(path, nextErrors)
 
         if (errors !== nextErrors) {
           workDone = true;

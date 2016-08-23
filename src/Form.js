@@ -284,7 +284,17 @@ class Form extends React.Component {
       }
 
       return err
-    }
+    },
+
+    /**
+     * yup schema context
+     */
+    context: React.PropTypes.object.isRequired,
+
+    /**
+     * toggle debug mode, which `console.warn`s validation errors
+     */
+    debug: React.PropTypes.bool,
   }
 
   static defaultProps = {
@@ -482,7 +492,8 @@ class Form extends React.Component {
       , getter
       , setter
       , errors
-      , __messageContainer: containerProps = {} } = this.props;
+      , __messageContainer: containerProps = {} // eslint-disable-line
+    } = this.props;
 
     let props = pickAttributes(this.props);
 
@@ -527,14 +538,15 @@ class Form extends React.Component {
   }
 
   notify(event, ...args){
-    this.props[event] && this.props[event](...args)
+    if (this.props[event])
+      this.props[event](...args)
   }
 }
 
 export default uncontrollable(Form,
   {
     value: 'onChange',
-    errors: 'onError' 
+    errors: 'onError'
   },
   ['submit', 'validateGroup', 'validate']
 )

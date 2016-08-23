@@ -10,6 +10,15 @@ let toArray = React.Children.toArray || function (children) {
 
 
 class Select extends React.Component {
+  static propTypes = {
+    value: React.PropTypes.number,
+    multiple: React.PropTypes.bool,
+    onChange: React.PropTypes.func,
+    tagName: React.PropTypes.oneOfType([
+      React.PropTypes.string,
+      React.PropTypes.func,
+    ]),
+  }
 
   handleChange = () => {
     let { onChange, children } = this.props;

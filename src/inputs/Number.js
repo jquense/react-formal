@@ -10,7 +10,8 @@ let isAtDelimiter = (num, str) =>{
 
 class NumberInput extends React.Component {
   static propTypes = {
-    value: React.PropTypes.number
+    value: React.PropTypes.number,
+    onChange: React.PropTypes.func,
   }
 
   state = {}
@@ -53,4 +54,4 @@ class NumberInput extends React.Component {
 }
 
 
-module.exports = NumberInput;
+export default NumberInput;
