@@ -1,4 +1,4 @@
-'use strict';
+var webpackConfig = require('./webpack/test.config');
 
 module.exports = function (config) {
 
@@ -27,7 +27,7 @@ module.exports = function (config) {
       'test.js': ['webpack', 'sourcemap']
     },
 
-    webpack: require('./webpack.configs').test,
+    webpack: webpackConfig,
 
     webpackServer: {
       noInfo: true

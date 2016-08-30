@@ -274,8 +274,9 @@ class Form extends React.Component {
      * For more information about the yup api check out: https://github.com/jquense/yup/blob/master/README.md
      * @type {YupSchema}
      */
-    schema(props, name, componentName) {
-      var err = !props.noValidate && React.PropTypes.any.isRequired(props, name, componentName)
+    schema(props, name, componentName, ...args) {
+      var err = !props.noValidate &&
+        React.PropTypes.any.isRequired(props, name, componentName, ...args)
 
       if (props[name]) {
         let schema = props[name];
@@ -289,7 +290,7 @@ class Form extends React.Component {
     /**
      * yup schema context
      */
-    context: React.PropTypes.object.isRequired,
+    context: React.PropTypes.object,
 
     /**
      * toggle debug mode, which `console.warn`s validation errors
@@ -366,8 +367,6 @@ class Form extends React.Component {
     let options = pick(props, YUP_OPTIONS)
     let abortEarly = options.abortEarly == null ? false : options.abortEarly
 
-    options = { ...options, abortEarly, parent, path }
-
     let { value, getter } = props
     let schema = this.getSchemaForPath(path, props)
 
@@ -376,7 +375,7 @@ class Form extends React.Component {
     let pathValue = parent != null ? parent[currentPath] : value
 
     return schema
-      .validate(pathValue, options)
+      .validate(pathValue, { ...options, abortEarly, parent, path })
       .then(() => null)
       .catch(err => err)
   }
