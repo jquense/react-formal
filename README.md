@@ -1,4 +1,5 @@
 # react-formal
+[![npm version](https://img.shields.io/npm/v/react-formal.svg?style=flat-square)](https://www.npmjs.com/package/react-formal)
 
 Better form validation and value management for React. Provides __minimal__ wiring while also allowing for complete input flexibility.
 
