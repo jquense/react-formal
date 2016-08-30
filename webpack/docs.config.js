@@ -14,7 +14,7 @@ var loaders = [
 
 module.exports = {
   devtool: 'source-map',
-  entry: './docs/app.jsx',
+  entry: './docs/app.js',
   cache: false,
   output: {
     path: path.resolve(__dirname, '../docs/'),
