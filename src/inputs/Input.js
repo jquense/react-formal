@@ -2,7 +2,7 @@ import React from 'react';
 
 class Input extends React.Component {
   static propTypes = {
-    value: React.PropTypes.string,
+    value: React.PropTypes.any,
     onChange: React.PropTypes.func,
     tagName: React.PropTypes.oneOfType([
       React.PropTypes.string,
