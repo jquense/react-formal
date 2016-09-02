@@ -20,25 +20,25 @@ __For more complete api documentations, live examples, and getting started guide
 `react-formal` uses a [yup](https://github.com/jquense/yup) schema to update and validate form values. It treats the `form` like an input (representing an object) with a `value` and `onChange`. The `form` can be controlled or uncontrolled as well, just like a normal React input.
 
 ```js
-var yup = require('yup')
-  , Form = require('react-formal')
+import yup from 'yup';
+import Form from 'react-formal';
 
-var modelSchema =  yup.object({
-        name: yup.object({
-            first: yup.string().required('Name is required'),
-            last: yup.string().required('Name is required')    
-        }),
-        dateOfBirth: yup.date()
-            .max(new Date(), 'You can be born in the future!')
-    })
+const modelSchema = yup.object({
+    name: yup.object({
+        first: yup.string().required('Name is required'),
+        last: yup.string().required('Name is required')
+    }),
+    dateOfBirth: yup.date()
+        .max(new Date(), 'You can be born in the future!')
+})
 
 // ...in a component
-render(){
+render() {
     return (
         <Form
             schema={modelSchema}
             value={this.state.model}
-            onChange={model => this.setState({ model})}
+            onChange={model => this.setState({ model })}
         >
             <fieldset>
                 <legend>Personal Details</legend>
