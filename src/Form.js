@@ -7,6 +7,7 @@ import Container from 'react-input-message/MessageContainer';
 import uncontrollable from 'uncontrollable';
 import warning from 'warning';
 import reach from 'yup/lib/util/reach';
+import PropTypes from 'proptypes';
 
 import errorManager from './errorManager';
 import contextTypes from './util/contextType';
@@ -118,7 +119,7 @@ class Form extends React.Component {
      * Form value object, can be left [uncontrolled](/controllables);
      * use the `defaultValue` prop to initialize an uncontrolled form.
      */
-    value: React.PropTypes.object,
+    value: PropTypes.object,
 
     /**
      * Callback that is called when the `value` prop changes.
@@ -153,7 +154,7 @@ class Form extends React.Component {
      * }}/>
      * ```
      */
-    errors: React.PropTypes.object,
+    errors: PropTypes.object,
 
     /**
      * Callback that is called when a validation error occurs. It is called with an `errors` object
@@ -276,7 +277,7 @@ class Form extends React.Component {
      */
     schema(props, name, componentName, ...args) {
       var err = !props.noValidate &&
-        React.PropTypes.any.isRequired(props, name, componentName, ...args)
+        PropTypes.any.isRequired(props, name, componentName, ...args)
 
       if (props[name]) {
         let schema = props[name];
@@ -290,7 +291,7 @@ class Form extends React.Component {
     /**
      * yup schema context
      */
-    context: React.PropTypes.object,
+    context: PropTypes.object,
 
     /**
      * toggle debug mode, which `console.warn`s validation errors
