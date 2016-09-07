@@ -1,4 +1,4 @@
-import chain from 'chain-function';
+
 import cn from 'classnames';
 import omit from 'lodash/object/omit';
 import React from 'react';
@@ -7,28 +7,13 @@ import MessageTrigger from 'react-input-message/MessageTrigger';
 import { Binding } from 'topeka';
 import invariant from 'invariant';
 
+import mergeWithEvents from './util/chainEvents';
 import isNativeType from './util/isNativeType';
 import resolveFieldComponent from './util/resolveFieldComponent'
 import contextTypes from './util/contextType';
 import config from './config';
 import isReactComponent from './util/isReactComponent';
 import { inPath } from './util/paths';
-
-
-function chainEvents(events, props, bindingProps, triggerProps) {
-  if (!events) return;
-
-  let result = {};
-
-  events.forEach(event => {
-    result[event] = chain(
-      props[event],
-      bindingProps[event],
-      triggerProps[event]
-    )
-  })
-  return result
-}
 
 function getValue(value, bindTo, getter) {
   if (typeof bindTo === 'function') {
@@ -147,13 +132,12 @@ class Field extends React.Component {
       errorClass = config.errorClass,
     } = this.props;
 
-    let fieldProps = {
-      name,
-      ...omit(this.props, Object.keys(Field.propTypes)),
-      ...bindingProps,
-      ...triggerProps,
-      ...chainEvents(events, this.props, bindingProps, triggerProps),
-    }
+    let fieldProps = mergeWithEvents(events, [
+      { name },
+      omit(this.props, Object.keys(Field.propTypes)),
+      bindingProps,
+      triggerProps
+    ])
 
     if (this.shouldValidate()) {
       let { messages } = fieldProps

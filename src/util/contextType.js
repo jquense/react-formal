@@ -6,5 +6,5 @@ export default {
     schema: React.PropTypes.func,
     onSubmit: React.PropTypes.func,
     onOptions: React.PropTypes.func
-  }).isRequired
+  })
 }

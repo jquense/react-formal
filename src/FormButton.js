@@ -2,7 +2,9 @@ import React from 'react';
 import warning from 'warning';
 import Trigger from 'react-input-message/MessageTrigger';
 import chain from 'chain-function';
+
 import contextTypes from './util/contextType';
+import mergeWithEvents from './util/chainEvents';
 
 /**
  * A Form Button, for triggering validations for specific Field groups
@@ -49,7 +51,7 @@ class Button extends React.Component {
       , component: Component
       , ...props } = this.props
 
-    let context = this.context.reactFormalContext;
+    let context = this.context.reactFormalContext || {};
 
     warning(!group || type.toLowerCase() !== 'submit',
       'You have specified a `group` prop with type="submit" on this Form.Button component. ' +
@@ -64,9 +66,17 @@ class Button extends React.Component {
       )
 
     return (
-      <Trigger group={group} events={events}>
-        {({ messages: _, ...props }) =>
-          <Component {...props} type={type}>{ this.props.children }</Component>
+      <Trigger group={group || '@all'} events={events}>
+        {({ messages: _, ...triggerProps }) =>
+          <Component
+            {...mergeWithEvents(events, [
+              props,
+              triggerProps
+            ])}
+            type={type}
+          >
+            {this.props.children}
+          </Component>
         }
       </Trigger>
     )
