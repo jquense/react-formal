@@ -152,20 +152,16 @@ class Field extends React.Component {
 
     let [Component, resolvedType] = resolveFieldComponent(type, this.schema(name))
 
+    fieldProps.type = isNativeType(resolvedType) ? resolvedType : undefined;
+
     // Escape hatch for more complex Field types.
-    if (type === null && typeof children === 'function') {
-      fieldProps.schema = this.schema(name);
-      fieldProps.fieldInput = Component;
-      fieldProps.type = isNativeType(resolvedType) ? resolvedType : undefined;
-
-      return children(fieldProps)
+    if (typeof children === 'function') {
+      return children(fieldProps, Component)
     }
-
 
     return (
       <Component
         {...fieldProps}
-        type={isNativeType(resolvedType) ? resolvedType : undefined}
         ref={isReactComponent(Component)
           ? r => this.input = r
           : null
@@ -444,7 +440,36 @@ Field.propTypes = {
   /**
    * Disables validation for the Field.
    */
-  noValidate: React.PropTypes.bool
+  noValidate: React.PropTypes.bool,
+
+  /**
+   * When children is the traditional react element or nodes, they are
+   * passed through as-is to the Field `type` component.
+   *
+   * ```jsx
+   * <Field type='select'>
+   *   <option>red</option>
+   *   <option>red</option>
+   * </Field>
+   * ```
+   *
+   * When `children` is a function, its called with the processed field
+   * props and the resolved Field Input component, for more advanced use cases
+   *
+   * ```jsx
+   * <Field name='birthDate'>
+   *  {(props, Input) =>
+   *    <DataProvider>
+   *      <Input {...props} />
+   *    </DataProvider>
+   *  }
+   * </Field>
+   * ```
+   */
+  children: React.PropTypes.oneOfType([
+    React.PropTypes.node,
+    React.PropTypes.func,
+  ]),
 }
 
 export default Field;
