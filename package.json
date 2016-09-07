@@ -53,7 +53,7 @@
     "react-pure-render": "^1.0.2",
     "spy-on-component": "^1.0.2",
     "topeka": "^0.4.1",
-    "uncontrollable": "^3.1.0",
+    "uncontrollable": "^4.0.3",
     "universal-promise": "^1.1.0",
     "warning": "^2.0.0",
     "yup": "^0.21.1"

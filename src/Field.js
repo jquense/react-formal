@@ -166,13 +166,17 @@ class Field extends React.Component {
       delete fieldProps.messages
     }
 
+    let [Component, resolvedType] = resolveFieldComponent(type, this.schema(name))
+
     // Escape hatch for more complex Field types.
     if (type === null && typeof children === 'function') {
       fieldProps.schema = this.schema(name);
+      fieldProps.fieldInput = Component;
+      fieldProps.type = isNativeType(resolvedType) ? resolvedType : undefined;
+
       return children(fieldProps)
     }
 
-    let [Component, resolvedType] = resolveFieldComponent(type, this.schema(name))
 
     return (
       <Component
