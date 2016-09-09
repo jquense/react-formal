@@ -14,7 +14,7 @@ var loaders = [
 
 module.exports = {
   devtool: 'source-map',
-  entry: './docs/app.js',
+  entry: './docs/App.js',
   cache: false,
   output: {
     path: path.resolve(__dirname, '../docs/'),
@@ -23,19 +23,14 @@ module.exports = {
   },
 
   resolve: {
-    extensions: ['', '.js', '.jsx', 'json'],
+    extensions: ['', '.js', 'json'],
     alias: {
+      components: path.resolve(__dirname, '../docs/components'),
       react: path.resolve(__dirname, '../node_modules/react')
     }
   },
 
-  externals: {
-    'babel-core/browser': 'window.babel'
-  },
   module: {
-    noParse: [
-      path.join(__dirname, '../node_modules/component-playground/node_modules/babel-core/browser.js')
-    ],
     loaders: loaders.concat([
       { test: /\.gif$/, loader: 'url-loader?mimetype=image/png' },
       { test: /\.woff(2)?(\?v=[0-9]\.[0-9]\.[0-9])?$/, loader: 'url-loader?limit=10000&minetype=application/font-woff' },

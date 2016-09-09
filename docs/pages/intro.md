@@ -99,5 +99,5 @@ var form = (
   <Form.Button type='submit'>Submit</Form.Button>
 </Form>)
 
-React.render(form, mountNode);
+render(form, mountNode);
 ```

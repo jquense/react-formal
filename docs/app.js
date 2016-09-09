@@ -12,8 +12,10 @@ import {
   , IndexRoute
   , Link } from 'react-router';
 
-import './styles/style.less';
+import '@monastic.panic/component-playground/codemirror.css';
+import '@monastic.panic/component-playground/themes/oceanic.css';
 import 'react-widgets/lib/less/react-widgets.less';
+import './styles/style.less';
 
 import localizers from 'react-widgets/lib/localizers/globalize'
 
