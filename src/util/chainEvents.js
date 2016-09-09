@@ -6,10 +6,11 @@ function chainEvents(events, objects) {
 
   let result = {};
 
-  events.forEach(event => {
+  [].concat(events).forEach(event => {
     let handlers = objects.map(p => p[event]);
     result[event] = chain(...handlers)
   })
+  
   return result
 }
 
