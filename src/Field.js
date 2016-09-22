@@ -166,7 +166,9 @@ class Field extends React.Component {
           ? r => this.input = r
           : null
         }
-      />
+      >
+        {children}
+      </Component>
     )
   }
 
