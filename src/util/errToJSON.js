@@ -2,7 +2,7 @@
 export default function errToJSON(error, target = {}) {
   if (error.inner.length) {
     error.inner.forEach(inner => {
-      errToJSON(inner, target, inner.path)
+      errToJSON(inner, target)
     })
 
     return target;

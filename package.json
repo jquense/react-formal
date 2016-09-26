@@ -44,6 +44,7 @@
   "dependencies": {
     "chain-function": "^1.0.0",
     "classnames": "^2.2.5",
+    "hoist-non-react-statics": "^1.2.0",
     "invariant": "^2.2.1",
     "lodash": "^3.10.1",
     "pick-attributes": "^1.0.2",

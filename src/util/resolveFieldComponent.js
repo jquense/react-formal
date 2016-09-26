@@ -1,6 +1,4 @@
-import Input from '../inputs/Input';
 import config from '../config';
-import types from './types';
 
 export default function resolveFieldComponent(type, schema) {
   if (!type && schema) {
@@ -11,7 +9,7 @@ export default function resolveFieldComponent(type, schema) {
   let Component = type
 
   if (typeof type === 'string') {
-    Component = types[type.toLowerCase()] || Input
+    Component = config.types[type.toLowerCase()] || config.types['']
   }
 
   return [Component, type]

@@ -1,5 +1,7 @@
+import hoistNonReactStatic from 'hoist-non-react-statics';
+import invariant from 'invariant';
 import pick from 'lodash/object/pick';
-import pickAttributes from 'pick-attributes';
+import omit from 'lodash/object/omit';
 import expr from 'property-expr';
 import React from 'react';
 import scu from 'react-pure-render/function';
@@ -9,6 +11,8 @@ import warning from 'warning';
 import reach from 'yup/lib/util/reach';
 
 import errorManager from './errorManager';
+import addTypes from './types';
+import config from './config';
 import contextTypes from './util/contextType';
 import errToJSON from './util/errToJSON';
 import createTimeoutManager from './util/timeoutManager';
@@ -16,28 +20,31 @@ import registerWithContext from './util/registerWithContext';
 
 import { BindingContext as BC } from 'topeka';
 
-let BindingContext = BC.ControlledComponent;
+const BindingContext = BC.ControlledComponent;
 
-let done = e => setTimeout(() => { throw e })
-let splitPath = path => {
-  let parts = expr.split(path);
-  let tail = parts.pop()
-  return [expr.join(parts), tail]
+const YUP_OPTIONS = [
+  'context',
+  'stripUnknown',
+  'recursive',
+  'abortEarly',
+  'strict'
+];
+
+const setter = BindingContext.defaultProps.setter;
+
+const getter = (path, model) =>
+  path ? expr.getter(path, true)(model || {}) : model;
+
+function toErrors(err) {
+  invariant(isValidationError(err),
+    '`toErrors()` only works with ValidationErrors.')
+  return errToJSON(err)
 }
 
-let isValidationError = err => err && err.name === 'ValidationError';
-
-const YUP_OPTIONS = ['context', 'stripUnknown', 'recursive', 'abortEarly', 'strict'];
-
-function maybeWarn(debug, errors, target) {
-  if (!debug) return;
-
-  if (process.env.NODE_ENV !== 'production') {
-    let keys = Object.keys(errors)
-    warning(!keys.length,
-      `[react-formal] (${target}) invalid fields: ${keys.join(', ')}`)
-  }
+function setDefaults(defaults = {}) {
+  Object.assign(config, defaults)
 }
+
 
 /**
  * Form component renders a `value` to be updated and validated by child Fields.
@@ -300,10 +307,11 @@ class Form extends React.Component {
 
   static defaultProps = {
     ...BindingContext.defaultProps,
+    getter,
+    setter,
     component: 'form',
     strict: false,
     delay: 300,
-    getter: (path, model) => path ? expr.getter(path, true)(model || {}) : model
   }
 
   static contextTypes = {
@@ -312,7 +320,13 @@ class Form extends React.Component {
 
   static childContextTypes = contextTypes
 
-  constructor(props, context){
+  static getter = getter;
+  static setter = setter;
+  static toErrors = toErrors;
+  static setDefaults = setDefaults;
+  static addInputTypes = addTypes;
+
+  constructor(props, context) {
     super(props, context)
 
     this.queue = []
@@ -494,21 +508,21 @@ class Form extends React.Component {
       , __messageContainer: containerProps = {} // eslint-disable-line
     } = this.props;
 
-    let props = pickAttributes(this.props);
+    let elementProps = omit(this.props, Object.keys(Form.propTypes));
 
     if (Element === 'form')
-      props.noValidate = true // disable html5 validation
+      elementProps.noValidate = true // disable html5 validation
 
-    props.onSubmit = this.handleSubmit
+    elementProps.onSubmit = this.handleSubmit
 
     if (Element === null || Element === false) {
       children = React.cloneElement(
         React.Children.only(children),
-        props
+        elementProps
       )
     } else  {
       children = (
-        <Element {...props}>
+        <Element {...elementProps}>
           { children }
         </Element>
       )
@@ -542,10 +556,40 @@ class Form extends React.Component {
   }
 }
 
-export default uncontrollable(Form,
-  {
-    value: 'onChange',
-    errors: 'onError'
-  },
-  ['submit', 'validateGroup', 'validate']
+export default hoistNonReactStatic(
+  uncontrollable(Form,
+    {
+      value: 'onChange',
+      errors: 'onError'
+    },
+    ['submit', 'validateGroup', 'validate']
+  ),
+  Form
 )
+
+
+
+
+function maybeWarn(debug, errors, target) {
+  if (!debug) return;
+
+  if (process.env.NODE_ENV !== 'production') {
+    let keys = Object.keys(errors)
+    warning(!keys.length,
+      `[react-formal] (${target}) invalid fields: ${keys.join(', ')}`)
+  }
+}
+
+function splitPath(path) {
+  let parts = expr.split(path);
+  let tail = parts.pop()
+  return [expr.join(parts), tail]
+}
+
+function isValidationError(err) {
+  return !!(err && err.name === 'ValidationError');
+}
+
+function done(e) {
+  setTimeout(() => { throw e })
+}

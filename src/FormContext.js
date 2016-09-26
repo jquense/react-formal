@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Children } from 'react';
 
 /**
  * `<Form.Context />` provides declarative API similar in purpose to the
@@ -32,7 +32,11 @@ class FormContext extends React.Component {
       React.PropTypes.func,
       React.PropTypes.string
     ])
-  }
+  };
+
+  static defaultProps = {
+    component: 'div'
+  };
 
   static childContextTypes = {
     reactFormalContext: React.PropTypes.object
@@ -50,11 +54,11 @@ class FormContext extends React.Component {
     })
   }
 
-  render(){
-    let Tag = this.props.component || 'div';
-    return React.Children.count(this.props.children) === 1
-      ? this.props.children
-      : <Tag {...this.props}/>
+  render() {
+    let { children, component: Tag, ...props } = this.props;
+
+    return Children.count(children) === 1
+      ? children : <Tag {...props}>{children}</Tag>
   }
 }
 
