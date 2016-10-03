@@ -1,5 +1,5 @@
-import pick from 'lodash/object/pick';
-import pickAttributes from 'pick-attributes';
+import omit from 'lodash/omit'
+import pick from 'lodash/pick';
 import expr from 'property-expr';
 import React from 'react';
 import scu from 'react-pure-render/function';
@@ -494,7 +494,11 @@ class Form extends React.Component {
       , __messageContainer: containerProps = {} // eslint-disable-line
     } = this.props;
 
-    let props = pickAttributes(this.props);
+    let props = omit(this.props, [
+      '__messageContainer',
+      ...YUP_OPTIONS,
+      ...Object.keys(Form.propTypes),
+    ]);
 
     if (Element === 'form')
       props.noValidate = true // disable html5 validation

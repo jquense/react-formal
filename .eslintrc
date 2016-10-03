@@ -1,0 +1,2 @@
+parser: babel-eslint
+extends: jason

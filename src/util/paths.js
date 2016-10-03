@@ -1,5 +1,5 @@
 import prop from 'property-expr';
-import uniq from 'lodash/array/uniq';
+import uniq from 'lodash/uniq';
 
 export function inPath(pathA, pathB) {
   if (pathA === pathB) return true

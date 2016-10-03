@@ -1,6 +1,6 @@
 
 import cn from 'classnames';
-import omit from 'lodash/object/omit';
+import omit from 'lodash/omit';
 import React from 'react';
 import shallowEqual from 'react-pure-render/shallowEqual';
 import MessageTrigger from 'react-input-message/MessageTrigger';
