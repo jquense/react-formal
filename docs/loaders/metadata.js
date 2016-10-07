@@ -1,8 +1,8 @@
 var metadata = require('react-component-metadata')
   , handlebars = require('handlebars')
-  , assign = require('lodash/object/assign')
-  , each = require('lodash/collection/each')
-  , transform = require('lodash/object/transform')
+  , assign = require('lodash/assign')
+  , each = require('lodash/each')
+  , transform = require('lodash/transform')
   , fs = require('fs');
 
 
