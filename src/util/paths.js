@@ -1,11 +1,11 @@
 import prop from 'property-expr';
 import uniq from 'lodash/uniq';
 
-export function inPath(pathA, pathB) {
-  if (pathA === pathB) return true
+export function inPath(basePath, childPath) {
+  if (basePath === childPath) return true
 
-  var partsA = prop.split(pathA) || []
-    , partsB = prop.split(pathB) || []
+  var partsA = prop.split(basePath) || []
+    , partsB = prop.split(childPath) || []
 
   if (partsA.length > partsB.length)
     return false

@@ -4,6 +4,7 @@ import expr from 'property-expr';
 import React from 'react';
 import scu from 'react-pure-render/function';
 import Container from 'react-input-message/MessageContainer';
+import { BindingContext as BC } from 'topeka';
 import uncontrollable from 'uncontrollable';
 import warning from 'warning';
 import reach from 'yup/lib/util/reach';
@@ -13,8 +14,7 @@ import contextTypes from './util/contextType';
 import errToJSON from './util/errToJSON';
 import createTimeoutManager from './util/timeoutManager';
 import registerWithContext from './util/registerWithContext';
-
-import { BindingContext as BC } from 'topeka';
+import * as ErrorUtils from './util/ErrorUtils';
 
 let BindingContext = BC.ControlledComponent;
 
@@ -349,7 +349,7 @@ class Form extends React.Component {
           noValidate,
           submit: null,
           schema: this.getSchemaForPath,
-          onError: this.handleError,
+          onFieldError: this.handleFieldError,
           onSubmit: this.handleSubmit,
           onOptions: this.handlePathOptions,
         }
@@ -391,6 +391,15 @@ class Form extends React.Component {
 
     if (e.type !== 'onChange')
       this.flush(delay)
+  }
+
+  handleFieldError = (name, fieldErrors) => {
+    const { errors } = this.props;
+
+    this.handleError(Object.assign(
+      ErrorUtils.remove(errors, name),
+      fieldErrors
+    ))
   }
 
   handleError = errors => {

@@ -263,6 +263,98 @@ describe('Field', ()=> {
     inst.single('input').trigger('change')
   })
 
+  describe.only('meta', () => {
+    it('should pass meta to form', () => {
+      let Input = ({ meta }) => {
+        meta.should.have.property('invalid').that.equals(true);
+        meta.should.have.property('valid').that.equals(false);
+        meta.should.have.property('errors').that.eqls({
+          name: 'foo'
+        });
+
+        return null
+      }
+
+      $(
+        <Form
+          schema={schema}
+          defaultValue={{}}
+          defaultErrors={{ 'name': 'foo' }}
+        >
+          <Form.Field name='name' type={Input} />
+        </Form>
+      )
+      .render()
+    })
+
+    it('should field onError should remove existing errors', () => {
+      let errorSpy = sinon.spy()
+      $(
+        <Form
+          schema={schema}
+          defaultValue={{}}
+          defaultErrors={{ 'name': 'foo', bar: 'baz' }}
+          onError={errorSpy}
+        >
+          <Form.Field name='name' type={TestInput} />
+        </Form>
+      )
+      .render()
+      .find(TestInput)
+      .props().meta.onError({})
+
+      errorSpy.should.have.been.calledOnce
+        .and.calledWith({ bar: 'baz' })
+    })
+
+    it('should field onError should update field errors', () => {
+      let errorSpy = sinon.spy()
+      $(
+        <Form
+          schema={schema}
+          defaultValue={{}}
+          defaultErrors={{ 'name': 'foo', bar: 'baz' }}
+          onError={errorSpy}
+        >
+          <Form.Field name='name' type={TestInput} />
+        </Form>
+      )
+      .render()
+      .find(TestInput)
+      .props().meta.onError({ 'name': 'foo', 'name.first': 'baz' })
+
+      errorSpy.should.have.been.calledOnce
+        .and.calledWith({
+          'name': 'foo',
+          'name.first': 'baz',
+          bar: 'baz'
+        })
+    })
+
+    it('should field onError should replace field errors', () => {
+      let errorSpy = sinon.spy()
+      $(
+        <Form
+          schema={schema}
+          defaultValue={{}}
+          defaultErrors={{ 'name': 'foo', bar: 'baz' }}
+          onError={errorSpy}
+        >
+          <Form.Field name='name' type={TestInput} />
+        </Form>
+      )
+      .render()
+      .find(TestInput)
+      .props().meta.onError({ 'name.first': 'baz' })
+
+      errorSpy.should.have.been.calledOnce
+        .and.calledWith({
+          'name.first': 'baz',
+          bar: 'baz'
+        })
+    })
+  })
+
   describe('inclusive active matching', () => {
 
     it('should count path matches', function() {

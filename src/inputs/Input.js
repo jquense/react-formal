@@ -15,8 +15,7 @@ class Input extends React.Component {
       , value
       , ...props } = this.props
 
-    delete props.errors;
-    delete props.invalid;
+    delete props.meta;
 
     if (value === null)
       value = '';

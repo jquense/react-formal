@@ -13,7 +13,7 @@ import resolveFieldComponent from './util/resolveFieldComponent'
 import contextTypes from './util/contextType';
 import config from './config';
 import isReactComponent from './util/isReactComponent';
-import { inPath } from './util/paths';
+import { inclusiveMapMessages } from './util/ErrorUtils';
 
 function getValue(value, bindTo, getter) {
   if (typeof bindTo === 'function') {
@@ -27,24 +27,6 @@ function getValue(value, bindTo, getter) {
     obj[key] = getValue(value, bindTo[key], getter);
     return obj
   }, {})
-}
-
-function inclusiveMapMessages(messages, names) {
-  let activeMessages = {};
-
-  if (!names.length) return activeMessages;
-
-  let paths = Object.keys(messages);
-
-  names.forEach(name => {
-    paths.forEach(path => {
-      if (messages[path] && inPath(name, path)) {
-        activeMessages[path] = messages[path]
-      }
-    })
-  })
-
-  return activeMessages;
 }
 
 
@@ -110,9 +92,15 @@ class Field extends React.Component {
       )
   }
 
+  onError = (errors) => {
+    let { name } = this.props
+      , context = this.context.reactFormalContext;
+
+    context.onFieldError(name, errors);
+  }
+
   bindTo = (_value, getter) => {
     let { mapToValue, name } = this.props;
-
     let value = getValue(_value, mapToValue || name, getter);
 
     // ensure that no inputs are left uncontrolled
@@ -132,27 +120,39 @@ class Field extends React.Component {
       errorClass = config.errorClass,
     } = this.props;
 
-    let fieldProps = mergeWithEvents(events, [
+    let fieldProps = omit(this.props, Object.keys(Field.propTypes))
+    fieldProps = mergeWithEvents(events, [
       { name },
-      omit(this.props, Object.keys(Field.propTypes)),
+      fieldProps,
       bindingProps,
-      triggerProps
+      triggerProps,
     ])
+
+    let [Component, resolvedType] = resolveFieldComponent(type, this.schema(name))
+
+    fieldProps.type = isNativeType(resolvedType)
+      ? resolvedType : undefined;
+
+    let meta = {
+      resolvedType,
+      errorClass,
+      onError: this.onError
+    }
 
     if (this.shouldValidate()) {
       let { messages } = fieldProps
       let invalid = messages && !!Object.keys(messages).length
 
-      fieldProps.errors = messages
-      fieldProps.invalid = invalid
+      meta.errors = messages
+      meta.invalid = invalid
+      meta.valid = !meta.invalid
+
       fieldProps.className = cn(className, invalid && errorClass)
 
       delete fieldProps.messages
     }
 
-    let [Component, resolvedType] = resolveFieldComponent(type, this.schema(name))
-
-    fieldProps.type = isNativeType(resolvedType) ? resolvedType : undefined;
+    fieldProps.meta = meta;
 
     // Escape hatch for more complex Field types.
     if (typeof children === 'function') {
@@ -195,7 +195,7 @@ class Field extends React.Component {
     }
 
     if (alsoValidates != null) {
-      name = [name, ...alsoValidates]
+      name = [name].concat(alsoValidates)
     }
 
     return (
@@ -419,11 +419,14 @@ Field.propTypes = {
    * if you want to trigger validation for the parent path as well.
    *
    * ```js
-   * <Form.Field name='name.first' alsoValidates={['name']}/>
-   * <Form.Field name='name.last' alsoValidates={['name']}/>
+   * <Form.Field name='name.first' alsoValidates="name" />
+   * <Form.Field name='name.last' alsoValidates={['name', 'surname']} />
    * ```
    */
-  alsoValidates: React.PropTypes.arrayOf(React.PropTypes.string),
+  alsoValidates:React.PropTypes.oneOfType([
+    React.PropTypes.string,
+    React.PropTypes.arrayOf(React.PropTypes.string)
+  ]),
 
   /**
    * Indicates whether child fields of the named field
