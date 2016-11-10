@@ -2,7 +2,9 @@ import omitBy from 'lodash/omitBy';
 
 import { inPath } from './paths';
 
-let isChildPath = (basePath, path) => path !== basePath && inPath(basePath, path);
+export let isChildPath = (basePath, path) =>
+  path !== basePath && inPath(basePath, path);
+
 
 function mapKeys(messages, baseName, fn) {
   const newMessages = {};
@@ -36,23 +38,33 @@ export function prefix(messages, baseName) {
   return result;
 }
 
+export function unprefix(messages, baseName) {
+  const paths = Object.keys(messages);
+  const result = {};
+
+  paths.forEach((path) => {
+    const shortened = path.slice(baseName.length).replace(/^\./, '');
+    result[shortened] = messages[path];
+  });
+  return result;
+}
+
+
 export function filter(messages, baseName) {
   const paths = Object.keys(messages);
   const result = {};
 
   paths.forEach((path) => {
     if (isChildPath(baseName, path)) {
-      const shortened = path.slice(baseName.length).replace(/^\./, '');
-
-      result[shortened] = messages[path];
+      result[path] = messages[path];
     }
   });
 
   return result;
 }
 
-export function remove(messages, baseName) {
-  return omitBy(messages, (_, path) => inPath(baseName, path));
+export function remove(messages, ...basePaths) {
+  return omitBy(messages, (_, path) => basePaths.some(b => inPath(b, path)));
 }
 
 export function shift(messages, baseName, atIndex) {
