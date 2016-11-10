@@ -6,6 +6,7 @@ import scu from 'react-pure-render/function';
 import Container from 'react-input-message/MessageContainer';
 import { BindingContext as BC } from 'topeka';
 import uncontrollable from 'uncontrollable';
+import Promise from 'universal-promise';
 import warning from 'warning';
 import reach from 'yup/lib/util/reach';
 
@@ -451,7 +452,8 @@ class Form extends React.Component {
     options.strict = false
 
     if (noValidate)
-      return this.notify('onSubmit', value)
+      return Promise.resolve(true)
+        .then(() => this.notify('onSubmit', value))
 
     let handleSuccess = validatedValue =>
       this.notify('onSubmit', validatedValue)

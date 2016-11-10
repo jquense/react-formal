@@ -128,7 +128,8 @@ class Field extends React.Component {
       triggerProps,
     ])
 
-    let [Component, resolvedType] = resolveFieldComponent(type, this.schema(name))
+    let schema = this.schema(name);
+    let [Component, resolvedType] = resolveFieldComponent(type, schema)
 
     fieldProps.type = isNativeType(resolvedType)
       ? resolvedType : undefined;
@@ -136,7 +137,12 @@ class Field extends React.Component {
     let meta = {
       resolvedType,
       errorClass,
+      schema,
       onError: this.onError
+    }
+
+    if (this.context.reactFormalContext) {
+      meta.context = this.context.reactFormalContext.options.context // lol
     }
 
     if (this.shouldValidate()) {
