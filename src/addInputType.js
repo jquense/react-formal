@@ -9,7 +9,7 @@ let addType = (type, Component) => {
   if ( compType !== 'string' && compType !== 'function' )
     throw new TypeError('The `Component` parameter must be a valid React Component class or tag name')
 
-  types[type] = Component
+  types[type.toLowerCase()] = Component
 }
 
 export default function(...args){
