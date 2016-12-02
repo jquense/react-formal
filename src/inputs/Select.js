@@ -11,7 +11,7 @@ let toArray = React.Children.toArray || function (children) {
 
 class Select extends React.Component {
   static propTypes = {
-    value: React.PropTypes.number,
+    value: React.PropTypes.any,
     multiple: React.PropTypes.bool,
     onChange: React.PropTypes.func,
     tagName: React.PropTypes.oneOfType([
