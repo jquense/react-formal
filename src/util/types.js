@@ -38,7 +38,8 @@ types.array      =
   types.listbox  = wrapWithDefaults(SelectInput, { multiple: true })
 
 types.bool       =
-  types.boolean  = BoolInput
+  types.boolean  =
+  types.checkbox = BoolInput
 
 types.textarea   = wrapWithDefaults(Input, { tagName: 'textarea' })
 
