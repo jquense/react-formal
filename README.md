@@ -15,7 +15,7 @@ __(don't like the yup but like how the form works? Try: [topeka](https://github.
 
 ### Use
 
-__For more complete api documentations, live examples, and getting started guide check out the [documentation site](http://jquense.github.io/react-formal/docs/#/getting-started).__
+__For more complete api documentations, live examples, and getting started guide check out the [documentation site](https://jquense.github.io/react-formal/#/api).__
 
 `react-formal` uses a [yup](https://github.com/jquense/yup) schema to update and validate form values. It treats the `form` like an input (representing an object) with a `value` and `onChange`. The `form` can be controlled or uncontrolled as well, just like a normal React input.
 
@@ -26,7 +26,7 @@ var yup = require('yup')
 var modelSchema =  yup.object({
         name: yup.object({
             first: yup.string().required('Name is required'),
-            last: yup.string().required('Name is required')    
+            last: yup.string().required('Name is required')
         }),
         dateOfBirth: yup.date()
             .max(new Date(), 'You can be born in the future!')
