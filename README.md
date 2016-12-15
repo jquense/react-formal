@@ -15,7 +15,7 @@ __(don't like the yup but like how the form works? Try: [topeka](https://github.
 
 ### Use
 
-__For more complete api documentations, live examples, and getting started guide check out the [documentation site](http://jquense.github.io/react-formal/docs/#/getting-started).__
+__For more complete api documentations, live examples, and getting started guide check out the [documentation site](http://jquense.github.io/react-formal).__
 
 `react-formal` uses a [yup](https://github.com/jquense/yup) schema to update and validate form values. It treats the `form` like an input (representing an object) with a `value` and `onChange`. The `form` can be controlled or uncontrolled as well, just like a normal React input.
 
