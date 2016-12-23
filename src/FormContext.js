@@ -1,5 +1,7 @@
 import React from 'react';
 
+const DEFAULT_CHANNEL = '@@parent';
+
 /**
  * `<Form.Context />` provides declarative API similar in purpose to the
  * HTML5 `.form` attribute. Sometimes it is necessary to trigger a form
@@ -34,23 +36,41 @@ class FormContext extends React.Component {
     ])
   }
 
+  static contextTypes = {
+    reactFormalContext: React.PropTypes.object
+  }
+
   static childContextTypes = {
     reactFormalContext: React.PropTypes.object
   }
 
-  getChildContext(){
+  channels = Object.create(null);
+
+  getChildContext() {
     return this._context || (this._context = {
       reactFormalContext: {
-        registerSubmit: fn => this.submit = fn,
-        onSubmit: ()=> {
-          if (this.submit)
-            this.submit();
-        }
+        registerForm: this.registerForm,
+        submitForm: this.submitForm,
       }
     })
   }
 
-  render(){
+  registerForm = (channelName = DEFAULT_CHANNEL, submit) => {
+    this.channels[channelName] = { submit }
+  }
+
+  submitForm =(channelName = DEFAULT_CHANNEL) => {
+    const { reactFormalContext } = this.context;
+    const channel = this.channels[channelName]
+
+    // console.log('submitform!', this.channels)
+
+    if (channel) channel.submit();
+    else if (reactFormalContext) reactFormalContext.submitForm(channelName)
+    // else throw new Error(`There is no form to submit`)
+  }
+
+  render() {
     let Tag = this.props.component || 'div';
     return React.Children.count(this.props.children) === 1
       ? this.props.children

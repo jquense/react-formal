@@ -134,6 +134,12 @@ class Form extends React.Component {
     onChange: React.PropTypes.func,
 
     /**
+     * A unique key that names a `Form` within a surrounding `Form.Context`.
+     * Corresponding `Form.Button`s with the same `formKey` will trigger validation.
+     */
+    formKey: React.PropTypes.string,
+
+    /**
      * An object hash of field errors for the form. The object should be keyed with paths
      * with the values being an array of messages or message objects. Errors can be
      * left [uncontrolled](/controllables) (use `defaultErrors` to set an initial value)
@@ -348,20 +354,15 @@ class Form extends React.Component {
         reactFormalContext: {
           options,
           noValidate,
-          submit: null,
+          registerForm: null,
+          submitForm: this.handleContextSubmit,
           schema: this.getSchemaForPath,
           onFieldError: this.handleFieldError,
-          onSubmit: this.handleSubmit,
-          onOptions: this.handlePathOptions,
         }
       }
     }
 
     return this._context;
-  }
-
-  handlePathOptions = (path, options) => {
-    this.pathOptions[path] = options;
   }
 
   handleValidate = (path, { props }) => {
@@ -405,6 +406,13 @@ class Form extends React.Component {
 
   handleError = errors => {
     this.notify('onError', errors)
+  }
+
+  handleContextSubmit = (formName) => {
+    if (formName && formName !== this.props.formKey)
+      throw new Error('Cannot trigger a submit for a Form from within a different form')
+
+    this.handleSubmit()
   }
 
   handleSubmit = e => {

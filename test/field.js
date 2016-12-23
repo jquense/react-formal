@@ -263,7 +263,7 @@ describe('Field', ()=> {
     inst.single('input').trigger('change')
   })
 
-  describe.only('meta', () => {
+  describe('meta', () => {
     it('should pass meta to form', () => {
       let Input = ({ meta }) => {
         meta.should.have.property('invalid').that.equals(true);

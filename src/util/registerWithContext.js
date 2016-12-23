@@ -2,22 +2,22 @@ import spyOnComponent from 'spy-on-component';
 
 export default function registerWithContext(component, submit) {
 
-  function register(context) {
+  function register(formKey, context) {
     if (context.reactFormalContext) {
-      let { registerSubmit } = context.reactFormalContext;
+      let { registerForm } = context.reactFormalContext;
 
-      if (registerSubmit)
-        registerSubmit(submit)
+      if (registerForm)
+        registerForm(formKey || '@@parent', submit)
     }
   }
 
   spyOnComponent(component, {
     componentDidMount() {
-      register(this.context);
+      register(this.props.formKey, this.context);
     },
 
-    componentWillReceiveProps(_, nextContext) {
-      register(nextContext);
+    componentWillReceiveProps({ formKey }, nextContext) {
+      register(formKey, nextContext);
     }
   })
 }
