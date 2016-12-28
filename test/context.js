@@ -4,12 +4,30 @@ var React = require('react')
 
 var tsp = require('teaspoon')
 
-describe.only('Form Context', ()=> {
+describe('Form Context', ()=> {
   var schema = yup.object({
     name: yup.string().default('')
   })
 
   it('should trigger an onSubmit in the Form', function(done) {
+    var inst = tsp(
+        <Form
+          onSubmit={sinon.spy(() => done())}
+          schema={schema}
+          defaultValue={{}}
+        >
+          <Form.Field name='name' type='text' className='test'/>
+          <Form.Button type='submit' />
+        </Form>
+    )
+
+    inst
+      .render()
+      .find(Form.Button)
+      .trigger('click')
+  })
+
+  it('should trigger an onSubmit from outside the form', function(done) {
     var inst = tsp(
       <Form.Context>
         <Form
@@ -123,7 +141,7 @@ describe.only('Form Context', ()=> {
           schema={schema}
           defaultValue={{}}
         >
-          <Form.Button type='submit' form="bar" />
+          <Form.Button type='submit' formKey="bar" />
           <Form.Field name='name' type='text' className='test'/>
         </Form>
       </Form.Context>

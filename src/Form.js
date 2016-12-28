@@ -409,7 +409,9 @@ class Form extends React.Component {
   }
 
   handleContextSubmit = (formName) => {
-    if (formName && formName !== this.props.formKey)
+    let key = this.props.formKey || '@@parent'
+
+    if (formName && formName !== key)
       throw new Error('Cannot trigger a submit for a Form from within a different form')
 
     this.handleSubmit()
