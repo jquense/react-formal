@@ -7,13 +7,16 @@ import MessageTrigger from 'react-input-message/MessageTrigger';
 import { Binding } from 'topeka';
 import invariant from 'invariant';
 
-import mergeWithEvents from './util/chainEvents';
 import isNativeType from './util/isNativeType';
 import resolveFieldComponent from './util/resolveFieldComponent'
 import contextTypes from './util/contextType';
 import config from './config';
 import isReactComponent from './util/isReactComponent';
 import { inclusiveMapMessages } from './util/ErrorUtils';
+
+function notify(handler, args) {
+  handler && handler(...args)
+}
 
 function getValue(value, bindTo, getter) {
   if (typeof bindTo === 'function') {
@@ -85,6 +88,9 @@ class Field extends React.Component {
     let { name } = this.props
       , context = this.context.reactFormalContext;
 
+    this.eventHandlers = {};
+    this.createEventHandlers(this.props)
+
     if (process.env.NODE_ENV !== 'production')
       invariant(context.noValidate || !name || this.schema(name),
         `There is no corresponding schema defined for this field: "${name}" ` +
@@ -110,23 +116,39 @@ class Field extends React.Component {
     return value;
   }
 
+  // create a set of handlers with a stable identity so as not to
+  // thwart SCU checks
+  createEventHandlers({ events = config.events }) {
+    if (events == null) return;
+
+    [].concat(events).forEach(event => {
+      let handler = (...args) => {
+        notify(this._fieldProps[event], args)
+        notify(this._bindingProps[event], args)
+        notify(this._triggerProps[event], args)
+      }
+      this.eventHandlers[event] = this.eventHandlers[event] || handler
+    })
+  }
+
   constructComponent = (bindingProps, triggerProps = {}) => {
     let {
       name,
       type,
       children,
       className,
-      events = config.events,
       errorClass = config.errorClass,
     } = this.props;
 
     let fieldProps = omit(this.props, Object.keys(Field.propTypes))
-    fieldProps = mergeWithEvents(events, [
+
+    fieldProps = Object.assign(
       { name },
-      fieldProps,
-      bindingProps,
-      triggerProps,
-    ])
+      this._fieldProps = fieldProps,
+      this._bindingProps = bindingProps,
+      this._triggerProps = triggerProps,
+      this.eventHandlers
+    )
 
     let schema = this.schema(name);
     let [Component, resolvedType] = resolveFieldComponent(type, schema)
@@ -158,7 +180,8 @@ class Field extends React.Component {
       delete fieldProps.messages
     }
 
-    fieldProps.meta = meta;
+    if (!this.props.noMeta)
+      fieldProps.meta = meta;
 
     // Escape hatch for more complex Field types.
     if (typeof children === 'function') {
@@ -481,6 +504,11 @@ Field.propTypes = {
     React.PropTypes.node,
     React.PropTypes.func,
   ]),
+
+  /**
+   * Instruct the field to not inject the `meta` prop into the input
+   */
+  noMeta: React.PropTypes.bool,
 }
 
 export default Field;
