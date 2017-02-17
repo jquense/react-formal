@@ -2,7 +2,6 @@ import omit from 'lodash/omit'
 import pick from 'lodash/pick';
 import expr from 'property-expr';
 import React from 'react';
-import scu from 'react-pure-render/function';
 import Container from 'react-input-message/MessageContainer';
 import { BindingContext as BC } from 'topeka';
 import uncontrollable from 'uncontrollable';
@@ -111,7 +110,7 @@ function maybeWarn(debug, errors, target) {
  * ReactDOM.render(form, mountNode);
  * ```
  */
-class Form extends React.Component {
+class Form extends React.PureComponent {
 
   static propTypes = {
 
@@ -328,10 +327,6 @@ class Form extends React.Component {
     this.errors = errorManager(this.handleValidate)
 
     registerWithContext(this, this.submit);
-  }
-
-  shouldComponentUpdate(nextProps, nextState) {
-    return scu.call(this, nextProps, nextState)
   }
 
   componentWillReceiveProps(nextProps) {

@@ -1,5 +1,4 @@
 import React from'react';
-import shouldComponentUpdate from'react-pure-render/function';
 import Message from'react-input-message/Message';
 import cn from'classnames';
 
@@ -11,7 +10,7 @@ import uniq from './util/uniqMessage';
  *
  * @alias Message
  */
-class ValidationMessage extends React.Component {
+class ValidationMessage extends React.PureComponent {
 
   static propTypes = {
     ...Message.propTypes,
@@ -49,10 +48,6 @@ class ValidationMessage extends React.Component {
     filter: uniq,
     extract: error => error.message || error,
     children: messages => messages.join(', ')
-  }
-
-  shouldComponentUpdate(p, s, c){
-    return shouldComponentUpdate.call(this, p, s, c)
   }
 
   render(){

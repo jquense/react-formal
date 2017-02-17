@@ -1,5 +1,4 @@
 import React from 'react';
-import shouldComponentUpdate from 'react-pure-render/function';
 import ValidationMessage from './ValidationMessage';
 
 
@@ -60,10 +59,6 @@ class ValidationSummary extends React.Component {
   static defaultProps = {
     component: 'ul',
     formatMessage: (message, idx) => <li key={idx}>{message}</li>
-  }
-
-  shouldComponentUpdate(p, s, c){
-    return shouldComponentUpdate.call(this, p, s, c)
   }
 
   render() {
