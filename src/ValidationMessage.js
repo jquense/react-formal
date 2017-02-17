@@ -1,8 +1,8 @@
-import React from'react';
+import React from 'react';
 import PropTypes from 'prop-types';
-import Message from'react-input-message/Message';
-import cn from'classnames';
-import shallowEqual from 'recompose/shallowEqual'
+import shallowEqual from 'recompose/shallowEqual';
+import Message from 'react-input-message/Message';
+import cn from 'classnames';
 
 import uniq from './util/uniqMessage';
 

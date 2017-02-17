@@ -3,13 +3,12 @@ import pick from 'lodash/pick';
 import expr from 'property-expr';
 import React from 'react';
 import PropTypes from 'prop-types';
-import scu from 'react-pure-render/function';
 import Container from 'react-input-message/MessageContainer';
 import { BindingContext as BC } from 'topeka';
+import shallowEqual from 'recompose/shallowEqual';
 import uncontrollable from 'uncontrollable';
 import warning from 'warning';
 import reach from 'yup/lib/util/reach';
-import shallowEqual from 'recompose/shallowEqual';
 
 import errorManager from './errorManager';
 import contextTypes from './util/contextType';
