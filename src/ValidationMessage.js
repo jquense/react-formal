@@ -1,6 +1,7 @@
 import React from'react';
 import Message from'react-input-message/Message';
 import cn from'classnames';
+import shallowEqual from 'recompose/shallowEqual'
 
 import uniq from './util/uniqMessage';
 
@@ -10,7 +11,7 @@ import uniq from './util/uniqMessage';
  *
  * @alias Message
  */
-class ValidationMessage extends React.PureComponent {
+class ValidationMessage extends React.Component {
 
   static propTypes = {
     ...Message.propTypes,
@@ -48,6 +49,10 @@ class ValidationMessage extends React.PureComponent {
     filter: uniq,
     extract: error => error.message || error,
     children: messages => messages.join(', ')
+  }
+
+  shouldComponentUpdate(nextProps) {
+    return !shallowEqual(this.props, nextProps)
   }
 
   render(){

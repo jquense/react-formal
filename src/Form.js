@@ -8,6 +8,7 @@ import uncontrollable from 'uncontrollable';
 import Promise from 'universal-promise';
 import warning from 'warning';
 import reach from 'yup/lib/util/reach';
+import shallowEqual from 'recompose/shallowEqual';
 
 import errorManager from './errorManager';
 import contextTypes from './util/contextType';
@@ -110,7 +111,7 @@ function maybeWarn(debug, errors, target) {
  * ReactDOM.render(form, mountNode);
  * ```
  */
-class Form extends React.PureComponent {
+class Form extends React.Component {
 
   static propTypes = {
 
@@ -327,6 +328,10 @@ class Form extends React.PureComponent {
     this.errors = errorManager(this.handleValidate)
 
     registerWithContext(this, this.submit);
+  }
+
+  shouldComponentUpdate(nextProps) {
+    return !shallowEqual(this.props, nextProps)
   }
 
   componentWillReceiveProps(nextProps) {
