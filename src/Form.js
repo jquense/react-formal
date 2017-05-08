@@ -2,13 +2,13 @@ import omit from 'lodash/omit'
 import pick from 'lodash/pick';
 import expr from 'property-expr';
 import React from 'react';
-import scu from 'react-pure-render/function';
 import Container from 'react-input-message/MessageContainer';
 import { BindingContext as BC } from 'topeka';
 import uncontrollable from 'uncontrollable';
 import Promise from 'universal-promise';
 import warning from 'warning';
 import reach from 'yup/lib/util/reach';
+import shallowEqual from 'recompose/shallowEqual';
 
 import errorManager from './errorManager';
 import contextTypes from './util/contextType';
@@ -330,8 +330,8 @@ class Form extends React.Component {
     registerWithContext(this, this.submit);
   }
 
-  shouldComponentUpdate(nextProps, nextState) {
-    return scu.call(this, nextProps, nextState)
+  shouldComponentUpdate(nextProps) {
+    return !shallowEqual(this.props, nextProps)
   }
 
   componentWillReceiveProps(nextProps) {
