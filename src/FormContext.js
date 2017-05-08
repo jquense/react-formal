@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 
 const DEFAULT_CHANNEL = '@@parent';
 
@@ -30,18 +31,18 @@ class FormContext extends React.Component {
    * @default 'div'
   **/
   static propTypes = {
-    component: React.PropTypes.oneOfType([
-      React.PropTypes.func,
-      React.PropTypes.string
+    component: PropTypes.oneOfType([
+      PropTypes.func,
+      PropTypes.string
     ])
   }
 
   static contextTypes = {
-    reactFormalContext: React.PropTypes.object
+    reactFormalContext: PropTypes.object
   }
 
   static childContextTypes = {
-    reactFormalContext: React.PropTypes.object
+    reactFormalContext: PropTypes.object
   }
 
   channels = Object.create(null);

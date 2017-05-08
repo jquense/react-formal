@@ -1,4 +1,5 @@
 import React from 'react'
+import PropTypes from 'prop-types';
 import yup from 'yup'
 import tsp from 'teaspoon'
 
@@ -12,7 +13,7 @@ let LeakySubmit = (props, context) => (
 )
 
 LeakySubmit.contextTypes = {
-  reactFormalContext: React.PropTypes.object
+  reactFormalContext: PropTypes.object
 }
 
 describe('Form', ()=> {

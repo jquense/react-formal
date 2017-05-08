@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import Input from '../inputs/Input';
 import DateInput from '../inputs/Date';
 import NumberInput from '../inputs/Number';
@@ -11,9 +12,9 @@ let localDt = 'datetime-local'
 let wrapWithDefaults =
   (Component, defaults) => class extends React.Component {
     static propTypes = {
-      type: React.PropTypes.oneOfType([
-        React.PropTypes.string,
-        React.PropTypes.func,
+      type: PropTypes.oneOfType([
+        PropTypes.string,
+        PropTypes.func,
       ]),
     };
 

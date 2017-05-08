@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import { findDOMNode } from 'react-dom';
 import Input from './Input';
 
@@ -11,12 +12,12 @@ let toArray = React.Children.toArray || function (children) {
 
 class Select extends React.Component {
   static propTypes = {
-    value: React.PropTypes.any,
-    multiple: React.PropTypes.bool,
-    onChange: React.PropTypes.func,
-    tagName: React.PropTypes.oneOfType([
-      React.PropTypes.string,
-      React.PropTypes.func,
+    value: PropTypes.any,
+    multiple: PropTypes.bool,
+    onChange: PropTypes.func,
+    tagName: PropTypes.oneOfType([
+      PropTypes.string,
+      PropTypes.func,
     ]),
   }
 
