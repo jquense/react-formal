@@ -70,7 +70,7 @@ also call `.cast()` unless you pass the `strict` option, during validation.
 ```console
 let { object, number, string } = yup;
 
-let schema = let schema = object({
+let schema = object({
   firstName: string().trim(),
   age: number()
 })
