@@ -1,4 +1,5 @@
 import React from'react';
+import PropTypes from 'prop-types';
 import Message from'react-input-message/Message';
 import cn from'classnames';
 import shallowEqual from 'recompose/shallowEqual'
@@ -25,22 +26,22 @@ class ValidationMessage extends React.Component {
      * </Message>
      * ```
      */
-    children: React.PropTypes.func,
+    children: PropTypes.func,
 
-    component: React.PropTypes.oneOfType([
-      React.PropTypes.func,
-      React.PropTypes.string
+    component: PropTypes.oneOfType([
+      PropTypes.func,
+      PropTypes.string
     ]).isRequired,
 
     /**
      * A css class that should be always be applied to the Message container.
      */
-    errorClass: React.PropTypes.string,
+    errorClass: PropTypes.string,
 
     /**
      * Map the passed in message object for the field to a string to display
      */
-    extract: React.PropTypes.func
+    extract: PropTypes.func
   }
 
   static defaultProps = {

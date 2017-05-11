@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import Input from './Input';
 
 let pad = n => n < 10 ? ('0' + n) : n
@@ -38,9 +39,9 @@ let toDateString = (date, part) => {
 
 class DateInput extends React.Component {
   static propTypes = {
-    value: React.PropTypes.instanceOf(Date),
-    onChange: React.PropTypes.func,
-    type: React.PropTypes.string,
+    value: PropTypes.instanceOf(Date),
+    onChange: PropTypes.func,
+    type: PropTypes.string,
   }
 
   render() {

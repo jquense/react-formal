@@ -1,11 +1,11 @@
-import React from 'react';
+import PropTypes from 'prop-types';
 
 export default {
-  reactFormalContext: React.PropTypes.shape({
-    noValidate: React.PropTypes.bool,
-    schema: React.PropTypes.func,
-    onFieldError: React.PropTypes.func,
-    onSubmit: React.PropTypes.func,
-    onOptions: React.PropTypes.func
+  reactFormalContext: PropTypes.shape({
+    noValidate: PropTypes.bool,
+    schema: PropTypes.func,
+    onFieldError: PropTypes.func,
+    onSubmit: PropTypes.func,
+    onOptions: PropTypes.func
   })
 }

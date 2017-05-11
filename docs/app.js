@@ -1,5 +1,6 @@
 /* eslint global-require: 0, react/prop-types: 0 */
 import React from 'react';
+import PropTypes from 'prop-types';
 import ReactDOM, { render } from 'react-dom';
 import types from 'react-formal-inputs';
 import Form from '../src';
@@ -97,7 +98,7 @@ class Main extends React.Component {
 
 class App extends React.Component {
   static contextTypes = {
-    history: React.PropTypes.object
+    history: PropTypes.object
   }
 
   render(){

@@ -1,10 +1,11 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import Input from './Input';
 
 class BooleanInput extends React.Component {
   static propTypes = {
-    value: React.PropTypes.bool,
-    onChange: React.PropTypes.func,
+    value: PropTypes.bool,
+    onChange: PropTypes.func,
   }
 
   render() {

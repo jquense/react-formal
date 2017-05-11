@@ -1,12 +1,13 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 
 class Input extends React.Component {
   static propTypes = {
-    value: React.PropTypes.any,
-    onChange: React.PropTypes.func,
-    tagName: React.PropTypes.oneOfType([
-      React.PropTypes.string,
-      React.PropTypes.func,
+    value: PropTypes.any,
+    onChange: PropTypes.func,
+    tagName: PropTypes.oneOfType([
+      PropTypes.string,
+      PropTypes.func,
     ]),
   };
   render() {
