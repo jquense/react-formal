@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import warning from 'warning';
 import Trigger from 'react-input-message/MessageTrigger';
 
@@ -14,32 +15,32 @@ class Button extends React.Component {
     /**
      * The `<button/>` type
      */
-    type: React.PropTypes.oneOf(['button', 'submit']),
+    type: PropTypes.oneOf(['button', 'submit']),
 
     /**
      * Specify a group to validate, if empty the entire form will be validated.
      * If the button type is 'submit' the group will be ignored and the
      * entire form will be validated prior to submission.
      */
-    group: React.PropTypes.string,
+    group: PropTypes.string,
 
     /**
      * The key of `Form` that "owns" this button. Validation will be triggered
      * only for that `Form`.
      */
-    formKey: React.PropTypes.string,
+    formKey: PropTypes.string,
 
-    component: React.PropTypes.oneOfType([
-      React.PropTypes.string,
-      React.PropTypes.func
+    component: PropTypes.oneOfType([
+      PropTypes.string,
+      PropTypes.func
     ]),
 
     /**
      * An array of event names that trigger validation.
      */
-    events: React.PropTypes.arrayOf(React.PropTypes.string),
+    events: PropTypes.arrayOf(PropTypes.string),
 
-    onClick: React.PropTypes.func,
+    onClick: PropTypes.func,
   }
 
   static contextTypes = contextTypes

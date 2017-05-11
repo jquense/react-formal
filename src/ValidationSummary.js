@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import shouldComponentUpdate from 'react-pure-render/function';
 import ValidationMessage from './ValidationMessage';
 
@@ -36,25 +37,25 @@ class ValidationSummary extends React.Component {
      * ) -> ReactElement
      * ```
      */
-    formatMessage: React.PropTypes.func.isRequired,
+    formatMessage: PropTypes.func.isRequired,
 
     /**
      * A DOM node tag name or Component class the Message should render as.
      */
-    component: React.PropTypes.oneOfType([
-      React.PropTypes.func,
-      React.PropTypes.string
+    component: PropTypes.oneOfType([
+      PropTypes.func,
+      PropTypes.string
     ]).isRequired,
 
     /**
      * A css class that should be always be applied to the Summary container.
      */
-    errorClass: React.PropTypes.string,
+    errorClass: PropTypes.string,
 
     /**
      * Specify a group to show erros for, if empty all form errors will be shown in the Summary.
      */
-    group: React.PropTypes.string
+    group: PropTypes.string
   }
 
   static defaultProps = {

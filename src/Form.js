@@ -2,6 +2,7 @@ import omit from 'lodash/omit'
 import pick from 'lodash/pick';
 import expr from 'property-expr';
 import React from 'react';
+import PropTypes from 'prop-types';
 import scu from 'react-pure-render/function';
 import Container from 'react-input-message/MessageContainer';
 import { BindingContext as BC } from 'topeka';
@@ -119,7 +120,7 @@ class Form extends React.Component {
      * Form value object, can be left [uncontrolled](/controllables);
      * use the `defaultValue` prop to initialize an uncontrolled form.
      */
-    value: React.PropTypes.object,
+    value: PropTypes.object,
 
     /**
      * Callback that is called when the `value` prop changes.
@@ -131,13 +132,13 @@ class Form extends React.Component {
      * )
      * ```
      */
-    onChange: React.PropTypes.func,
+    onChange: PropTypes.func,
 
     /**
      * A unique key that names a `Form` within a surrounding `Form.Context`.
      * Corresponding `Form.Button`s with the same `formKey` will trigger validation.
      */
-    formKey: React.PropTypes.string,
+    formKey: PropTypes.string,
 
     /**
      * An object hash of field errors for the form. The object should be keyed with paths
@@ -160,7 +161,7 @@ class Form extends React.Component {
      * }}/>
      * ```
      */
-    errors: React.PropTypes.object,
+    errors: PropTypes.object,
 
     /**
      * Callback that is called when a validation error occurs. It is called with an `errors` object
@@ -182,7 +183,7 @@ class Form extends React.Component {
      * </Form>
      * ```
      */
-    onError: React.PropTypes.func,
+    onError: PropTypes.func,
 
     /**
      * Callback that is called whenever a validation is triggered.
@@ -193,7 +194,7 @@ class Form extends React.Component {
      * }
      * ```
      */
-    onValidate: React.PropTypes.func,
+    onValidate: PropTypes.func,
 
     /**
      * Callback that is fired when the native onSubmit event is triggered. Only relevant when
@@ -205,7 +206,7 @@ class Form extends React.Component {
      * }
      * ```
      */
-    onSubmit: React.PropTypes.func,
+    onSubmit: PropTypes.func,
 
     /**
      * Callback that is fired when the native onSubmit event is triggered. Only relevant when
@@ -217,7 +218,7 @@ class Form extends React.Component {
      * }
      * ```
      */
-    onInvalidSubmit: React.PropTypes.func,
+    onInvalidSubmit: PropTypes.func,
 
     /**
      * A value getter function. `getter` is called with `path` and `value` and
@@ -230,7 +231,7 @@ class Form extends React.Component {
      * ) -> object
      * ```
      */
-    getter: React.PropTypes.func,
+    getter: PropTypes.func,
 
     /**
      * A value setter function. `setter` is called with `path`, the form `value` and the path `value`.
@@ -246,23 +247,23 @@ class Form extends React.Component {
      * ) -> object
      * ```
      */
-    setter: React.PropTypes.func,
+    setter: PropTypes.func,
 
     /**
      * Time in milliseconds that validations should be debounced. Reduces the amount of validation calls
      * made at the expense of a slight delay. Helpful for performance.
      */
-    delay: React.PropTypes.number,
+    delay: PropTypes.number,
 
     /**
      * Validations will be strict, making no attempt to coarce input values to the appropriate type.
      */
-    strict: React.PropTypes.bool,
+    strict: PropTypes.bool,
 
     /**
      * Turns off input validation for the Form, value updates will continue to work.
      */
-    noValidate: React.PropTypes.bool,
+    noValidate: PropTypes.bool,
 
     /**
      * A tag name or Component class the Form should render.
@@ -270,10 +271,10 @@ class Form extends React.Component {
      * If `null` are `false` the form will simply render it's child. In
      * this instance there must only be one child.
      */
-    component: React.PropTypes.oneOfType([
-      React.PropTypes.func,
-      React.PropTypes.string,
-      React.PropTypes.oneOf([null, false])
+    component: PropTypes.oneOfType([
+      PropTypes.func,
+      PropTypes.string,
+      PropTypes.oneOf([null, false])
     ]),
 
     /**
@@ -283,7 +284,7 @@ class Form extends React.Component {
      */
     schema(props, name, componentName, ...args) {
       var err = !props.noValidate &&
-        React.PropTypes.any.isRequired(props, name, componentName, ...args)
+        PropTypes.any.isRequired(props, name, componentName, ...args)
 
       if (props[name]) {
         let schema = props[name];
@@ -297,12 +298,12 @@ class Form extends React.Component {
     /**
      * yup schema context
      */
-    context: React.PropTypes.object,
+    context: PropTypes.object,
 
     /**
      * toggle debug mode, which `console.warn`s validation errors
      */
-    debug: React.PropTypes.bool,
+    debug: PropTypes.bool,
   }
 
   static defaultProps = {
@@ -314,7 +315,7 @@ class Form extends React.Component {
   }
 
   static contextTypes = {
-    reactFormalContext: React.PropTypes.object
+    reactFormalContext: PropTypes.object
   }
 
   static childContextTypes = contextTypes

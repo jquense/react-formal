@@ -1,10 +1,11 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import Input from './Input';
 
 class FileInput extends React.Component {
   static propTypes = {
-    multiple: React.PropTypes.bool,
-    onChange: React.PropTypes.func,
+    multiple: PropTypes.bool,
+    onChange: PropTypes.func,
   }
 
   handleChange = ({ target: { files } }) => {

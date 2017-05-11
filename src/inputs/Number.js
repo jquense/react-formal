@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import Input from './Input';
 
 let isValid = num => typeof num === 'number' && !isNaN(num)
@@ -10,8 +11,8 @@ let isAtDelimiter = (num, str) =>{
 
 class NumberInput extends React.Component {
   static propTypes = {
-    value: React.PropTypes.number,
-    onChange: React.PropTypes.func,
+    value: PropTypes.number,
+    onChange: PropTypes.func,
   }
 
   state = {}

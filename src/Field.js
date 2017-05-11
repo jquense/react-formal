@@ -2,6 +2,7 @@
 import cn from 'classnames';
 import omit from 'lodash/omit';
 import React from 'react';
+import PropTypes from 'prop-types';
 import shallowEqual from 'react-pure-render/shallowEqual';
 import MessageTrigger from 'react-input-message/MessageTrigger';
 import { Binding } from 'topeka';
@@ -287,7 +288,7 @@ Field.propTypes = {
    *
    * ```
    */
-  name: React.PropTypes.string.isRequired,
+  name: PropTypes.string.isRequired,
 
   /**
    * Group Fields together with a common `group` name. Groups can be
@@ -322,7 +323,7 @@ Field.propTypes = {
    * </Form>
    * ```
    */
-  group: React.PropTypes.string,
+  group: PropTypes.string,
 
   /**
    * The Component Input the form should render. You can sepcify a builtin type
@@ -360,17 +361,17 @@ Field.propTypes = {
    * You can also permenantly map Components to a string `type` name via the top-level
    * `addInputType()` api.
    */
-  type: React.PropTypes.oneOfType([
-    React.PropTypes.func,
-    React.PropTypes.string
+  type: PropTypes.oneOfType([
+    PropTypes.func,
+    PropTypes.string
   ]),
 
   /**
    * Event name or array of event names that the Field should trigger a validation.
    */
-  events: React.PropTypes.oneOfType([
-    React.PropTypes.string,
-    React.PropTypes.arrayOf(React.PropTypes.string)
+  events: PropTypes.oneOfType([
+    PropTypes.string,
+    PropTypes.arrayOf(PropTypes.string)
   ]),
 
   /**
@@ -413,10 +414,10 @@ Field.propTypes = {
    * </Form>
    * ```
    */
-  mapFromValue: React.PropTypes.oneOfType([
-    React.PropTypes.func,
-    React.PropTypes.string,
-    React.PropTypes.object
+  mapFromValue: PropTypes.oneOfType([
+    PropTypes.func,
+    PropTypes.string,
+    PropTypes.object
   ]),
 
   /**
@@ -432,15 +433,15 @@ Field.propTypes = {
    * />
    * ```
    */
-  mapToValue: React.PropTypes.oneOfType([
-    React.PropTypes.func,
-    React.PropTypes.object
+  mapToValue: PropTypes.oneOfType([
+    PropTypes.func,
+    PropTypes.object
   ]),
 
   /**
    * The css class added to the Field Input when it fails validation
    */
-  errorClass: React.PropTypes.string,
+  errorClass: PropTypes.string,
 
   /**
    * Tells the Field to trigger validation for addition paths as well as its own (`name`).
@@ -452,9 +453,9 @@ Field.propTypes = {
    * <Form.Field name='name.last' alsoValidates={['name', 'surname']} />
    * ```
    */
-  alsoValidates:React.PropTypes.oneOfType([
-    React.PropTypes.string,
-    React.PropTypes.arrayOf(React.PropTypes.string)
+  alsoValidates:PropTypes.oneOfType([
+    PropTypes.string,
+    PropTypes.arrayOf(PropTypes.string)
   ]),
 
   /**
@@ -469,12 +470,12 @@ Field.propTypes = {
    *
    * Are all considered "part" of a field named `'names'` by default.
    */
-  exclusive: React.PropTypes.bool,
+  exclusive: PropTypes.bool,
 
   /**
    * Disables validation for the Field.
    */
-  noValidate: React.PropTypes.bool,
+  noValidate: PropTypes.bool,
 
   /**
    * When children is the traditional react element or nodes, they are
@@ -500,15 +501,15 @@ Field.propTypes = {
    * </Field>
    * ```
    */
-  children: React.PropTypes.oneOfType([
-    React.PropTypes.node,
-    React.PropTypes.func,
+  children: PropTypes.oneOfType([
+    PropTypes.node,
+    PropTypes.func,
   ]),
 
   /**
    * Instruct the field to not inject the `meta` prop into the input
    */
-  noMeta: React.PropTypes.bool,
+  noMeta: PropTypes.bool,
 }
 
 export default Field;
