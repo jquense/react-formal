@@ -5,6 +5,7 @@ export default function Codeblock(props) {
   return (
     <Playground.Editor
       {...props}
+      theme="one-light"
       className='static-codeblock'
       mode="text/jsx"
       readOnly='nocursor'

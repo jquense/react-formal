@@ -7,7 +7,6 @@ import scu from 'react-pure-render/function';
 import Container from 'react-input-message/MessageContainer';
 import { BindingContext as BC } from 'topeka';
 import uncontrollable from 'uncontrollable';
-import Promise from 'universal-promise';
 import warning from 'warning';
 import reach from 'yup/lib/util/reach';
 

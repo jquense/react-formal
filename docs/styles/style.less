@@ -1,3 +1,4 @@
+@import './one-light.less';
 
 body {
   font-size: 16px;
@@ -82,15 +83,18 @@ pre {
 }
 
 code {
-  color: #555;
+  background-color: @syntax-bg;
+  color: @hue-2;
   margin: -.05rem -.15em;
   padding: .05rem .35em;
-  background-color: rgba(0,0,0,0.04);
 }
 
+.playground,
+.static-codeblock {
+  background-color: @syntax-bg;
+}
 
 .playground-editor {
-  background-color: #1B2B34;
   height: auto;
   min-height: 75px;
 }
@@ -154,7 +158,6 @@ code {
   position: relative;
   margin:  0;
   margin-bottom: 20px;
-  border-left: 4px solid #ccc;
 }
 
 .navbar-default {
@@ -190,10 +193,9 @@ code {
     margin-left:auto;
     margin-right:auto;
     width: 330px;
-    background: #FFF;
     padding: 40px 30px 20px 30px;
     font: 14px "Helvetica Neue", Helvetica, Arial, sans-serif;
-    color: #888;
+    color: #333;
 
     .doc-page & {
       width: 270px;

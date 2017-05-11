@@ -14,11 +14,16 @@ import {
   , Link } from 'react-router';
 
 import '@monastic.panic/component-playground/codemirror.css';
-import '@monastic.panic/component-playground/themes/oceanic.css';
 import 'react-widgets/lib/less/react-widgets.less';
+import './styles/one-light.less';
 import './styles/style.less';
 
 import localizers from 'react-widgets/lib/localizers/globalize'
+
+
+import Editor from '@monastic.panic/component-playground/Editor';
+
+Editor.defaultProps.theme ='one-light'
 
 localizers(require('globalize'))
 

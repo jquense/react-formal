@@ -35,7 +35,9 @@ Lets install both `react-formal` and `yup`.
 npm install react-formal yup --save
 ```
 
-If you'd like more robust input options like, date and number pickers, multiselect, and comboboxes (like in the documentation) you might want to also install `react-formal-inputs` which is swaps out the native input types for [react-widgets](http://jquense.github.io/react-widgets/docs/#/) (read the docs for complete installation instructions).
+> For older browsers without the `Promise` global object, you'll need to include a polyfill such as `es6-promise`.
+
+If you'd like more robust inputs such as, date and number pickers, multiselect, and comboboxes (like in the documentation) you might want to also install `react-formal-inputs` which is swaps out the native input types for [react-widgets](http://jquense.github.io/react-widgets/docs/#/) (read the docs for complete installation instructions).
 
 ```sh
 npm install react-formal-inputs --save

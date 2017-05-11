@@ -35,11 +35,11 @@ renderer.codespan = function(text) {
 
 renderer.code = function(code, lang, escaped) {
   if (lang === 'editable')
-    return '<Playground mode="text/jsx" scope={this.props.scope} code={`'
+    return '<Playground theme="one-light" mode="text/jsx" scope={this.props.scope} code={`'
       + code + '`} ' + (code.indexOf('render(') === -1 ? 'noRender' : '') + '/>\n\n'
 
   if( lang === 'console' )
-    return '<Console scope={this.props.scope} code={`'+ code + '`} es6Console />\n\n'
+    return '<Console theme="one-light" scope={this.props.scope} code={`'+ code + '`} es6Console />\n\n'
 
   return '<Codeblock code={`' + code + '`} />\n\n';
 };
