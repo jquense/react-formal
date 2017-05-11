@@ -124,7 +124,7 @@ describe('Field', ()=> {
         <Form.Field name='name' />
       </Form>).render()
 
-    expect(
+    chai.expect(
       inst
         .single('Input')
         .props('value')

@@ -1,5 +1,3 @@
-import Promise from 'universal-promise';
-
 import errToJSON from './util/errToJSON';
 import { reduce, trim } from './util/paths';
 
