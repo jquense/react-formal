@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import shouldComponentUpdate from 'react-pure-render/function';
+import shallowEqual from 'recompose/shallowEqual';
 import Message from 'react-input-message/Message';
 import cn from 'classnames';
 
@@ -52,8 +52,11 @@ class ValidationMessage extends React.Component {
     children: messages => messages.join(', ')
   }
 
-  shouldComponentUpdate(p, s, c){
-    return shouldComponentUpdate.call(this, p, s, c)
+  shouldComponentUpdate(nextProps, _, nextContext) {
+    return (
+      !shallowEqual(nextProps, this.props) ||
+      !shallowEqual(nextContext, this.context)
+    )
   }
 
   render(){

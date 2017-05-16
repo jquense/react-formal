@@ -3,9 +3,9 @@ import pick from 'lodash/pick';
 import expr from 'property-expr';
 import React from 'react';
 import PropTypes from 'prop-types';
-import scu from 'react-pure-render/function';
 import Container from 'react-input-message/MessageContainer';
 import { BindingContext as BC } from 'topeka';
+import shallowEqual from 'recompose/shallowEqual';
 import uncontrollable from 'uncontrollable';
 import warning from 'warning';
 import reach from 'yup/lib/util/reach';
@@ -330,8 +330,11 @@ class Form extends React.Component {
     registerWithContext(this, this.submit);
   }
 
-  shouldComponentUpdate(nextProps, nextState) {
-    return scu.call(this, nextProps, nextState)
+  shouldComponentUpdate(nextProps, _, nextContext) {
+    return (
+      !shallowEqual(nextProps, this.props) ||
+      !shallowEqual(nextContext, this.context)
+    )
   }
 
   componentWillReceiveProps(nextProps) {
