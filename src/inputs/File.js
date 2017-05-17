@@ -8,7 +8,7 @@ class FileInput extends React.Component {
     onChange: PropTypes.func,
   }
 
-  handleChange = ({ target: { files } }) => {
+  handleChange = (_, { target: { files } }) => {
     const { multiple, onChange } = this.props;
 
     if (onChange)
