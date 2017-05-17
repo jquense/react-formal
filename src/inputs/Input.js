@@ -25,7 +25,7 @@ class Input extends React.Component {
       <Tag
         {...props}
         value={value}
-        onChange={ e => props.onChange(e.target.value)}
+        onChange={ e => props.onChange(e.target.value, e)}
       />
     );
   }
