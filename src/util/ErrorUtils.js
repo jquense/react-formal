@@ -15,7 +15,7 @@ function mapKeys(messages, baseName, fn) {
     if (isChildPath(baseName, path)) {
       const matches = path.slice(baseName.length).match(/\[(\d+)\](.+)$/);
 
-      newKey = fn(+matches[1], matches[2], path) || path;
+      newKey = fn(+matches[1], matches[2] || '', path) || path;
     }
 
     newMessages[newKey] = messages[path];
