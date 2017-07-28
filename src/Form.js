@@ -376,6 +376,10 @@ class Form extends React.Component {
     let parent = getter(parentPath, value) || {}
     let pathValue = parent != null ? parent[currentPath] : value
 
+    if (pathValue === '') {
+        pathValue = undefined;
+    }
+
     return schema
       .validate(pathValue, { ...options, abortEarly, parent, path })
       .then(() => null)
