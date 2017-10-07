@@ -23,7 +23,7 @@ __For more complete api documentations, live examples, and getting started guide
 var yup = require('yup')
   , Form = require('react-formal')
 
-var modelSchema =  yup.object({
+var modelSchema = yup.object({
         name: yup.object({
             first: yup.string().required('Name is required'),
             last: yup.string().required('Name is required')    
@@ -33,12 +33,12 @@ var modelSchema =  yup.object({
     })
 
 // ...in a component
-render(){
+render() {
     return (
         <Form
             schema={modelSchema}
             value={this.state.model}
-            onChange={model => this.setState({ model})}
+            onChange={model => this.setState({ model })}
         >
             <fieldset>
                 <legend>Personal Details</legend>
@@ -52,7 +52,7 @@ render(){
                 <Form.Field name='dateOfBirth'/>
                 <Form.Message for='dateOfBirth'/>
             </fieldset>
-            <Form.Button type='submit' >Submit</Form.Button>
+            <Form.Button type='submit'>Submit</Form.Button>
         </Form>
     )
 }
