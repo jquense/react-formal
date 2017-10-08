@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import shouldComponentUpdate from 'react-pure-render/function';
+import shallowEqual from 'recompose/shallowEqual';
 import ValidationMessage from './ValidationMessage';
 
 
@@ -63,8 +63,11 @@ class ValidationSummary extends React.Component {
     formatMessage: (message, idx) => <li key={idx}>{message}</li>
   }
 
-  shouldComponentUpdate(p, s, c){
-    return shouldComponentUpdate.call(this, p, s, c)
+  shouldComponentUpdate(nextProps, _, nextContext) {
+    return (
+      !shallowEqual(nextProps, this.props) ||
+      !shallowEqual(nextContext, this.context)
+    )
   }
 
   render() {

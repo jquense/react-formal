@@ -3,7 +3,7 @@ import cn from 'classnames';
 import omit from 'lodash/omit';
 import React from 'react';
 import PropTypes from 'prop-types';
-import shallowEqual from 'react-pure-render/shallowEqual';
+import shallowEqual from 'recompose/shallowEqual';
 import MessageTrigger from 'react-input-message/MessageTrigger';
 import { Binding } from 'topeka';
 import invariant from 'invariant';
@@ -82,7 +82,7 @@ class Field extends React.Component {
     return (
       !shallowEqual(nextProps, this.props) ||
       !shallowEqual(nextContext, this.context)
-    );
+    )
   }
 
   componentWillMount() {
