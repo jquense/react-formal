@@ -1,5 +1,5 @@
-import errToJSON from './util/errToJSON';
-import { reduce, trim } from './util/paths';
+import errToJSON from './utils/errToJSON';
+import { reduce, trim } from './utils/paths';
 
 let isValidationError = err => err && err.name === 'ValidationError';
 

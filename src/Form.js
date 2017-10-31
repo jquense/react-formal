@@ -11,11 +11,11 @@ import warning from 'warning';
 import reach from 'yup/lib/util/reach';
 
 import errorManager from './errorManager';
-import contextTypes from './util/contextType';
-import errToJSON from './util/errToJSON';
-import createTimeoutManager from './util/timeoutManager';
-import registerWithContext from './util/registerWithContext';
-import * as ErrorUtils from './util/ErrorUtils';
+import contextTypes from './utils/contextType';
+import errToJSON from './utils/errToJSON';
+import createTimeoutManager from './utils/timeoutManager';
+import registerWithContext from './utils/registerWithContext';
+import * as ErrorUtils from './utils/ErrorUtils';
 
 let BindingContext = BC.ControlledComponent;
 

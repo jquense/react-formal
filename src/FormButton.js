@@ -3,8 +3,8 @@ import PropTypes from 'prop-types';
 import warning from 'warning';
 import Trigger from 'react-input-message/MessageTrigger';
 
-import contextTypes from './util/contextType';
-import mergeWithEvents from './util/chainEvents';
+import contextTypes from './utils/contextType';
+import mergeWithEvents from './utils/chainEvents';
 
 /**
  * A Form Button, for triggering validations for specific Field groups
