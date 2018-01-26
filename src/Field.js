@@ -1,19 +1,18 @@
+import cn from 'classnames'
+import omit from 'lodash/omit'
+import React from 'react'
+import PropTypes from 'prop-types'
+import { Binding } from 'topeka'
+import invariant from 'invariant'
 
-import cn from 'classnames';
-import omit from 'lodash/omit';
-import React from 'react';
-import PropTypes from 'prop-types';
-import shallowEqual from 'react-pure-render/shallowEqual';
-import MessageTrigger from 'react-input-message/MessageTrigger';
-import { Binding } from 'topeka';
-import invariant from 'invariant';
-
-import isNativeType from './utils/isNativeType';
+import config from './config'
+import isNativeType from './utils/isNativeType'
 import resolveFieldComponent from './utils/resolveFieldComponent'
-import contextTypes from './utils/contextType';
-import config from './config';
-import isReactComponent from './utils/isReactComponent';
-import { inclusiveMapMessages } from './utils/ErrorUtils';
+import contextTypes from './utils/contextType'
+import shallowEqual from './shallowEqual'
+import MessageTrigger from './MessageTrigger'
+import isReactComponent from './utils/isReactComponent'
+import { inclusiveMapMessages } from './utils/ErrorUtils'
 
 function notify(handler, args) {
   handler && handler(...args)
@@ -28,11 +27,10 @@ function getValue(value, bindTo, getter) {
   }
 
   return Object.keys(bindTo).reduce((obj, key) => {
-    obj[key] = getValue(value, bindTo[key], getter);
+    obj[key] = getValue(value, bindTo[key], getter)
     return obj
   }, {})
 }
-
 
 /**
  * The Field Component renders a form control and handles input value updates and validations.
@@ -70,59 +68,54 @@ function getValue(value, bindTo, getter) {
  * ```
  */
 class Field extends React.Component {
-
   static contextTypes = contextTypes
 
   static defaultProps = {
     type: '',
-    exclusive: false
+    exclusive: false,
   }
 
   shouldComponentUpdate(nextProps, _, nextContext) {
-    return (
-      !shallowEqual(nextProps, this.props) ||
-      !shallowEqual(nextContext, this.context)
-    );
+    return !shallowEqual(nextProps, this.props) || !shallowEqual(nextContext, this.context)
   }
 
   componentWillMount() {
-    let { name } = this.props
-      , context = this.context.reactFormalContext;
+    let { name } = this.props,
+      context = this.context.reactFormalContext
 
-    this.eventHandlers = {};
+    this.eventHandlers = {}
     this.createEventHandlers(this.props)
 
     if (process.env.NODE_ENV !== 'production')
-      invariant(context.noValidate || !name || this.schema(name),
+      invariant(
+        context.noValidate || !name || this.schema(name),
         `There is no corresponding schema defined for this field: "${name}" ` +
-        `Each Field's \`name\` prop must be a valid path defined by the parent Form schema`
+          `Each Field's \`name\` prop must be a valid path defined by the parent Form schema`
       )
   }
 
-  onError = (errors) => {
-    let { name } = this.props
-      , context = this.context.reactFormalContext;
+  onError = errors => {
+    let { name } = this.props,
+      context = this.context.reactFormalContext
 
-    context.onFieldError(name, errors);
+    context.onFieldError(name, errors)
   }
 
   bindTo = (_value, getter) => {
-    let { mapToValue, name } = this.props;
-    let value = getValue(_value, mapToValue || name, getter);
+    let { mapToValue, name } = this.props
+    let value = getValue(_value, mapToValue || name, getter)
 
     // ensure that no inputs are left uncontrolled
-    if (value === undefined)
-     value = null;
+    if (value === undefined) value = null
 
-    return value;
+    return value
   }
 
   // create a set of handlers with a stable identity so as not to
   // thwart SCU checks
   createEventHandlers({ events = config.events }) {
-    if (events == null) return;
-
-    [].concat(events).forEach(event => {
+    if (events == null) return
+    ;[].concat(events).forEach(event => {
       let handler = (...args) => {
         notify(this._fieldProps[event], args)
         notify(this._bindingProps[event], args)
@@ -133,35 +126,28 @@ class Field extends React.Component {
   }
 
   constructComponent = (bindingProps, triggerProps = {}) => {
-    let {
-      name,
-      type,
-      children,
-      className,
-      errorClass = config.errorClass,
-    } = this.props;
+    let { name, type, children, className, errorClass = config.errorClass } = this.props
 
     let fieldProps = omit(this.props, Object.keys(Field.propTypes))
 
     fieldProps = Object.assign(
       { name },
-      this._fieldProps = fieldProps,
-      this._bindingProps = bindingProps,
-      this._triggerProps = triggerProps,
+      (this._fieldProps = fieldProps),
+      (this._bindingProps = bindingProps),
+      (this._triggerProps = triggerProps),
       this.eventHandlers
     )
 
-    let schema = this.schema(name);
+    let schema = this.schema(name)
     let [Component, resolvedType] = resolveFieldComponent(type, schema)
 
-    fieldProps.type = isNativeType(resolvedType)
-      ? resolvedType : undefined;
+    fieldProps.type = isNativeType(resolvedType) ? resolvedType : undefined
 
     let meta = {
       resolvedType,
       errorClass,
       schema,
-      onError: this.onError
+      onError: this.onError,
     }
 
     if (this.context.reactFormalContext) {
@@ -181,8 +167,7 @@ class Field extends React.Component {
       delete fieldProps.messages
     }
 
-    if (!this.props.noMeta)
-      fieldProps.meta = meta;
+    if (!this.props.noMeta) fieldProps.meta = meta
 
     // Escape hatch for more complex Field types.
     if (typeof children === 'function') {
@@ -190,31 +175,18 @@ class Field extends React.Component {
     }
 
     return (
-      <Component
-        {...fieldProps}
-        ref={isReactComponent(Component)
-          ? r => this.input = r
-          : null
-        }
-      >
+      <Component {...fieldProps} ref={isReactComponent(Component) ? r => (this.input = r) : null}>
         {children}
       </Component>
     )
   }
 
   render() {
-    let {
-        name
-      , group
-      , exclusive
-      , mapFromValue
-      , alsoValidates
-      , events = config.events } = this.props;
+    let { name, group, exclusive, mapFromValue, alsoValidates, events = config.events } = this.props
 
-    let mapMessages = !exclusive ? inclusiveMapMessages : undefined;
+    let mapMessages = !exclusive ? inclusiveMapMessages : undefined
 
-    if (typeof mapFromValue !== 'object')
-      mapFromValue = { [name]: mapFromValue }
+    if (typeof mapFromValue !== 'object') mapFromValue = { [name]: mapFromValue }
 
     if (!this.shouldValidate()) {
       return (
@@ -230,17 +202,9 @@ class Field extends React.Component {
 
     return (
       <Binding bindTo={this.bindTo} mapValue={mapFromValue}>
-        {(bindingProps) => (
-          <MessageTrigger
-            for={name}
-            group={group}
-            events={events}
-            mapMessages={mapMessages}
-          >
-            {triggerProps => this.constructComponent(
-              bindingProps,
-              triggerProps
-            )}
+        {bindingProps => (
+          <MessageTrigger for={name} group={group} events={events} mapMessages={mapMessages}>
+            {triggerProps => this.constructComponent(bindingProps, triggerProps)}
           </MessageTrigger>
         )}
       </Binding>
@@ -248,18 +212,17 @@ class Field extends React.Component {
   }
 
   schema(path) {
-    let schema;
-    let context = this.context.reactFormalContext;
+    let schema
+    let context = this.context.reactFormalContext
     try {
       schema = path && context.schema && context.schema(path)
-    }
-    catch (err) {} // eslint-disable-line no-empty
+    } catch (err) {} // eslint-disable-line no-empty
 
     return schema
   }
 
   shouldValidate() {
-    let context = this.context.reactFormalContext;
+    let context = this.context.reactFormalContext
     return !(this.props.noValidate || context.noValidate)
   }
 
@@ -267,7 +230,6 @@ class Field extends React.Component {
     return this.input
   }
 }
-
 
 Field.propTypes = {
   /**
@@ -361,18 +323,12 @@ Field.propTypes = {
    * You can also permenantly map Components to a string `type` name via the top-level
    * `addInputType()` api.
    */
-  type: PropTypes.oneOfType([
-    PropTypes.func,
-    PropTypes.string
-  ]),
+  type: PropTypes.oneOfType([PropTypes.func, PropTypes.string]),
 
   /**
    * Event name or array of event names that the Field should trigger a validation.
    */
-  events: PropTypes.oneOfType([
-    PropTypes.string,
-    PropTypes.arrayOf(PropTypes.string)
-  ]),
+  events: PropTypes.oneOfType([PropTypes.string, PropTypes.arrayOf(PropTypes.string)]),
 
   /**
    * Customize how the Field value maps to the overall Form `value`.
@@ -414,11 +370,7 @@ Field.propTypes = {
    * </Form>
    * ```
    */
-  mapFromValue: PropTypes.oneOfType([
-    PropTypes.func,
-    PropTypes.string,
-    PropTypes.object
-  ]),
+  mapFromValue: PropTypes.oneOfType([PropTypes.func, PropTypes.string, PropTypes.object]),
 
   /**
    * Map the Form value to the Field value. By default
@@ -433,10 +385,7 @@ Field.propTypes = {
    * />
    * ```
    */
-  mapToValue: PropTypes.oneOfType([
-    PropTypes.func,
-    PropTypes.object
-  ]),
+  mapToValue: PropTypes.oneOfType([PropTypes.func, PropTypes.object]),
 
   /**
    * The css class added to the Field Input when it fails validation
@@ -453,10 +402,7 @@ Field.propTypes = {
    * <Form.Field name='name.last' alsoValidates={['name', 'surname']} />
    * ```
    */
-  alsoValidates:PropTypes.oneOfType([
-    PropTypes.string,
-    PropTypes.arrayOf(PropTypes.string)
-  ]),
+  alsoValidates: PropTypes.oneOfType([PropTypes.string, PropTypes.arrayOf(PropTypes.string)]),
 
   /**
    * Indicates whether child fields of the named field
@@ -501,10 +447,7 @@ Field.propTypes = {
    * </Field>
    * ```
    */
-  children: PropTypes.oneOfType([
-    PropTypes.node,
-    PropTypes.func,
-  ]),
+  children: PropTypes.oneOfType([PropTypes.node, PropTypes.func]),
 
   /**
    * Instruct the field to not inject the `meta` prop into the input
@@ -512,4 +455,4 @@ Field.propTypes = {
   noMeta: PropTypes.bool,
 }
 
-export default Field;
+export default Field

@@ -1,8 +1,7 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import shouldComponentUpdate from 'react-pure-render/function';
-import ValidationMessage from './ValidationMessage';
+import React from 'react'
+import PropTypes from 'prop-types'
 
+import ValidationMessage from './ValidationMessage'
 
 /**
  * Display all Form validation `errors` in a single summary list.
@@ -23,10 +22,8 @@ import ValidationMessage from './ValidationMessage';
  * ```
  * @alias Summary
  */
-class ValidationSummary extends React.Component {
-
+class ValidationSummary extends React.PureComponent {
   static propTypes = {
-
     /**
      * An error message renderer, Should return a `ReactElement`
      * ```
@@ -42,10 +39,7 @@ class ValidationSummary extends React.Component {
     /**
      * A DOM node tag name or Component class the Message should render as.
      */
-    component: PropTypes.oneOfType([
-      PropTypes.func,
-      PropTypes.string
-    ]).isRequired,
+    component: PropTypes.oneOfType([PropTypes.func, PropTypes.string]).isRequired,
 
     /**
      * A css class that should be always be applied to the Summary container.
@@ -55,29 +49,21 @@ class ValidationSummary extends React.Component {
     /**
      * Specify a group to show erros for, if empty all form errors will be shown in the Summary.
      */
-    group: PropTypes.string
+    group: PropTypes.string,
   }
 
   static defaultProps = {
     component: 'ul',
-    formatMessage: (message, idx) => <li key={idx}>{message}</li>
-  }
-
-  shouldComponentUpdate(p, s, c){
-    return shouldComponentUpdate.call(this, p, s, c)
+    formatMessage: (message, idx) => <li key={idx}>{message}</li>,
   }
 
   render() {
-    let {
-        formatMessage
-      , ...props } = this.props;
+    let { formatMessage, ...props } = this.props
 
     return (
-      <ValidationMessage {...props}>
-        {messages => messages.map(formatMessage)}
-      </ValidationMessage>
+      <ValidationMessage {...props}>{messages => messages.map(formatMessage)}</ValidationMessage>
     )
   }
 }
 
-export default ValidationSummary;
+export default ValidationSummary

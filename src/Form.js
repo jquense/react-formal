@@ -1,42 +1,43 @@
 import omit from 'lodash/omit'
-import pick from 'lodash/pick';
-import expr from 'property-expr';
-import React from 'react';
-import PropTypes from 'prop-types';
-import scu from 'react-pure-render/function';
-import Container from 'react-input-message/MessageContainer';
-import { BindingContext as BC } from 'topeka';
-import uncontrollable from 'uncontrollable';
-import warning from 'warning';
-import reach from 'yup/lib/util/reach';
+import pick from 'lodash/pick'
+import expr from 'property-expr'
+import React from 'react'
+import PropTypes from 'prop-types'
+import { BindingContext as BC } from 'topeka'
+import uncontrollable from 'uncontrollable'
+import warning from 'warning'
+import reach from 'yup/lib/util/reach'
 
-import errorManager from './errorManager';
-import contextTypes from './utils/contextType';
-import errToJSON from './utils/errToJSON';
-import createTimeoutManager from './utils/timeoutManager';
-import registerWithContext from './utils/registerWithContext';
-import * as ErrorUtils from './utils/ErrorUtils';
+import errorManager from './errorManager'
+import contextTypes from './utils/contextType'
+import errToJSON from './utils/errToJSON'
+import createTimeoutManager from './utils/timeoutManager'
+import registerWithContext from './utils/registerWithContext'
+import * as ErrorUtils from './utils/ErrorUtils'
+import Container from './MessageContainer'
 
-let BindingContext = BC.ControlledComponent;
+let BindingContext = BC.ControlledComponent
 
-let done = e => setTimeout(() => { throw e })
+let done = e =>
+  setTimeout(() => {
+    throw e
+  })
 let splitPath = path => {
-  let parts = expr.split(path);
+  let parts = expr.split(path)
   let tail = parts.pop()
   return [expr.join(parts), tail]
 }
 
-let isValidationError = err => err && err.name === 'ValidationError';
+let isValidationError = err => err && err.name === 'ValidationError'
 
-const YUP_OPTIONS = ['context', 'stripUnknown', 'recursive', 'abortEarly', 'strict'];
+const YUP_OPTIONS = ['context', 'stripUnknown', 'recursive', 'abortEarly', 'strict']
 
 function maybeWarn(debug, errors, target) {
-  if (!debug) return;
+  if (!debug) return
 
   if (process.env.NODE_ENV !== 'production') {
     let keys = Object.keys(errors)
-    warning(!keys.length,
-      `[react-formal] (${target}) invalid fields: ${keys.join(', ')}`)
+    warning(!keys.length, `[react-formal] (${target}) invalid fields: ${keys.join(', ')}`)
   }
 }
 
@@ -111,10 +112,8 @@ function maybeWarn(debug, errors, target) {
  * ReactDOM.render(form, mountNode);
  * ```
  */
-class Form extends React.Component {
-
+class Form extends React.PureComponent {
   static propTypes = {
-
     /**
      * Form value object, can be left [uncontrolled](/controllables);
      * use the `defaultValue` prop to initialize an uncontrolled form.
@@ -223,7 +222,7 @@ class Form extends React.Component {
      * A value getter function. `getter` is called with `path` and `value` and
      * should return the plain **javascript** value at the path.
      *
-      * ```js
+     * ```js
      * function(
      *  path: string,
      *  value: any,
@@ -273,7 +272,7 @@ class Form extends React.Component {
     component: PropTypes.oneOfType([
       PropTypes.func,
       PropTypes.string,
-      PropTypes.oneOf([null, false])
+      PropTypes.oneOf([null, false]),
     ]),
 
     /**
@@ -282,11 +281,10 @@ class Form extends React.Component {
      * @type {YupSchema}
      */
     schema(props, name, componentName, ...args) {
-      var err = !props.noValidate &&
-        PropTypes.any.isRequired(props, name, componentName, ...args)
+      var err = !props.noValidate && PropTypes.any.isRequired(props, name, componentName, ...args)
 
       if (props[name]) {
-        let schema = props[name];
+        let schema = props[name]
         if (!schema.__isYupSchema__ && !(schema.resolve && schema.validate))
           err = new Error('`schema` must be a proper yup schema: (' + componentName + ')')
       }
@@ -310,32 +308,28 @@ class Form extends React.Component {
     component: 'form',
     strict: false,
     delay: 300,
-    getter: (path, model) => path ? expr.getter(path, true)(model || {}) : model
+    getter: (path, model) => (path ? expr.getter(path, true)(model || {}) : model),
   }
 
   static contextTypes = {
-    reactFormalContext: PropTypes.object
+    reactFormalContext: PropTypes.object,
   }
 
   static childContextTypes = contextTypes
 
-  constructor(props, context){
+  constructor(props, context) {
     super(props, context)
 
     this.queue = []
     this.pathOptions = Object.create(null)
-    this.timeouts = createTimeoutManager(this);
+    this.timeouts = createTimeoutManager(this)
     this.errors = errorManager(this.handleValidate)
 
-    registerWithContext(this, this.submit);
-  }
-
-  shouldComponentUpdate(nextProps, nextState) {
-    return scu.call(this, nextProps, nextState)
+    registerWithContext(this, this.submit)
   }
 
   componentWillReceiveProps(nextProps) {
-    if (nextProps.schema !== this.props.schema){
+    if (nextProps.schema !== this.props.schema) {
       this.enqueue(Object.keys(nextProps.errors || {}))
     }
     this.flush(nextProps.delay)
@@ -343,13 +337,9 @@ class Form extends React.Component {
 
   getChildContext() {
     let { noValidate, schema, ...options } = this.props
-    let context = this._context && this._context.reactFormalContext;
+    let context = this._context && this._context.reactFormalContext
 
-    if (
-      !context ||
-      context.schema !== schema ||
-      context.noValidate !== noValidate
-    ) {
+    if (!context || context.schema !== schema || context.noValidate !== noValidate) {
       this._context = {
         reactFormalContext: {
           options,
@@ -358,11 +348,11 @@ class Form extends React.Component {
           submitForm: this.handleContextSubmit,
           schema: this.getSchemaForPath,
           onFieldError: this.handleFieldError,
-        }
+        },
       }
     }
 
-    return this._context;
+    return this._context
   }
 
   handleValidate = (path, { props }) => {
@@ -382,33 +372,28 @@ class Form extends React.Component {
       .catch(err => err)
   }
 
-  handleValidationRequest = (e) => {
-    let { noValidate, delay } = this.props;
+  handleValidationRequest = e => {
+    let { noValidate, delay } = this.props
 
-    if (noValidate)
-      return
+    if (noValidate) return
 
     this.notify('onValidate', e)
     this.enqueue(e.fields)
 
-    if (e.type !== 'onChange')
-      this.flush(delay)
+    if (e.type !== 'onChange') this.flush(delay)
   }
 
   handleFieldError = (name, fieldErrors) => {
-    const { errors } = this.props;
+    const { errors } = this.props
 
-    this.handleError(Object.assign(
-      ErrorUtils.remove(errors, name),
-      fieldErrors
-    ))
+    this.handleError(Object.assign(ErrorUtils.remove(errors, name), fieldErrors))
   }
 
   handleError = errors => {
     this.notify('onError', errors)
   }
 
-  handleContextSubmit = (formName) => {
+  handleContextSubmit = formName => {
     let key = this.props.formKey || '@@parent'
 
     if (formName && formName !== key)
@@ -418,11 +403,10 @@ class Form extends React.Component {
   }
 
   handleSubmit = e => {
-    if (e && e.preventDefault)
-      e.preventDefault()
+    if (e && e.preventDefault) e.preventDefault()
 
     clearTimeout(this.submitTimer)
-    this.submitTimer = setTimeout(()=> this.submit().catch(done), 0)
+    this.submitTimer = setTimeout(() => this.submit().catch(done), 0)
   }
 
   enqueue(fields) {
@@ -430,27 +414,30 @@ class Form extends React.Component {
   }
 
   flush(delay) {
-    this.timeouts.set('flush-validations', () => {
-      let fields = this.queue;
-      let props = this.props;
+    this.timeouts.set(
+      'flush-validations',
+      () => {
+        let fields = this.queue
+        let props = this.props
 
-      if (!fields.length)
-        return;
+        if (!fields.length) return
 
-      this.queue = [];
-      this._validate(fields, this.props)
-        .then(errors => {
-          if (errors !== this.props.errors) {
-            maybeWarn(props.debug, errors, 'field validation')
-            this.notify('onError', errors)
-          }
-        })
-        .catch(done)
-    }, delay)
+        this.queue = []
+        this._validate(fields, this.props)
+          .then(errors => {
+            if (errors !== this.props.errors) {
+              maybeWarn(props.debug, errors, 'field validation')
+              this.notify('onError', errors)
+            }
+          })
+          .catch(done)
+      },
+      delay
+    )
   }
 
   getSchemaForPath = (path, props = this.props) => {
-    let { schema, value, context } = props;
+    let { schema, value, context } = props
 
     return schema && path && reach(schema, path, value, context)
   }
@@ -461,16 +448,12 @@ class Form extends React.Component {
     options.abortEarly = false
     options.strict = false
 
-    if (noValidate)
-      return Promise.resolve(true)
-        .then(() => this.notify('onSubmit', value))
+    if (noValidate) return Promise.resolve(true).then(() => this.notify('onSubmit', value))
 
-    let handleSuccess = validatedValue =>
-      this.notify('onSubmit', validatedValue)
+    let handleSuccess = validatedValue => this.notify('onSubmit', validatedValue)
 
     let handleError = err => {
-      if (!isValidationError(err))
-        throw err;
+      if (!isValidationError(err)) throw err
 
       var errors = errToJSON(err)
 
@@ -480,18 +463,16 @@ class Form extends React.Component {
       this.notify('onInvalidSubmit', errors)
     }
 
-    return schema
-      .validate(value, options)
-      // no catch, we aren't interested in errors from onSubmit handlers
-      .then(handleSuccess, handleError)
+    return (
+      schema
+        .validate(value, options)
+        // no catch, we aren't interested in errors from onSubmit handlers
+        .then(handleSuccess, handleError)
+    )
   }
 
   _validate(fields, props = this.props) {
-    return this.errors.collect(
-      fields,
-      props.errors,
-      { props }
-    )
+    return this.errors.collect(fields, props.errors, { props })
   }
 
   validate(fields) {
@@ -499,44 +480,36 @@ class Form extends React.Component {
   }
 
   validateGroup(groups) {
-    let fields = this._container.fieldsForGroup(groups);
+    let fields = this._container.fieldsForGroup(groups)
     return this.validate(fields)
   }
 
   render() {
     var {
-        children
-      , onChange
-      , value
-      , component: Element
-      , getter
-      , setter
-      , errors
-      , __messageContainer: containerProps = {} // eslint-disable-line
-    } = this.props;
+      children,
+      onChange,
+      value,
+      component: Element,
+      getter,
+      setter,
+      errors,
+      __messageContainer: containerProps = {}, // eslint-disable-line
+    } = this.props
 
     let props = omit(this.props, [
       '__messageContainer',
       ...YUP_OPTIONS,
       ...Object.keys(Form.propTypes),
-    ]);
+    ])
 
-    if (Element === 'form')
-      props.noValidate = true // disable html5 validation
+    if (Element === 'form') props.noValidate = true // disable html5 validation
 
     props.onSubmit = this.handleSubmit
 
     if (Element === null || Element === false) {
-      children = React.cloneElement(
-        React.Children.only(children),
-        props
-      )
-    } else  {
-      children = (
-        <Element {...props}>
-          { children }
-        </Element>
-      )
+      children = React.cloneElement(React.Children.only(children), props)
+    } else {
+      children = <Element {...props}>{children}</Element>
     }
 
     if (!containerProps.passthrough) {
@@ -544,33 +517,28 @@ class Form extends React.Component {
     }
 
     return (
-      <BindingContext
-        value={value}
-        onChange={onChange}
-        getter={getter}
-        setter={setter}
-      >
+      <BindingContext value={value} onChange={onChange} getter={getter} setter={setter}>
         <Container
           {...containerProps}
-          ref={ref => this._container = ref}
+          ref={ref => (this._container = ref)}
           onValidationNeeded={this.handleValidationRequest}
         >
           {children}
         </Container>
       </BindingContext>
-    );
+    )
   }
 
-  notify(event, ...args){
-    if (this.props[event])
-      this.props[event](...args)
+  notify(event, ...args) {
+    if (this.props[event]) this.props[event](...args)
   }
 }
 
-export default uncontrollable(Form,
+export default uncontrollable(
+  Form,
   {
     value: 'onChange',
-    errors: 'onError'
+    errors: 'onError',
   },
   ['submit', 'validateGroup', 'validate']
 )

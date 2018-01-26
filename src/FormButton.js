@@ -1,16 +1,15 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import warning from 'warning';
-import Trigger from 'react-input-message/MessageTrigger';
+import React from 'react'
+import PropTypes from 'prop-types'
+import warning from 'warning'
 
-import contextTypes from './utils/contextType';
-import mergeWithEvents from './utils/chainEvents';
+import contextTypes from './utils/contextType'
+import mergeWithEvents from './utils/chainEvents'
+import Trigger from './MessageTrigger'
 
 /**
  * A Form Button, for triggering validations for specific Field groups
  */
 class Button extends React.Component {
-
   static propTypes = {
     /**
      * The `<button/>` type
@@ -30,10 +29,7 @@ class Button extends React.Component {
      */
     formKey: PropTypes.string,
 
-    component: PropTypes.oneOfType([
-      PropTypes.string,
-      PropTypes.func
-    ]),
+    component: PropTypes.oneOfType([PropTypes.string, PropTypes.func]),
 
     /**
      * An array of event names that trigger validation.
@@ -48,31 +44,30 @@ class Button extends React.Component {
   static defaultProps = {
     type: 'button',
     component: 'button',
-    events: ['onClick']
+    events: ['onClick'],
   }
 
   handleSubmit = (...args) => {
-    let { formKey, onClick } = this.props;
+    let { formKey, onClick } = this.props
     let context = this.context.reactFormalContext
 
     if (onClick) onClick(...args)
     if (context) context.submitForm(formKey || '@@parent')
   }
 
-  render(){
-    let {
-        type
-      , group
-      , events
-      , component: Component
-      , ...props } = this.props
+  render() {
+    let { type, group, events, component: Component, ...props } = this.props
 
-    warning(!group || type.toLowerCase() !== 'submit',
+    warning(
+      !group || type.toLowerCase() !== 'submit',
       'You have specified a `group` prop with type="submit" on this Form.Button component. ' +
-      'submit type buttons will automatically trigger a form wide validation. ' +
-      'to trigger validation for just the group: `' + group + '` use type="button" instead.')
+        'submit type buttons will automatically trigger a form wide validation. ' +
+        'to trigger validation for just the group: `' +
+        group +
+        '` use type="button" instead.'
+    )
 
-    delete props.formKey;
+    delete props.formKey
 
     if (type.toLowerCase() === 'submit')
       return (
@@ -83,17 +78,11 @@ class Button extends React.Component {
 
     return (
       <Trigger group={group || '@all'} events={events}>
-        {({ messages: _, ...triggerProps }) =>
-          <Component
-            {...mergeWithEvents(events, [
-              props,
-              triggerProps
-            ])}
-            type={type}
-          >
+        {({ messages: _, ...triggerProps }) => (
+          <Component {...mergeWithEvents(events, [props, triggerProps])} type={type}>
             {this.props.children}
           </Component>
-        }
+        )}
       </Trigger>
     )
   }
