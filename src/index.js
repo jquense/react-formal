@@ -4,7 +4,7 @@ import Field from './Field';
 import Context from './FormContext';
 import ValidationMessage from './ValidationMessage';
 import ValidationSummary from './ValidationSummary';
-import errToJSON from './util/errToJSON';
+import errToJSON from './utils/errToJSON';
 import FormButton  from './FormButton';
 import addType  from './addInputType';
 import config from './config';

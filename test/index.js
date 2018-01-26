@@ -1,0 +1,25 @@
+global.requestAnimationFrame = cb => setTimeout(cb, 0)
+const { configure, ShallowWrapper, ReactWrapper } = require('enzyme')
+const Adapter = require('enzyme-adapter-react-16')
+
+global.chai = require('chai')
+global.sinon = require('sinon')
+global.chai.use(require('sinon-chai'))
+global.chai.use(require('chai-as-promised'))
+global.chai.should()
+
+configure({ adapter: new Adapter() })
+
+function assertLength(length) {
+  return function $assertLength(selector) {
+    let result = this.find(selector)
+    result.should.have.length(length)
+    return result
+  }
+}
+
+ReactWrapper.prototype.assertSingle = assertLength(1)
+ShallowWrapper.prototype.assertSingle = assertLength(1)
+
+ReactWrapper.prototype.assertNone = assertLength(0)
+ShallowWrapper.prototype.assertNone = assertLength(0)

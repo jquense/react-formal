@@ -1,2 +1,7 @@
 parser: babel-eslint
 extends: jason
+overrides:
+  - files:
+     - test/**.js
+    env:
+      jest: true

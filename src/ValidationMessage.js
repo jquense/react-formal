@@ -4,7 +4,7 @@ import shouldComponentUpdate from 'react-pure-render/function';
 import Message from 'react-input-message/Message';
 import cn from 'classnames';
 
-import uniq from './util/uniqMessage';
+import uniq from './utils/uniqMessage';
 
 /**
  * Represents a Form validation error message. Only renders when the

@@ -8,12 +8,12 @@ import MessageTrigger from 'react-input-message/MessageTrigger';
 import { Binding } from 'topeka';
 import invariant from 'invariant';
 
-import isNativeType from './util/isNativeType';
-import resolveFieldComponent from './util/resolveFieldComponent'
-import contextTypes from './util/contextType';
+import isNativeType from './utils/isNativeType';
+import resolveFieldComponent from './utils/resolveFieldComponent'
+import contextTypes from './utils/contextType';
 import config from './config';
-import isReactComponent from './util/isReactComponent';
-import { inclusiveMapMessages } from './util/ErrorUtils';
+import isReactComponent from './utils/isReactComponent';
+import { inclusiveMapMessages } from './utils/ErrorUtils';
 
 function notify(handler, args) {
   handler && handler(...args)

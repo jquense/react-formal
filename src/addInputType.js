@@ -1,4 +1,4 @@
-import types from './util/types';
+import types from './utils/types';
 
 let addType = (type, Component) => {
   let compType = typeof Component;

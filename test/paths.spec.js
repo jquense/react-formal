@@ -1,4 +1,4 @@
-var paths = require('../src/util/paths')
+var paths = require('../src/utils/paths')
 
 describe('PATH utils', ()=>{
 
