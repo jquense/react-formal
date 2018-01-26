@@ -3,7 +3,9 @@ import PropTypes from 'prop-types'
 import cn from 'classnames'
 
 import uniq from './utils/uniqMessage'
-import Message from './Message'
+import connectToMessageContainer from './connectToMessageContainer'
+
+let flatten = (arr, next) => arr.concat(next)
 
 /**
  * Represents a Form validation error message. Only renders when the
@@ -11,9 +13,18 @@ import Message from './Message'
  *
  * @alias Message
  */
-class ValidationMessage extends React.PureComponent {
+class Message extends React.PureComponent {
   static propTypes = {
-    ...Message.propTypes,
+    for: PropTypes.oneOfType([
+      PropTypes.string,
+      PropTypes.arrayOf(PropTypes.string),
+    ]),
+    group: PropTypes.oneOfType([
+      PropTypes.string,
+      PropTypes.arrayOf(PropTypes.string),
+    ]),
+    messagesForNames: PropTypes.func,
+
     /**
      * A function that maps an array of message strings
      * and returns a renderable string or ReactElement.
@@ -26,7 +37,8 @@ class ValidationMessage extends React.PureComponent {
      */
     children: PropTypes.func,
 
-    component: PropTypes.oneOfType([PropTypes.func, PropTypes.string]).isRequired,
+    component: PropTypes.oneOfType([PropTypes.func, PropTypes.string])
+      .isRequired,
 
     /**
      * A css class that should be always be applied to the Message container.
@@ -48,14 +60,34 @@ class ValidationMessage extends React.PureComponent {
   }
 
   render() {
-    let { className, errorClass, children, extract, filter, ...props } = this.props
+    let {
+      /* eslint-disable no-unused-vars */
+      for: fieldFor,
+      group,
+      /* eslint-enable no-unused-vars */
+      className,
+      errorClass,
+      extract,
+      filter,
+      messages,
+      component: Component,
+      children,
+      ...props
+    } = this.props
+
+    if (!Object.keys(messages || {}).length) return null
+
+    messages = Object.values(messages)
+      .reduce(flatten, [])
+      .filter((...args) => filter(...args, extract))
+      .map(extract)
 
     return (
-      <Message {...props} className={cn(className, errorClass)}>
-        {messages => children(messages.filter((...args) => filter(...args, extract)).map(extract))}
-      </Message>
+      <Component {...props} className={cn(className, errorClass)}>
+        {children(messages)}
+      </Component>
     )
   }
 }
 
-export default ValidationMessage
+export default connectToMessageContainer(Message)

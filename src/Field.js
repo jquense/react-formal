@@ -76,7 +76,10 @@ class Field extends React.Component {
   }
 
   shouldComponentUpdate(nextProps, _, nextContext) {
-    return !shallowEqual(nextProps, this.props) || !shallowEqual(nextContext, this.context)
+    return (
+      !shallowEqual(nextProps, this.props) ||
+      !shallowEqual(nextContext, this.context)
+    )
   }
 
   componentWillMount() {
@@ -126,7 +129,13 @@ class Field extends React.Component {
   }
 
   constructComponent = (bindingProps, triggerProps = {}) => {
-    let { name, type, children, className, errorClass = config.errorClass } = this.props
+    let {
+      name,
+      type,
+      children,
+      className,
+      errorClass = config.errorClass,
+    } = this.props
 
     let fieldProps = omit(this.props, Object.keys(Field.propTypes))
 
@@ -175,18 +184,29 @@ class Field extends React.Component {
     }
 
     return (
-      <Component {...fieldProps} ref={isReactComponent(Component) ? r => (this.input = r) : null}>
+      <Component
+        {...fieldProps}
+        ref={isReactComponent(Component) ? r => (this.input = r) : null}
+      >
         {children}
       </Component>
     )
   }
 
   render() {
-    let { name, group, exclusive, mapFromValue, alsoValidates, events = config.events } = this.props
+    let {
+      name,
+      group,
+      exclusive,
+      mapFromValue,
+      alsoValidates,
+      events = config.events,
+    } = this.props
 
     let mapMessages = !exclusive ? inclusiveMapMessages : undefined
 
-    if (typeof mapFromValue !== 'object') mapFromValue = { [name]: mapFromValue }
+    if (typeof mapFromValue !== 'object')
+      mapFromValue = { [name]: mapFromValue }
 
     if (!this.shouldValidate()) {
       return (
@@ -203,8 +223,15 @@ class Field extends React.Component {
     return (
       <Binding bindTo={this.bindTo} mapValue={mapFromValue}>
         {bindingProps => (
-          <MessageTrigger for={name} group={group} events={events} mapMessages={mapMessages}>
-            {triggerProps => this.constructComponent(bindingProps, triggerProps)}
+          <MessageTrigger
+            for={name}
+            group={group}
+            events={events}
+            mapMessages={mapMessages}
+          >
+            {triggerProps =>
+              this.constructComponent(bindingProps, triggerProps)
+            }
           </MessageTrigger>
         )}
       </Binding>
@@ -328,7 +355,10 @@ Field.propTypes = {
   /**
    * Event name or array of event names that the Field should trigger a validation.
    */
-  events: PropTypes.oneOfType([PropTypes.string, PropTypes.arrayOf(PropTypes.string)]),
+  events: PropTypes.oneOfType([
+    PropTypes.string,
+    PropTypes.arrayOf(PropTypes.string),
+  ]),
 
   /**
    * Customize how the Field value maps to the overall Form `value`.
@@ -370,7 +400,11 @@ Field.propTypes = {
    * </Form>
    * ```
    */
-  mapFromValue: PropTypes.oneOfType([PropTypes.func, PropTypes.string, PropTypes.object]),
+  mapFromValue: PropTypes.oneOfType([
+    PropTypes.func,
+    PropTypes.string,
+    PropTypes.object,
+  ]),
 
   /**
    * Map the Form value to the Field value. By default
@@ -402,7 +436,10 @@ Field.propTypes = {
    * <Form.Field name='name.last' alsoValidates={['name', 'surname']} />
    * ```
    */
-  alsoValidates: PropTypes.oneOfType([PropTypes.string, PropTypes.arrayOf(PropTypes.string)]),
+  alsoValidates: PropTypes.oneOfType([
+    PropTypes.string,
+    PropTypes.arrayOf(PropTypes.string),
+  ]),
 
   /**
    * Indicates whether child fields of the named field
