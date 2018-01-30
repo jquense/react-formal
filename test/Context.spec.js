@@ -11,7 +11,11 @@ describe('Form Context', () => {
 
   it('should simulate an onSubmit in the Form', function(done) {
     mount(
-      <Form onSubmit={sinon.spy(() => done())} schema={schema} defaultValue={{}}>
+      <Form
+        onSubmit={sinon.spy(() => done())}
+        schema={schema}
+        defaultValue={{}}
+      >
         <Form.Field name="name" type="text" className="test" />
         <Form.Button type="submit" />
       </Form>
@@ -23,7 +27,11 @@ describe('Form Context', () => {
   it('should simulate an onSubmit from outside the form', function(done) {
     mount(
       <Form.Context>
-        <Form onSubmit={sinon.spy(() => done())} schema={schema} defaultValue={{}}>
+        <Form
+          onSubmit={sinon.spy(() => done())}
+          schema={schema}
+          defaultValue={{}}
+        >
           <Form.Field name="name" type="text" className="test" />
         </Form>
         <Form.Button type="submit" />
@@ -103,6 +111,35 @@ describe('Form Context', () => {
     setTimeout(() => done(), 10)
   })
 
+  it('should fall-through to next context', done => {
+    mount(
+      <Form.Context>
+        <Form
+          schema={schema}
+          defaultValue={{}}
+          formKey="bar"
+          onSubmit={() => setTimeout(() => done(), 10)}
+        >
+          <Form.Field name="name" type="text" className="test" />
+        </Form>
+        <Form.Context>
+          <Form
+            schema={schema}
+            defaultValue={{}}
+            onSubmit={() => {
+              throw new Error()
+            }}
+          >
+            <Form.Field name="name" type="text" className="test" />
+          </Form>
+          <Form.Button type="submit" formKey="bar" />
+        </Form.Context>
+      </Form.Context>
+    )
+      .find(Form.Button)
+      .simulate('click')
+  })
+
   it('should not allow submit past form', done => {
     try {
       mount(
@@ -116,7 +153,9 @@ describe('Form Context', () => {
         .find(Form.Button)
         .simulate('click')
     } catch (err) {
-      err.message.should.equal('Cannot trigger a submit for a Form from within a different form')
+      err.message.should.equal(
+        'Cannot trigger a submit for a Form from within a different form'
+      )
       done()
     }
   })

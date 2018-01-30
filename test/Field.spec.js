@@ -19,7 +19,12 @@ describe('Field', () => {
 
   class TestInput extends React.Component {
     render() {
-      return <input value={this.props.value || ''} onChange={e => this.props.onChange(e, 'hi')} />
+      return (
+        <input
+          value={this.props.value || ''}
+          onChange={e => this.props.onChange(e, 'hi')}
+        />
+      )
     }
   }
 
@@ -92,7 +97,7 @@ describe('Field', () => {
 
     mount(
       <Form schema={schema} defaultValue={{}}>
-        <Form.Field name="name" type={() => null} />
+        <Form.Field name="name" type={() => null} fieldRef={() => {}} />
       </Form>
     )
 
@@ -344,7 +349,11 @@ describe('Field', () => {
 
     it('should use inclusive active checking', function() {
       mount(
-        <Form schema={schema} defaultValue={{}} defaultErrors={{ 'name.first': 'foo' }}>
+        <Form
+          schema={schema}
+          defaultValue={{}}
+          defaultErrors={{ 'name.first': 'foo' }}
+        >
           <Form.Field name="name" errorClass="invalid" />
         </Form>
       ).assertSingle('input.invalid')
@@ -352,7 +361,11 @@ describe('Field', () => {
 
     it('should respect `exclusive`', function() {
       mount(
-        <Form schema={schema} defaultValue={{}} defaultErrors={{ 'name.first': 'foo' }}>
+        <Form
+          schema={schema}
+          defaultValue={{}}
+          defaultErrors={{ 'name.first': 'foo' }}
+        >
           <Form.Field exclusive name="name" errorClass="invalid" />
         </Form>
       ).assertNone('input.invalid')
@@ -422,17 +435,20 @@ describe('Field', () => {
     })
   })
 
-  it('should expose input wrapperance', function() {
+  it('should add inner ref', function() {
+    let inst
     let wrapper = mount(
       <Form schema={schema} defaultValue={{}}>
-        <Form.Field name="name" type={TestInput} />
+        <Form.Field
+          name="name"
+          type={TestInput}
+          fieldRef={r => {
+            inst = r
+          }}
+        />
       </Form>
     )
-    ;(wrapper
-      .assertSingle(Form.Field)
-      .instance()
-      .inputInstance() instanceof TestInput
-    ).should.be.true
+    ;(inst instanceof TestInput).should.be.true
   })
 
   it('should work with conditional schema', function() {

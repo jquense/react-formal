@@ -4,17 +4,18 @@ import React from 'react'
 import yup from 'yup'
 
 import Form from '../src'
+import { Consumer } from '../src/Form'
 import errorManager from '../src/errorManager'
 
 let LeakySubmit = (props, context) => (
-  <button type="submit" onClick={context.reactFormalContext.onSubmit}>
-    Submit
-  </button>
+  <Consumer>
+    {({ onSubmit }) => (
+      <button type="submit" onClick={onSubmit}>
+        Submit
+      </button>
+    )}
+  </Consumer>
 )
-
-LeakySubmit.contextTypes = {
-  reactFormalContext: PropTypes.object,
-}
 
 describe('Form', () => {
   var schema = yup.object({
@@ -32,9 +33,24 @@ describe('Form', () => {
     Form.getter('foo', { foo: 5 }).should.equal(5)
   })
 
+  it('should pass messages', () => {
+    let wrapper = mount(
+      <Form schema={schema} defaultErrors={{ fieldA: ['hi', 'good day'] }}>
+        <div>
+          <Form.Message for="fieldA" className="msg" />
+          <Form.Message for="fieldB" className="msg" />
+        </div>
+      </Form>
+    )
+
+    wrapper
+      .find('span.msg')
+      .text()
+      .should.equal('hi, good day')
+  })
+
   it('should update the form value', function() {
-    let value
-    let last
+    let value, last
     let change = sinon.spy(v => (value = v))
 
     let wrapper = mount(
@@ -104,7 +120,12 @@ describe('Form', () => {
   it('should respect noValidate', () => {
     var change = sinon.spy(),
       wrapper = mount(
-        <Form noValidate schema={schema} defaultValue={schema.default()} onValidate={change}>
+        <Form
+          noValidate
+          schema={schema}
+          defaultValue={schema.default()}
+          onValidate={change}
+        >
           <Form.Field name="name.first" className="field" />
           <Form.Field name="name.last" className="field" />
         </Form>

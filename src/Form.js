@@ -6,6 +6,7 @@ import PropTypes from 'prop-types'
 import { BindingContext as BC } from 'topeka'
 import uncontrollable from 'uncontrollable'
 import warning from 'warning'
+import createContext from 'create-react-context'
 import reach from 'yup/lib/util/reach'
 
 import errorManager from './errorManager'
@@ -14,14 +15,23 @@ import errToJSON from './utils/errToJSON'
 import createTimeoutManager from './utils/timeoutManager'
 import registerWithContext from './utils/registerWithContext'
 import * as ErrorUtils from './utils/ErrorUtils'
-import Container from './MessageContainer'
+import MessageContext from './MessageContext'
 
 let BindingContext = BC.ControlledComponent
+
+const ALL_FIELDS = '@all'
 
 let done = e =>
   setTimeout(() => {
     throw e
   })
+
+let uniq = array => array.filter((item, idx) => array.indexOf(item) === idx)
+
+let add = (array, item) => array.indexOf(item) === -1 && array.push(item)
+
+let remove = (array, item) => array.filter(i => i !== item)
+
 let splitPath = path => {
   let parts = expr.split(path)
   let tail = parts.pop()
@@ -30,14 +40,32 @@ let splitPath = path => {
 
 let isValidationError = err => err && err.name === 'ValidationError'
 
-const YUP_OPTIONS = ['context', 'stripUnknown', 'recursive', 'abortEarly', 'strict']
+export const { Provider, Consumer } = createContext({
+  options: null,
+  noValidate: false,
+  onFieldError() {},
+  getSchemaForPath() {},
+  registerForm: null,
+  submitForm() {},
+})
+
+const YUP_OPTIONS = [
+  'context',
+  'stripUnknown',
+  'recursive',
+  'abortEarly',
+  'strict',
+]
 
 function maybeWarn(debug, errors, target) {
   if (!debug) return
 
   if (process.env.NODE_ENV !== 'production') {
     let keys = Object.keys(errors)
-    warning(!keys.length, `[react-formal] (${target}) invalid fields: ${keys.join(', ')}`)
+    warning(
+      !keys.length,
+      `[react-formal] (${target}) invalid fields: ${keys.join(', ')}`
+    )
   }
 }
 
@@ -281,12 +309,16 @@ class Form extends React.PureComponent {
      * @type {YupSchema}
      */
     schema(props, name, componentName, ...args) {
-      var err = !props.noValidate && PropTypes.any.isRequired(props, name, componentName, ...args)
+      var err =
+        !props.noValidate &&
+        PropTypes.any.isRequired(props, name, componentName, ...args)
 
       if (props[name]) {
         let schema = props[name]
         if (!schema.__isYupSchema__ && !(schema.resolve && schema.validate))
-          err = new Error('`schema` must be a proper yup schema: (' + componentName + ')')
+          err = new Error(
+            '`schema` must be a proper yup schema: (' + componentName + ')'
+          )
       }
 
       return err
@@ -308,54 +340,85 @@ class Form extends React.PureComponent {
     component: 'form',
     strict: false,
     delay: 300,
-    getter: (path, model) => (path ? expr.getter(path, true)(model || {}) : model),
+    errors: Object.create(null),
+    getter: (path, model) =>
+      path ? expr.getter(path, true)(model || {}) : model,
   }
-
-  static contextTypes = {
-    reactFormalContext: PropTypes.object,
-  }
-
-  static childContextTypes = contextTypes
 
   constructor(props, context) {
     super(props, context)
 
     this.queue = []
-    this.pathOptions = Object.create(null)
+    this.groups = Object.create(null)
     this.timeouts = createTimeoutManager(this)
-    this.errors = errorManager(this.handleValidate)
-
-    registerWithContext(this, this.submit)
+    this.errors = errorManager(this.validatePath)
+    this.formContext = this.getFormContext(props)
+    this.messageContext = this.getMessageContext(props)
   }
 
   componentWillReceiveProps(nextProps) {
-    if (nextProps.schema !== this.props.schema) {
+    const schemaChanged = nextProps.schema !== this.props.schema
+
+    if (nextProps.errors !== this.props.errors)
+      this.messageContext = this.getMessageContext(nextProps)
+
+    if (schemaChanged || nextProps.noValidate !== this.props.noValidate) {
+      this.formContext = this.getFormContext(nextProps)
+    }
+
+    if (schemaChanged) {
       this.enqueue(Object.keys(nextProps.errors || {}))
     }
+
     this.flush(nextProps.delay)
   }
 
-  getChildContext() {
-    let { noValidate, schema, ...options } = this.props
-    let context = this._context && this._context.reactFormalContext
+  getMessageContext({ errors }) {
+    const { groups: allGroups } = this
 
-    if (!context || context.schema !== schema || context.noValidate !== noValidate) {
-      this._context = {
-        reactFormalContext: {
-          options,
-          noValidate,
-          registerForm: null,
-          submitForm: this.handleContextSubmit,
-          schema: this.getSchemaForPath,
-          onFieldError: this.handleFieldError,
-        },
-      }
+    return {
+      messages: errors,
+      onValidate: this.handleValidationRequest,
+      namesForGroup(groups) {
+        groups = groups ? [].concat(groups) : []
+
+        if (groups.indexOf(ALL_FIELDS) !== -1) {
+          groups = Object.keys(allGroups)
+        }
+        return uniq(
+          groups.reduce((fields, group) => fields.concat(allGroups[group]), [])
+        )
+      },
+      addToGroup(grpName, names) {
+        if (grpName === ALL_FIELDS) return
+
+        grpName = grpName || '@@unassigned-group'
+
+        names = names && [].concat(names)
+
+        let group = allGroups[grpName]
+
+        if (!names || !names.length) return
+        if (!group) group = allGroups[grpName] = []
+
+        names.forEach(name => add(group, name))
+        return () => names.forEach(name => remove(group, name))
+      },
     }
-
-    return this._context
   }
 
-  handleValidate = (path, { props }) => {
+  getFormContext({ noValidate, schema, ...options }) {
+    return {
+      options,
+      noValidate,
+      registerForm: null,
+      submitForm: this.handleContextSubmit,
+      getSchemaForPath: this.getSchemaForPath,
+      onFieldError: this.handleFieldError,
+    }
+  }
+
+  validatePath = (path, { props }) => {
     let options = pick(props, YUP_OPTIONS)
     let abortEarly = options.abortEarly == null ? false : options.abortEarly
 
@@ -372,21 +435,22 @@ class Form extends React.PureComponent {
       .catch(err => err)
   }
 
-  handleValidationRequest = e => {
+  handleValidationRequest = (fields, type, args) => {
     let { noValidate, delay } = this.props
+    if (noValidate || !fields || !fields.length) return
 
-    if (noValidate) return
+    this.notify('onValidate', { type, fields, args })
+    this.enqueue(fields)
 
-    this.notify('onValidate', e)
-    this.enqueue(e.fields)
-
-    if (e.type !== 'onChange') this.flush(delay)
+    if (type !== 'onChange') this.flush(delay)
   }
 
   handleFieldError = (name, fieldErrors) => {
     const { errors } = this.props
 
-    this.handleError(Object.assign(ErrorUtils.remove(errors, name), fieldErrors))
+    this.handleError(
+      Object.assign(ErrorUtils.remove(errors, name), fieldErrors)
+    )
   }
 
   handleError = errors => {
@@ -397,7 +461,9 @@ class Form extends React.PureComponent {
     let key = this.props.formKey || '@@parent'
 
     if (formName && formName !== key)
-      throw new Error('Cannot trigger a submit for a Form from within a different form')
+      throw new Error(
+        'Cannot trigger a submit for a Form from within a different form'
+      )
 
     this.handleSubmit()
   }
@@ -423,7 +489,7 @@ class Form extends React.PureComponent {
         if (!fields.length) return
 
         this.queue = []
-        this._validate(fields, this.props)
+        this.collectErrors(fields, this.props)
           .then(errors => {
             if (errors !== this.props.errors) {
               maybeWarn(props.debug, errors, 'field validation')
@@ -448,9 +514,11 @@ class Form extends React.PureComponent {
     options.abortEarly = false
     options.strict = false
 
-    if (noValidate) return Promise.resolve(true).then(() => this.notify('onSubmit', value))
+    if (noValidate)
+      return Promise.resolve(true).then(() => this.notify('onSubmit', value))
 
-    let handleSuccess = validatedValue => this.notify('onSubmit', validatedValue)
+    let handleSuccess = validatedValue =>
+      this.notify('onSubmit', validatedValue)
 
     let handleError = err => {
       if (!isValidationError(err)) throw err
@@ -471,12 +539,16 @@ class Form extends React.PureComponent {
     )
   }
 
-  _validate(fields, props = this.props) {
+  collectErrors(fields, props = this.props) {
     return this.errors.collect(fields, props.errors, { props })
   }
 
+  notify(event, ...args) {
+    if (this.props[event]) this.props[event](...args)
+  }
+
   validate(fields) {
-    return this._validate(fields)
+    return this.collectErrors(fields)
   }
 
   validateGroup(groups) {
@@ -493,11 +565,9 @@ class Form extends React.PureComponent {
       getter,
       setter,
       errors,
-      __messageContainer: containerProps = {}, // eslint-disable-line
     } = this.props
 
     let props = omit(this.props, [
-      '__messageContainer',
       ...YUP_OPTIONS,
       ...Object.keys(Form.propTypes),
     ])
@@ -512,25 +582,27 @@ class Form extends React.PureComponent {
       children = <Element {...props}>{children}</Element>
     }
 
-    if (!containerProps.passthrough) {
-      containerProps.messages = errors
-    }
-
     return (
-      <BindingContext value={value} onChange={onChange} getter={getter} setter={setter}>
-        <Container
-          {...containerProps}
-          ref={ref => (this._container = ref)}
-          onValidationNeeded={this.handleValidationRequest}
-        >
-          {children}
-        </Container>
-      </BindingContext>
+      <Consumer>
+        {({ registerForm }) => {
+          if (registerForm) registerForm(this.props.formKey, this.submit)
+          return (
+            <Provider value={this.formContext}>
+              <MessageContext.Provider value={this.messageContext}>
+                <BindingContext
+                  value={value}
+                  onChange={onChange}
+                  getter={getter}
+                  setter={setter}
+                >
+                  {children}
+                </BindingContext>
+              </MessageContext.Provider>
+            </Provider>
+          )
+        }}
+      </Consumer>
     )
-  }
-
-  notify(event, ...args) {
-    if (this.props[event]) this.props[event](...args)
   }
 }
 

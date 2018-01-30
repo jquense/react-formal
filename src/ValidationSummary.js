@@ -39,7 +39,8 @@ class ValidationSummary extends React.PureComponent {
     /**
      * A DOM node tag name or Component class the Message should render as.
      */
-    component: PropTypes.oneOfType([PropTypes.func, PropTypes.string]).isRequired,
+    component: PropTypes.oneOfType([PropTypes.func, PropTypes.string])
+      .isRequired,
 
     /**
      * A css class that should be always be applied to the Summary container.
@@ -47,7 +48,7 @@ class ValidationSummary extends React.PureComponent {
     errorClass: PropTypes.string,
 
     /**
-     * Specify a group to show erros for, if empty all form errors will be shown in the Summary.
+     * Specify a group to show errors for, if empty all form errors will be shown in the Summary.
      */
     group: PropTypes.string,
   }
@@ -61,7 +62,9 @@ class ValidationSummary extends React.PureComponent {
     let { formatMessage, ...props } = this.props
 
     return (
-      <ValidationMessage {...props}>{messages => messages.map(formatMessage)}</ValidationMessage>
+      <ValidationMessage {...props}>
+        {messages => messages.map(formatMessage)}
+      </ValidationMessage>
     )
   }
 }

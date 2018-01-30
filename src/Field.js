@@ -6,9 +6,9 @@ import { Binding } from 'topeka'
 import invariant from 'invariant'
 
 import config from './config'
+import { Consumer } from './Form'
 import isNativeType from './utils/isNativeType'
 import resolveFieldComponent from './utils/resolveFieldComponent'
-import contextTypes from './utils/contextType'
 import shallowEqual from './shallowEqual'
 import MessageTrigger from './MessageTrigger'
 import isReactComponent from './utils/isReactComponent'
@@ -67,41 +67,20 @@ function getValue(value, bindTo, getter) {
  * </Form>
  * ```
  */
-class Field extends React.Component {
-  static contextTypes = contextTypes
-
+class Field extends React.PureComponent {
   static defaultProps = {
     type: '',
     exclusive: false,
-  }
-
-  shouldComponentUpdate(nextProps, _, nextContext) {
-    return (
-      !shallowEqual(nextProps, this.props) ||
-      !shallowEqual(nextContext, this.context)
-    )
+    fieldRef: null,
   }
 
   componentWillMount() {
-    let { name } = this.props,
-      context = this.context.reactFormalContext
-
     this.eventHandlers = {}
     this.createEventHandlers(this.props)
-
-    if (process.env.NODE_ENV !== 'production')
-      invariant(
-        context.noValidate || !name || this.schema(name),
-        `There is no corresponding schema defined for this field: "${name}" ` +
-          `Each Field's \`name\` prop must be a valid path defined by the parent Form schema`
-      )
   }
 
   onError = errors => {
-    let { name } = this.props,
-      context = this.context.reactFormalContext
-
-    context.onFieldError(name, errors)
+    this.formContext.onFieldError(this.props.name, errors)
   }
 
   bindTo = (_value, getter) => {
@@ -129,11 +108,13 @@ class Field extends React.Component {
   }
 
   constructComponent = (bindingProps, triggerProps = {}) => {
+    let { formContext } = this
     let {
       name,
       type,
       children,
       className,
+      fieldRef,
       errorClass = config.errorClass,
     } = this.props
 
@@ -147,7 +128,18 @@ class Field extends React.Component {
       this.eventHandlers
     )
 
-    let schema = this.schema(name)
+    let schema
+    try {
+      schema = name && formContext.getSchemaForPath(name)
+    } catch (err) {}
+
+    if (process.env.NODE_ENV !== 'production')
+      invariant(
+        formContext.noValidate || !name || schema,
+        `There is no corresponding schema defined for this field: "${name}" ` +
+          "Each Field's `name` prop must be a valid path defined by the parent Form schema"
+      )
+
     let [Component, resolvedType] = resolveFieldComponent(type, schema)
 
     fieldProps.type = isNativeType(resolvedType) ? resolvedType : undefined
@@ -159,8 +151,8 @@ class Field extends React.Component {
       onError: this.onError,
     }
 
-    if (this.context.reactFormalContext) {
-      meta.context = this.context.reactFormalContext.options.context // lol
+    if (formContext.options) {
+      meta.context = formContext.options.context // lol
     }
 
     if (this.shouldValidate()) {
@@ -186,14 +178,14 @@ class Field extends React.Component {
     return (
       <Component
         {...fieldProps}
-        ref={isReactComponent(Component) ? r => (this.input = r) : null}
+        ref={isReactComponent(Component) ? fieldRef : null}
       >
         {children}
       </Component>
     )
   }
 
-  render() {
+  renderField = formContext => {
     let {
       name,
       group,
@@ -202,6 +194,8 @@ class Field extends React.Component {
       alsoValidates,
       events = config.events,
     } = this.props
+
+    this.formContext = formContext
 
     let mapMessages = !exclusive ? inclusiveMapMessages : undefined
 
@@ -238,23 +232,14 @@ class Field extends React.Component {
     )
   }
 
-  schema(path) {
-    let schema
-    let context = this.context.reactFormalContext
-    try {
-      schema = path && context.schema && context.schema(path)
-    } catch (err) {} // eslint-disable-line no-empty
-
-    return schema
+  render() {
+    return <Consumer>{this.renderField}</Consumer>
   }
+
+  getSchema(path) {}
 
   shouldValidate() {
-    let context = this.context.reactFormalContext
-    return !(this.props.noValidate || context.noValidate)
-  }
-
-  inputInstance() {
-    return this.input
+    return !(this.props.noValidate || this.formContext.noValidate)
   }
 }
 
@@ -490,6 +475,11 @@ Field.propTypes = {
    * Instruct the field to not inject the `meta` prop into the input
    */
   noMeta: PropTypes.bool,
+
+  /**
+   * Attach a ref to the rendered input component
+   */
+  fieldRef: PropTypes.func,
 }
 
 export default Field

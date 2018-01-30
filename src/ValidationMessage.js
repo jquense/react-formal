@@ -3,7 +3,7 @@ import PropTypes from 'prop-types'
 import cn from 'classnames'
 
 import uniq from './utils/uniqMessage'
-import connectToMessageContainer from './connectToMessageContainer'
+import MessageContext from './MessageContext'
 
 let flatten = (arr, next) => arr.concat(next)
 
@@ -23,7 +23,6 @@ class Message extends React.PureComponent {
       PropTypes.string,
       PropTypes.arrayOf(PropTypes.string),
     ]),
-    messagesForNames: PropTypes.func,
 
     /**
      * A function that maps an array of message strings
@@ -37,9 +36,6 @@ class Message extends React.PureComponent {
      */
     children: PropTypes.func,
 
-    component: PropTypes.oneOfType([PropTypes.func, PropTypes.string])
-      .isRequired,
-
     /**
      * A css class that should be always be applied to the Message container.
      */
@@ -52,42 +48,45 @@ class Message extends React.PureComponent {
   }
 
   static defaultProps = {
-    component: 'span',
     errorClass: 'validation-error',
     filter: uniq,
     extract: error => error.message || error,
-    children: messages => messages.join(', '),
+    children: (messages, props) => (
+      <span {...props}>{messages.join(', ')}</span>
+    ),
   }
 
   render() {
     let {
-      /* eslint-disable no-unused-vars */
       for: fieldFor,
       group,
-      /* eslint-enable no-unused-vars */
       className,
       errorClass,
       extract,
       filter,
-      messages,
-      component: Component,
       children,
       ...props
     } = this.props
 
-    if (!Object.keys(messages || {}).length) return null
-
-    messages = Object.values(messages)
-      .reduce(flatten, [])
-      .filter((...args) => filter(...args, extract))
-      .map(extract)
-
     return (
-      <Component {...props} className={cn(className, errorClass)}>
-        {children(messages)}
-      </Component>
+      <MessageContext.Consumer for={fieldFor} group={group}>
+        {(messages, container) => {
+          if (!messages || !Object.keys(messages).length) return null
+
+          return children(
+            Object.values(messages)
+              .reduce(flatten, [])
+              .filter((...args) => filter(...args, extract))
+              .map(extract),
+            {
+              ...props,
+              className: cn(className, errorClass),
+            }
+          )
+        }}
+      </MessageContext.Consumer>
     )
   }
 }
 
-export default connectToMessageContainer(Message)
+export default Message

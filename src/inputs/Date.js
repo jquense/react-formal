@@ -1,8 +1,8 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import Input from './Input';
+import React from 'react'
+import PropTypes from 'prop-types'
+import Input from './Input'
 
-let pad = n => n < 10 ? ('0' + n) : n
+let pad = n => (n < 10 ? '0' + n : n)
 
 let isValid = date => date && !isNaN(date.getTime())
 
@@ -10,24 +10,29 @@ let toLocal = date => {
   if (!date) return null
 
   date = new Date(date)
-  return new Date(
-    date.getTime() + (date.getTimezoneOffset() * 60000)
-  )
+  return new Date(date.getTime() + date.getTimezoneOffset() * 60000)
 }
 
-let parse = (date, org, part) => toLocal(
-  part === 'time'
-    ? (toDateString(org || new Date(), 'date') + 'T' + date)
-    : date
-)
+let parse = (date, org, part) =>
+  toLocal(
+    part === 'time'
+      ? toDateString(org || new Date(), 'date') + 'T' + date
+      : date
+  )
 
 let localISOString = date =>
-      date.getFullYear()       + '-'
-    + pad(date.getMonth() + 1) + '-'
-    + pad(date.getDate())      + 'T'
-    + pad(date.getHours())     + ':'
-    + pad(date.getMinutes())   + ':'
-    + pad(date.getSeconds())   + '.000';
+  date.getFullYear() +
+  '-' +
+  pad(date.getMonth() + 1) +
+  '-' +
+  pad(date.getDate()) +
+  'T' +
+  pad(date.getHours()) +
+  ':' +
+  pad(date.getMinutes()) +
+  ':' +
+  pad(date.getSeconds()) +
+  '.000'
 
 let toDateString = (date, part) => {
   if (!isValid(date)) return ''
@@ -45,23 +50,19 @@ class DateInput extends React.Component {
   }
 
   render() {
-    var {
-        value
-      , type = 'date'
-      , ...props } = this.props
+    var { value, type = 'date', ...props } = this.props
 
     return (
       <Input
         {...props}
         type={type}
         value={toDateString(value, type)}
-        onChange={stringValue => props.onChange(
-          parse(stringValue, value, type)
-        )}
+        onChange={stringValue =>
+          props.onChange(parse(stringValue, value, type))
+        }
       />
-    );
+    )
   }
 }
 
-
-export default DateInput;
+export default DateInput

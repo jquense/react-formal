@@ -2,9 +2,9 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import warning from 'warning'
 
-import contextTypes from './utils/contextType'
 import mergeWithEvents from './utils/chainEvents'
 import Trigger from './MessageTrigger'
+import { Consumer } from './Form'
 
 /**
  * A Form Button, for triggering validations for specific Field groups
@@ -39,8 +39,6 @@ class Button extends React.Component {
     onClick: PropTypes.func,
   }
 
-  static contextTypes = contextTypes
-
   static defaultProps = {
     type: 'button',
     component: 'button',
@@ -49,10 +47,10 @@ class Button extends React.Component {
 
   handleSubmit = (...args) => {
     let { formKey, onClick } = this.props
-    let context = this.context.reactFormalContext
+    let context = this.formContext
 
     if (onClick) onClick(...args)
-    if (context) context.submitForm(formKey || '@@parent')
+    this.formContext.submitForm(formKey || '@@parent')
   }
 
   render() {
@@ -71,15 +69,25 @@ class Button extends React.Component {
 
     if (type.toLowerCase() === 'submit')
       return (
-        <Component {...props} onClick={this.handleSubmit}>
-          {this.props.children}
-        </Component>
+        <Consumer>
+          {formContext => {
+            this.formContext = formContext
+            return (
+              <Component {...props} onClick={this.handleSubmit}>
+                {this.props.children}
+              </Component>
+            )
+          }}
+        </Consumer>
       )
 
     return (
       <Trigger group={group || '@all'} events={events}>
         {({ messages: _, ...triggerProps }) => (
-          <Component {...mergeWithEvents(events, [props, triggerProps])} type={type}>
+          <Component
+            {...mergeWithEvents(events, [props, triggerProps])}
+            type={type}
+          >
             {this.props.children}
           </Component>
         )}

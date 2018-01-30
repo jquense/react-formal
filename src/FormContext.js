@@ -1,7 +1,9 @@
-import React from 'react';
-import PropTypes from 'prop-types';
+import React from 'react'
+import PropTypes from 'prop-types'
 
-const DEFAULT_CHANNEL = '@@parent';
+import { Provider, Consumer } from './Form'
+
+const DEFAULT_CHANNEL = '@@parent'
 
 /**
  * `<Form.Context />` provides declarative API similar in purpose to the
@@ -24,59 +26,33 @@ const DEFAULT_CHANNEL = '@@parent';
  * @alias Context
  */
 class FormContext extends React.Component {
-  /**
-   * the component the Context will render as it's root if necessary.
-   * If there is only one child defined the Context will just return that.
-   *
-   * @default 'div'
-  **/
-  static propTypes = {
-    component: PropTypes.oneOfType([
-      PropTypes.func,
-      PropTypes.string
-    ])
-  }
+  channels = new Map()
 
-  static contextTypes = {
-    reactFormalContext: PropTypes.object
-  }
+  formContext = {
+    registerForm: (channelName = DEFAULT_CHANNEL, submit) => {
+      if (!this.channels.has(channelName))
+        this.channels.set(channelName, submit)
+    },
+    submitForm: (channelName = DEFAULT_CHANNEL) => {
+      const { parentFormContext, channels } = this
 
-  static childContextTypes = {
-    reactFormalContext: PropTypes.object
-  }
-
-  channels = Object.create(null);
-
-  getChildContext() {
-    return this._context || (this._context = {
-      reactFormalContext: {
-        registerForm: this.registerForm,
-        submitForm: this.submitForm,
-      }
-    })
-  }
-
-  registerForm = (channelName = DEFAULT_CHANNEL, submit) => {
-    this.channels[channelName] = { submit }
-  }
-
-  submitForm =(channelName = DEFAULT_CHANNEL) => {
-    const { reactFormalContext } = this.context;
-    const channel = this.channels[channelName]
-
-    // console.log('submitform!', this.channels)
-
-    if (channel) channel.submit();
-    else if (reactFormalContext) reactFormalContext.submitForm(channelName)
-    // else throw new Error(`There is no form to submit`)
+      if (channels.has(channelName)) channels.get(channelName)()
+      else if (parentFormContext) parentFormContext.submitForm(channelName)
+    },
   }
 
   render() {
-    let Tag = this.props.component || 'div';
-    return React.Children.count(this.props.children) === 1
-      ? this.props.children
-      : <Tag {...this.props}/>
+    return (
+      <Consumer>
+        {formContext => {
+          this.parentFormContext = formContext
+          return (
+            <Provider value={this.formContext}>{this.props.children}</Provider>
+          )
+        }}
+      </Consumer>
+    )
   }
 }
 
-export default FormContext;
+export default FormContext

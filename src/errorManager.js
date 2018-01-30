@@ -1,23 +1,19 @@
-import errToJSON from './utils/errToJSON';
-import { reduce, trim } from './utils/paths';
+import errToJSON from './utils/errToJSON'
+import { reduce, trim } from './utils/paths'
 
-let isValidationError = err => err && err.name === 'ValidationError';
-
+let isValidationError = err => err && err.name === 'ValidationError'
 
 export default function errorManager(handleValidation) {
   function validatePath(name, context, errors) {
-    return Promise.resolve(
-        handleValidation(name, context)
-      )
-      .then(validationError => {
-        if (!validationError)
-          return true;
+    return Promise.resolve(handleValidation(name, context)).then(
+      validationError => {
+        if (!validationError) return true
 
-        if (!isValidationError(validationError))
-          throw validationError
+        if (!isValidationError(validationError)) throw validationError
 
         errToJSON(validationError, errors)
-      })
+      }
+    )
   }
 
   return {
@@ -32,19 +28,17 @@ export default function errorManager(handleValidation) {
         nextErrors = trim(path, nextErrors)
 
         if (errors !== nextErrors) {
-          workDone = true;
+          workDone = true
         }
 
         return validatePath(path, options, nextErrors)
       })
 
-      return Promise.all(validations)
-        .then(results => {
-          if (!workDone && results.every(Boolean))
-            return pristineErrors
+      return Promise.all(validations).then(results => {
+        if (!workDone && results.every(Boolean)) return pristineErrors
 
-          return nextErrors
-        })
-    }
+        return nextErrors
+      })
+    },
   }
 }
