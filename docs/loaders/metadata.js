@@ -1,41 +1,49 @@
-var metadata = require('react-component-metadata')
-  , handlebars = require('handlebars')
-  , assign = require('lodash/assign')
-  , each = require('lodash/each')
-  , transform = require('lodash/transform')
-  , fs = require('fs');
+var metadata = require('react-component-metadata'),
+  handlebars = require('handlebars'),
+  assign = require('lodash/assign'),
+  each = require('lodash/each'),
+  transform = require('lodash/transform'),
+  fs = require('fs')
 
-
-
-handlebars.registerHelper('cleanDoclets', function types(desc){
+handlebars.registerHelper('cleanDoclets', function types(desc) {
   desc = desc || ''
   var idx = desc.indexOf('@')
-  return (idx === -1 ? desc : desc.substr(0, idx )).trim()
+  return (idx === -1 ? desc : desc.substr(0, idx)).trim()
 })
 
-handlebars.registerHelper('isRequired', function types(prop){
-  var doclets = metadata.parseDoclets(prop.desc || '') || {};
+handlebars.registerHelper('isRequired', function types(prop) {
+  var doclets = metadata.parseDoclets(prop.description || '') || {}
   return prop.required || !!doclets.required
 })
 
 handlebars.registerHelper('propType', function types(prop) {
   !prop.type && console.log(prop)
-  var type = prop.type
-    , name = type.name
-    , doclets = metadata.parseDoclets(prop.desc || '') || {};
+  var type = prop.type,
+    name = type.name,
+    doclets = metadata.parseDoclets(prop.description || '') || {}
 
-  switch (name){
+  switch (name) {
     case 'object':
-      if( type.value )
-        return 'object: ' + displayObj(transform(type.value, function(obj, val, key){
-          obj[key] = types(val)
-        }, {}))
-
       return name
+    case 'shape':
+      return (
+        'object: ' +
+        displayObj(
+          transform(
+            type.value,
+            function(obj, val, key) {
+              obj[key] = types(val)
+            },
+            {}
+          )
+        )
+      )
     case 'union':
-      return type.value.map(function(val){
-        return types({ type: val })
-      }).join(', ')
+      return type.value
+        .map(function(val) {
+          return types({ type: val })
+        })
+        .join(', ')
 
     case 'array':
       return 'array<' + type.value.name + '>'
@@ -48,28 +56,32 @@ handlebars.registerHelper('propType', function types(prop) {
   }
 })
 
-var apiFile = handlebars.compile(fs.readFileSync(__dirname + '/../templates/api.hbs').toString())
+var apiFile = handlebars.compile(
+  fs.readFileSync(__dirname + '/../templates/api.hbs').toString()
+)
 
 module.exports = function(contents) {
-  var markdown;
+  var markdown
 
-  each(metadata(contents), function(val, key) {
+  each(
+    metadata(contents),
+    function(val, key) {
+      if (val.desc || Object.keys(val.props).length) {
+        var doclets = metadata.parseDoclets(val.description || '') || {}
 
-    if( val.desc || Object.keys(val.props).length ){
-      var doclets = metadata.parseDoclets(val.desc || '') || {};
-
-      markdown = apiFile(assign({ name: doclets.alias || key }, val))
-    }
-  }, this)
+        markdown = apiFile(assign({ name: doclets.alias || key }, val))
+      }
+    },
+    this
+  )
 
   return markdown
 }
 
-
-function displayObj(obj){
+function displayObj(obj) {
   return JSON.stringify(obj, null, 2).replace(/"|'/g, '')
 }
 
-function cleanDocletValue(str){
+function cleanDocletValue(str) {
   return str.replace(/^\{/, '').replace(/\}$/, '')
 }
