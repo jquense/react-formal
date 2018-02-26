@@ -1,13 +1,17 @@
-var plugins = []
-// During bootstrap, we write requires at top of this file which looks like:
+var preferDefault = m => (m && m.default) || m;
+        var plugins = [
+          
+        ];
+
+        // During bootstrap, we write requires at top of this file which looks like:
 // var plugins = [
 //   require('/path/to/plugin1/gatsby-ssr.js'),
 //   require('/path/to/plugin2/gatsby-ssr.js'),
 // ]
 
-const apis = require(`./api-ssr-docs`)
+import apis from "./api-ssr-docs"
 
-module.exports = (api, args, defaultReturn) => {
+export default (api, args, defaultReturn) => {
   if (!apis[api]) {
     console.log(`This API doesn't exist`, api)
   }

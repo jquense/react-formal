@@ -1,8 +1,13 @@
-var plugins = [{
-      plugin: require('/Users/jason/src/react-formal/www/node_modules/gatsby-plugin-catch-links/gatsby-browser.js'),
-      options: {"plugins":[]},
-    }]
-// During bootstrap, we write requires at top of this file which looks
+var preferDefault = m => (m && m.default) || m;
+        var plugins = [
+          
+          {
+            plugin: preferDefault(require('/Users/jason/src/react-formal/www/node_modules/gatsby-plugin-catch-links/gatsby-browser.js')),
+            options: {"plugins":[]},
+          }
+        ];
+
+        // During bootstrap, we write requires at top of this file which looks
 // basically like:
 // var plugins = [
 //   require('/path/to/plugin1/gatsby-browser.js'),

@@ -12,7 +12,7 @@ let Html
 try {
   Html = require(`../src/html`)
 } catch (err) {
-  if (testRequireError(`..\/src\/html`, err)) {
+  if (testRequireError(`../src/html`, err)) {
     Html = require(`./default-html`)
   } else {
     console.log(
@@ -23,6 +23,8 @@ try {
     process.exit()
   }
 }
+
+Html = Html && Html.__esModule ? Html.default : Html
 
 const pathChunkName = path => {
   const name = path === `/` ? `index` : kebabCase(path)
@@ -39,7 +41,7 @@ const getLayout = page => {
 
 const createElement = React.createElement
 
-module.exports = (locals, callback) => {
+export default (locals, callback) => {
   let pathPrefix = `/`
   if (__PREFIX_PATHS__) {
     pathPrefix = `${__PATH_PREFIX__}/`
@@ -147,6 +149,7 @@ module.exports = (locals, callback) => {
   // Create paths to scripts
   const page = pages.find(page => page.path === locals.path)
   const scripts = [
+    `@@webpack-runtime`,
     `commons`,
     `app`,
     pathChunkName(locals.path),
@@ -176,24 +179,15 @@ module.exports = (locals, callback) => {
     })
     .filter(s => isString(s))
 
-  scripts.forEach(script => {
-    // Add preload <link>s for scripts.
-    headComponents.unshift(
-      <link rel="preload" key={script} href={script} as="script" />
-    )
-  })
-
-  // Add the chunk-manifest at the end of body element.
-  const chunkManifest = require(`!raw!../public/chunk-manifest.json`)
-  postBodyComponents.unshift(
-    <script
-      id="webpack-manifest"
-      key="webpack-manifest"
-      dangerouslySetInnerHTML={{
-        __html: `/*<![CDATA[*/window.webpackManifest=${chunkManifest}/*]]>*/`,
-      }}
-    />
-  )
+  scripts
+    .slice(0)
+    .reverse()
+    .forEach(script => {
+      // Add preload <link>s for scripts.
+      headComponents.unshift(
+        <link rel="preload" key={script} href={script} as="script" />
+      )
+    })
 
   // Add script loader for page scripts to the end of body element (after webpack manifest).
   // Taken from https://www.html5rocks.com/en/tutorials/speed/script-loading/
@@ -201,6 +195,7 @@ module.exports = (locals, callback) => {
   postBodyComponents.push(
     <script
       key={`script-loader`}
+      id={`gatsby-script-loader`}
       dangerouslySetInnerHTML={{
         __html: `/*<![CDATA[*/!function(e,t,r){function n(){for(;d[0]&&"loaded"==d[0][f];)c=d.shift(),c[o]=!i.parentNode.insertBefore(c,i)}for(var s,a,c,d=[],i=e.scripts[0],o="onreadystatechange",f="readyState";s=r.shift();)a=e.createElement(t),"async"in i?(a.async=!1,e.head.appendChild(a)):i[f]?(d.push(a),a[o]=n):e.write("<"+t+' src="'+s+'" defer></'+t+">"),a.src=s}(document,"script",[${scriptsString}])/*]]>*/`,
       }}

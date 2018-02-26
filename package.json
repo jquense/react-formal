@@ -13,9 +13,7 @@
     "url": "https://github.com/jquense/react-formal"
   },
   "license": "MIT",
-  "files": [
-    "lib"
-  ],
+  "files": ["lib"],
   "keywords": [
     "react-formal",
     "react",
@@ -29,9 +27,7 @@
     "yup"
   ],
   "jest": {
-    "roots": [
-      "<rootDir>/test"
-    ],
+    "roots": ["<rootDir>/test"],
     "setupTestFrameworkScriptFile": "./test/index.js"
   },
   "release-script": {
@@ -52,7 +48,7 @@
   "dependencies": {
     "chain-function": "^1.0.0",
     "classnames": "^2.2.5",
-    "create-react-context": "^0.1.6",
+    "create-react-context": "^0.1.4",
     "invariant": "^2.2.1",
     "lodash": "^4.17.5",
     "prop-types": "^15.5.0",
@@ -95,11 +91,8 @@
     "react-bootstrap": "^0.32.1",
     "react-component-metadata": "^3.0.0",
     "react-dom": "^16.2.0",
-    "react-formal-inputs": "^2.0.0",
     "react-router": "^4.2.0",
     "react-router-dom": "^4.2.2",
-    "react-widgets": "^4.2.0",
-    "react-widgets-globalize": "^5.0.0",
     "release-script": "^1.0.2",
     "rimraf": "^2.5.2",
     "sinon": "^4.3.0",

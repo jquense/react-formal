@@ -4,19 +4,21 @@ import { merge } from "lodash"
 import apiRunner from "./api-runner-ssr"
 import testRequireError from "./test-require-error"
 
-let HTML
+let Html
 try {
-  HTML = require(`../src/html`)
+  Html = require(`../src/html`)
 } catch (err) {
   if (testRequireError(`..\/src\/html`, err)) {
-    HTML = require(`./default-html`)
+    Html = require(`./default-html`)
   } else {
     console.log(`There was an error requiring "src/html.js"\n\n`, err, `\n\n`)
     process.exit()
   }
 }
 
-module.exports = (locals, callback) => {
+Html = Html && Html.__esModule ? Html.default : Html
+
+export default (locals, callback) => {
   // const apiRunner = require(`${directory}/.cache/api-runner-ssr`)
   let headComponents = []
   let htmlAttributes = {}
@@ -59,7 +61,7 @@ module.exports = (locals, callback) => {
     setBodyProps,
   })
 
-  const htmlElement = React.createElement(HTML, {
+  const htmlElement = React.createElement(Html, {
     ...bodyProps,
     body: ``,
     headComponents: headComponents.concat([

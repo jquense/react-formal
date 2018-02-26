@@ -1,19 +1,34 @@
 const path = require('path')
-const webpack = require('webpack')
 
-exports.modifyWebpackConfig = function modifyWebpackConfig({ config }) {
-  // See https://github.com/FormidableLabs/react-live/issues/5
-  config.plugin('ignore', () => new webpack.IgnorePlugin(/^(xor|props)$/))
-
-  config.loader('raw-loader', {
-    test: /src\/examples\//,
-    loaders: ['raw-loader'],
+exports.modifyWebpackConfig = function modifyWebpackConfig({
+  plugins,
+  loaders,
+  actions,
+}) {
+  actions.setWebpackConfig({
+    module: {
+      rules: [
+        {
+          test: /src\/examples\//,
+          use: [loaders.raw()],
+        },
+      ],
+    },
+    resolve: {
+      symlinks: false,
+      alias: {
+        'react$': require.resolve('react'),
+        'react-dom$': require.resolve('react-dom'),
+        'react-dom/server$': require.resolve('react-dom/server'),
+        'react-formal$': path.resolve(__dirname, '../src/index.js'),
+        'react-formal/lib': path.resolve(__dirname, '../src'),
+      },
+    },
+    plugins: [
+      // See https://github.com/FormidableLabs/react-live/issues/5
+      plugins.ignore(/^(xor|props)$/),
+    ],
   })
-
-  config._config.resolve.alias = {
-    'react-formal$': path.resolve(__dirname, '../lib/index.js'),
-    'react-formal/lib': path.resolve(__dirname, '../lib'),
-  }
 }
 
 exports.onCreatePage = ({ page }) => {
