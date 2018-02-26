@@ -1,5 +1,4 @@
 import { mount } from 'enzyme'
-import PropTypes from 'prop-types'
 import React from 'react'
 import yup from 'yup'
 
@@ -7,7 +6,7 @@ import Form from '../src'
 import { Consumer } from '../src/Form'
 import errorManager from '../src/errorManager'
 
-let LeakySubmit = (props, context) => (
+let LeakySubmit = () => (
   <Consumer>
     {({ onSubmit }) => (
       <button type="submit" onClick={onSubmit}>
@@ -65,7 +64,7 @@ describe('Form', () => {
       .first()
       .simulate('change', { target: { value: 'Jill' } })
 
-    change.should.have.been.calledOnce
+    change.should.have.been.calledOnce()
 
     value.should.eql({
       name: {
@@ -136,7 +135,7 @@ describe('Form', () => {
       .first()
       .simulate('change')
 
-    change.should.not.have.been.called
+    change.should.not.have.been.called()
 
     wrapper
       .setProps({ noValidate: false })
@@ -144,7 +143,7 @@ describe('Form', () => {
       .first()
       .simulate('change')
 
-    change.should.have.been.called
+    change.should.have.been.called()
   })
 
   it('should let native submits simulate onSubmit', function(done) {
@@ -158,8 +157,7 @@ describe('Form', () => {
 
     wrapper
       .assertSingle('button')
-      .getDOMNode()
-      .click()
+      .simulate('submit')
   })
 
   it('should deduplicate form submissions', function(done) {
@@ -173,11 +171,10 @@ describe('Form', () => {
 
     wrapper
       .assertSingle(LeakySubmit)
-      .getDOMNode()
-      .click()
+      .simulate('submit')
 
     setTimeout(() => {
-      spy.should.have.been.calledOnce
+      spy.should.have.been.calledOnce()
       done()
     }, 100)
   })
@@ -203,7 +200,7 @@ describe('Form', () => {
       .submit()
       .catch(err => {
         err.should.equal('foo!')
-        spy.should.not.have.been.called
+        spy.should.not.have.been.called()
       })
   })
 

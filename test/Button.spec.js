@@ -1,5 +1,4 @@
 import React from 'react'
-import yup from 'yup'
 import Form from '../src'
 
 import { mount } from 'enzyme'
@@ -16,6 +15,6 @@ describe('Form Button', () => {
 
     mount(<Form.Button onClick={spy} />).simulate('click')
 
-    spy.should.have.been.calledOnce
+    spy.should.have.been.calledOnce()
   })
 })

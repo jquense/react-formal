@@ -28,16 +28,20 @@ const DEFAULT_CHANNEL = '@@parent'
 class FormContext extends React.Component {
   channels = new Map()
 
-  formContext = {
-    registerForm: (channelName = DEFAULT_CHANNEL, submit) => {
-      if (!this.channels.has(channelName))
-        this.channels.set(channelName, submit)
-    },
-    submitForm: (channelName = DEFAULT_CHANNEL) => {
-      const { parentFormContext, channels } = this
+  state = {
+    formContext: {
+      registerForm: (channelName = DEFAULT_CHANNEL, submit) => {
+        if (!this.channels.has(channelName))
+          this.channels.set(channelName, submit)
+      },
 
-      if (channels.has(channelName)) channels.get(channelName)()
-      else if (parentFormContext) parentFormContext.submitForm(channelName)
+      submitForm: (channelName = DEFAULT_CHANNEL) => {
+        const { parentFormContext, channels } = this
+
+        if (channels.has(channelName)) {
+          channels.get(channelName)()
+        } else if (parentFormContext) parentFormContext.submitForm(channelName)
+      },
     },
   }
 
@@ -47,7 +51,9 @@ class FormContext extends React.Component {
         {formContext => {
           this.parentFormContext = formContext
           return (
-            <Provider value={this.formContext}>{this.props.children}</Provider>
+            <Provider value={this.state.formContext}>
+              {this.props.children}
+            </Provider>
           )
         }}
       </Consumer>

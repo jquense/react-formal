@@ -47,10 +47,16 @@ class Button extends React.Component {
 
   handleSubmit = (...args) => {
     let { formKey, onClick } = this.props
-    let context = this.formContext
 
     if (onClick) onClick(...args)
     this.formContext.submitForm(formKey || '@@parent')
+  }
+
+  renderChildren(isBusy = false) {
+    const { children } = this.props
+    if (typeof children === 'function') return children(isBusy)
+
+    return children
   }
 
   render() {
@@ -74,7 +80,7 @@ class Button extends React.Component {
             this.formContext = formContext
             return (
               <Component {...props} onClick={this.handleSubmit}>
-                {this.props.children}
+                {this.renderChildren(this.formContext.isBusy)}
               </Component>
             )
           }}
@@ -88,7 +94,7 @@ class Button extends React.Component {
             {...mergeWithEvents(events, [props, triggerProps])}
             type={type}
           >
-            {this.props.children}
+            {this.renderChildren()}
           </Component>
         )}
       </Trigger>

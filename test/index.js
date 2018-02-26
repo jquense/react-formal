@@ -4,9 +4,13 @@ const Adapter = require('enzyme-adapter-react-16')
 
 global.chai = require('chai')
 global.sinon = require('sinon')
+
+global.chai.use(require('dirty-chai'))
 global.chai.use(require('sinon-chai'))
 global.chai.use(require('chai-as-promised'))
 global.chai.should()
+
+global.expect = global.chai.expect;
 
 configure({ adapter: new Adapter() })
 

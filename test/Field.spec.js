@@ -101,7 +101,7 @@ describe('Field', () => {
       </Form>
     )
 
-    console.error.should.not.have.been.called
+    console.error.should.not.have.been.called()
     console.error.restore()
   })
 
@@ -122,7 +122,7 @@ describe('Field', () => {
       </Form>
     )
 
-    chai.expect(wrapper.assertSingle('Input').prop('value')).to.equal(null)
+    expect(wrapper.assertSingle('Input').prop('value')).to.equal(null)
   })
 
   it('maps value from string', function() {
@@ -257,9 +257,9 @@ describe('Field', () => {
   describe('meta', () => {
     it('should pass meta to form', () => {
       let Input = ({ meta }) => {
-        meta.should.have.property('invalid').that.equals(true)
-        meta.should.have.property('valid').that.equals(false)
-        meta.should.have.property('errors').that.eqls({
+        meta.invalid.should.equals(true)
+        meta.valid.should.equals(false)
+        meta.errors.should.eqls({
           name: 'foo',
         })
 
@@ -421,7 +421,7 @@ describe('Field', () => {
     })
 
     it('should properly prefix nested errors', () => {
-      mount(
+      const onError = mount(
         <Form schema={schema} defaultValue={{}}>
           <Form.Field name="name" />
         </Form>
@@ -437,7 +437,7 @@ describe('Field', () => {
 
   it('should add inner ref', function() {
     let inst
-    let wrapper = mount(
+    mount(
       <Form schema={schema} defaultValue={{}}>
         <Form.Field
           name="name"
@@ -448,7 +448,7 @@ describe('Field', () => {
         />
       </Form>
     )
-    ;(inst instanceof TestInput).should.be.true
+    ;(inst instanceof TestInput).should.be.true()
   })
 
   it('should work with conditional schema', function() {

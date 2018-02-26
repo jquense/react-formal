@@ -1,2 +1,2 @@
 parser: babel-eslint
-extends: jason/react
+extends: jason/jest

@@ -11,7 +11,7 @@ describe('Message', () => {
       msgs.should.eql(['hi', 'good day'])
       return null
     })
-    let wrapper = mount(
+    mount(
       <Form noValidate defaultErrors={{ fieldA: 'hi', fieldB: 'good day' }}>
         <div>
           <Message className="msg">{renderSpy}</Message>
@@ -19,7 +19,7 @@ describe('Message', () => {
       </Form>
     )
 
-    renderSpy.should.have.been.called
+    renderSpy.should.have.been.called()
   })
 
   it('should allow group summaries', () => {
@@ -28,7 +28,7 @@ describe('Message', () => {
       return null
     })
 
-    let wrapper = mount(
+    mount(
       <Form
         noValidate
         defaultErrors={{ fieldA: ['foo', 'hi'], fieldB: 'good day' }}
@@ -44,6 +44,6 @@ describe('Message', () => {
       </Form>
     )
 
-    renderSpy.should.have.been.called
+    renderSpy.should.have.been.called()
   })
 })

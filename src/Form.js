@@ -10,10 +10,8 @@ import createContext from 'create-react-context'
 import reach from 'yup/lib/util/reach'
 
 import errorManager from './errorManager'
-import contextTypes from './utils/contextType'
 import errToJSON from './utils/errToJSON'
 import createTimeoutManager from './utils/timeoutManager'
-import registerWithContext from './utils/registerWithContext'
 import * as ErrorUtils from './utils/ErrorUtils'
 import MessageContext from './MessageContext'
 
@@ -45,8 +43,10 @@ export const { Provider, Consumer } = createContext({
   noValidate: false,
   onFieldError() {},
   getSchemaForPath() {},
-  registerForm: null,
+  registerForm() {},
   submitForm() {},
+  isBusy: null,
+  onBusy: null,
 })
 
 const YUP_OPTIONS = [
@@ -234,6 +234,9 @@ class Form extends React.PureComponent {
      */
     onSubmit: PropTypes.func,
 
+    /* */
+    submitForm: PropTypes.func,
+
     /**
      * Callback that is fired when the native onSubmit event is triggered. Only relevant when
      * the `component` prop renders a `<form/>` tag. onInvalidSubmit will trigger only if the form is invalid.
@@ -352,7 +355,18 @@ class Form extends React.PureComponent {
     this.groups = Object.create(null)
     this.timeouts = createTimeoutManager(this)
     this.errors = errorManager(this.validatePath)
-    this.formContext = this.getFormContext(props)
+
+    this._staticFormContext = {
+      registerForm: null,
+      submitForm: this.handleContextSubmit,
+      getSchemaForPath: this.getSchemaForPath,
+      onFieldError: this.handleFieldError,
+      onBusy: this.handleIsBusy,
+      isBusy: false,
+      noValidate: props.noValidate,
+      context: props.context,
+    }
+
     this.messageContext = this.getMessageContext(props)
   }
 
@@ -363,7 +377,11 @@ class Form extends React.PureComponent {
       this.messageContext = this.getMessageContext(nextProps)
 
     if (schemaChanged || nextProps.noValidate !== this.props.noValidate) {
-      this.formContext = this.getFormContext(nextProps)
+      this._staticFormContext = {
+        ...this._staticFormContext,
+        context: nextProps.context,
+        noValidate: nextProps.noValidate,
+      }
     }
 
     if (schemaChanged) {
@@ -407,15 +425,8 @@ class Form extends React.PureComponent {
     }
   }
 
-  getFormContext({ noValidate, schema, ...options }) {
-    return {
-      options,
-      noValidate,
-      registerForm: null,
-      submitForm: this.handleContextSubmit,
-      getSchemaForPath: this.getSchemaForPath,
-      onFieldError: this.handleFieldError,
-    }
+  getFormContext() {
+    return this._staticFormContext
   }
 
   validatePath = (path, { props }) => {
@@ -455,6 +466,24 @@ class Form extends React.PureComponent {
 
   handleError = errors => {
     this.notify('onError', errors)
+  }
+
+  handleSubmitSuccess = validatedValue => {
+    const { submitForm } = this.props
+    this.notify('onSubmit', validatedValue)
+
+    return Promise.resolve(submitForm && submitForm(validatedValue))
+  }
+
+  handleSubmitError = err => {
+    if (!isValidationError(err)) throw err
+
+    var errors = errToJSON(err)
+
+    maybeWarn(this.props.debug, errors, 'onSubmit')
+
+    this.notify('onError', errors)
+    this.notify('onInvalidSubmit', errors)
   }
 
   handleContextSubmit = formName => {
@@ -509,7 +538,7 @@ class Form extends React.PureComponent {
   }
 
   submit = () => {
-    var { schema, noValidate, value, debug, ...options } = this.props
+    var { schema, noValidate, value, ...options } = this.props
 
     options.abortEarly = false
     options.strict = false
@@ -517,25 +546,11 @@ class Form extends React.PureComponent {
     if (noValidate)
       return Promise.resolve(true).then(() => this.notify('onSubmit', value))
 
-    let handleSuccess = validatedValue =>
-      this.notify('onSubmit', validatedValue)
-
-    let handleError = err => {
-      if (!isValidationError(err)) throw err
-
-      var errors = errToJSON(err)
-
-      maybeWarn(debug, errors, 'onSubmit')
-
-      this.notify('onError', errors)
-      this.notify('onInvalidSubmit', errors)
-    }
-
     return (
       schema
         .validate(value, options)
         // no catch, we aren't interested in errors from onSubmit handlers
-        .then(handleSuccess, handleError)
+        .then(this.handleSubmitSuccess, this.handleSubmitError)
     )
   }
 
@@ -556,7 +571,7 @@ class Form extends React.PureComponent {
     return this.validate(fields)
   }
 
-  render() {
+  renderForm(formContext) {
     var {
       children,
       onChange,
@@ -564,7 +579,6 @@ class Form extends React.PureComponent {
       component: Element,
       getter,
       setter,
-      errors,
     } = this.props
 
     let props = omit(this.props, [
@@ -581,25 +595,27 @@ class Form extends React.PureComponent {
     } else {
       children = <Element {...props}>{children}</Element>
     }
-
+    return (
+      <Provider value={formContext}>
+        <MessageContext.Provider value={this.messageContext}>
+          <BindingContext
+            value={value}
+            onChange={onChange}
+            getter={getter}
+            setter={setter}
+          >
+            {children}
+          </BindingContext>
+        </MessageContext.Provider>
+      </Provider>
+    )
+  }
+  render() {
     return (
       <Consumer>
-        {({ registerForm }) => {
-          if (registerForm) registerForm(this.props.formKey, this.submit)
-          return (
-            <Provider value={this.formContext}>
-              <MessageContext.Provider value={this.messageContext}>
-                <BindingContext
-                  value={value}
-                  onChange={onChange}
-                  getter={getter}
-                  setter={setter}
-                >
-                  {children}
-                </BindingContext>
-              </MessageContext.Provider>
-            </Provider>
-          )
+        {formContext => {
+          formContext.registerForm(this.props.formKey, this.submit)
+          return this.renderForm(this.getFormContext(formContext))
         }}
       </Consumer>
     )

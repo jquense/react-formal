@@ -1,8 +1,6 @@
 import Validator from '../src/Validator'
 
 describe('validator', () => {
-  var validator
-
   it('should use passed in validation function', () => {
     var spy,
       context = {},
@@ -10,7 +8,7 @@ describe('validator', () => {
 
     return validator
       .validate('field', context)
-      .should.be.fulfilled.then(valid => {
+      .should.be.fulfilled().then(() => {
         spy.should.have.been.calledWithExactly('field', context)
       })
   })
@@ -22,7 +20,7 @@ describe('validator', () => {
 
     return validator
       .validate('field', context)
-      .should.be.fulfilled.then(valid => {
+      .should.be.fulfilled().then(() => {
         spy.should.have.been.calledWithExactly('field', context)
       })
   })
@@ -33,8 +31,8 @@ describe('validator', () => {
 
     return validator
       .validate(['fieldA', 'fieldB'])
-      .should.be.fulfilled.then(() => {
-        spy.should.have.been.calledTwice
+      .should.be.fulfilled().then(() => {
+        spy.should.have.been.calledTwice()
       })
   })
 
@@ -43,7 +41,7 @@ describe('validator', () => {
 
     return validator
       .validate(['fieldA', 'fieldB'])
-      .should.be.fulfilled.then(() => {
+      .should.be.fulfilled().then(() => {
         validator.errors().should.have.keys('fieldA', 'fieldB')
 
         validator.errors().fieldA.length.should.equal(1)
@@ -55,12 +53,12 @@ describe('validator', () => {
 
   it('should remove errors', () => {
     var count = 0,
-      validator = new Validator(field => (count++ ? undefined : 'invalid'))
+      validator = new Validator(() => (count++ ? undefined : 'invalid'))
 
-    return validator.validate('fieldA').should.be.fulfilled.then(() => {
+    return validator.validate('fieldA').should.be.fulfilled().then(() => {
       validator.errors().should.have.key('fieldA')
 
-      return validator.validate('fieldA').should.be.fulfilled.then(() => {
+      return validator.validate('fieldA').should.be.fulfilled().then(() => {
         validator.errors().should.not.have.key('fieldA')
       })
     })

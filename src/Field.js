@@ -151,8 +151,8 @@ class Field extends React.PureComponent {
       onError: this.onError,
     }
 
-    if (formContext.options) {
-      meta.context = formContext.options.context // lol
+    if (formContext.context) {
+      meta.context = formContext.context // lol
     }
 
     if (this.shouldValidate()) {
@@ -235,8 +235,6 @@ class Field extends React.PureComponent {
   render() {
     return <Consumer>{this.renderField}</Consumer>
   }
-
-  getSchema(path) {}
 
   shouldValidate() {
     return !(this.props.noValidate || this.formContext.noValidate)

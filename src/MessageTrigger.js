@@ -81,7 +81,7 @@ class MessageTrigger extends React.Component {
         mapMessages={mapMessages}
       >
         {(messages, container) => {
-          if (container && names) {
+          if (names) {
             this.removeFromGroup()
             this.removeFromGroup = container.addToGroup(group, names)
           }

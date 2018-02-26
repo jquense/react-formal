@@ -9,20 +9,20 @@ describe('Trigger', () => {
   const schema = yup.object({ fieldA: yup.mixed() })
 
   it('should simulate event for name', () => {
-    let spy = sinon.spy(),
-      wrapper = mount(
-        <From schema={schema} onValidate={spy}>
-          <div>
-            <MessageTrigger for="fieldA">
-              <input />
-            </MessageTrigger>
-          </div>
-        </From>
-      )
-        .find('input')
-        .simulate('change')
+    let spy = sinon.spy()
+    mount(
+      <From schema={schema} onValidate={spy}>
+        <div>
+          <MessageTrigger for="fieldA">
+            <input />
+          </MessageTrigger>
+        </div>
+      </From>
+    )
+      .find('input')
+      .simulate('change')
 
-    spy.should.have.been.calledOnce
+    spy.should.have.been.calledOnce()
     spy.args[0][0].fields.should.eql(['fieldA'])
   })
 
@@ -40,7 +40,7 @@ describe('Trigger', () => {
 
     wrapper.find('input').simulate('change')
 
-    spy.should.have.been.calledOnce
+    spy.should.have.been.calledOnce()
     spy.args[0][0].fields.should.eql(['fieldA'])
   })
 
@@ -58,7 +58,7 @@ describe('Trigger', () => {
 
     wrapper.find('input').simulate('change')
 
-    spy.should.have.been.calledOnce
+    spy.should.have.been.calledOnce()
     spy.args[0][0].fields.should.eql(['fieldA', 'fieldB'])
   })
 
