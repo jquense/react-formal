@@ -2,40 +2,24 @@ import React from 'react'
 import { mount } from 'enzyme'
 import yup from 'yup'
 
-import From from '../src/Form'
-import MessageTrigger from '../src/MessageTrigger'
+import Form from '../src'
+
+const sleep = ms => new Promise(y => setTimeout(() => y(), ms))
 
 describe('Trigger', () => {
-  const schema = yup.object({ fieldA: yup.mixed() })
+  const schema = yup.object({ fieldA: yup.mixed(), fieldB: yup.mixed() })
+
 
   it('should simulate event for name', () => {
-    let spy = sinon.spy()
-    mount(
-      <From schema={schema} onValidate={spy}>
-        <div>
-          <MessageTrigger for="fieldA">
-            <input />
-          </MessageTrigger>
-        </div>
-      </From>
-    )
-      .find('input')
-      .simulate('change')
-
-    spy.should.have.been.calledOnce()
-    spy.args[0][0].fields.should.eql(['fieldA'])
-  })
-
-  it('should simulate event for name with func child', () => {
     let spy = sinon.spy(),
       wrapper = mount(
-        <From schema={schema} onValidate={spy}>
+        <Form schema={schema} onValidate={spy}>
           <div>
-            <MessageTrigger for="fieldA">
-              {props => <input {...props} />}
-            </MessageTrigger>
+            <Form.Trigger for="fieldA">
+              {({ props }) => <input {...props} />}
+            </Form.Trigger>
           </div>
-        </From>
+        </Form>
       )
 
     wrapper.find('input').simulate('change')
@@ -47,13 +31,13 @@ describe('Trigger', () => {
   it('should simulate event once with multiple names', () => {
     let spy = sinon.spy(),
       wrapper = mount(
-        <From schema={schema} onValidate={spy}>
+        <Form schema={schema} onValidate={spy}>
           <div>
-            <MessageTrigger for={['fieldA', 'fieldB']}>
-              <input />
-            </MessageTrigger>
+            <Form.Trigger triggers={['fieldA', 'fieldB']}>
+              {({ props }) => <input {...props} />}
+            </Form.Trigger>
           </div>
-        </From>
+        </Form>
       )
 
     wrapper.find('input').simulate('change')
@@ -69,46 +53,20 @@ describe('Trigger', () => {
     }
 
     let wrapper = mount(
-      <From schema={schema} onValidate={spy}>
+      <Form schema={schema} onValidate={spy}>
         <div>
-          <MessageTrigger for={'fieldA'} group="foo">
-            <input />
-          </MessageTrigger>
-          <MessageTrigger for={'fieldB'}>
-            <input />
-          </MessageTrigger>
+          <Form.Trigger for={'fieldA'} group="foo">
+            {({ props }) => <input {...props} />}
+          </Form.Trigger>
+          <Form.Trigger for={'fieldB'}>
+            {({ props }) => <input {...props} />}
+          </Form.Trigger>
 
-          <MessageTrigger events="onClick" group="foo">
-            <button />
-          </MessageTrigger>
+          <Form.Trigger events="onClick" group="foo">
+          {({ props }) => <button {...props} />}
+          </Form.Trigger>
         </div>
-      </From>
-    )
-
-    wrapper.find('button').simulate('click')
-  })
-
-  it('should simulate entire form', function(done) {
-    function spy({ fields }) {
-      fields.should.eql(['fieldA', 'fieldB'])
-      done()
-    }
-
-    let wrapper = mount(
-      <From schema={schema} onValidate={spy}>
-        <div>
-          <MessageTrigger for={'fieldA'} group="foo">
-            <input />
-          </MessageTrigger>
-          <MessageTrigger for={'fieldB'}>
-            <input />
-          </MessageTrigger>
-
-          <MessageTrigger events="onClick" group="@all">
-            <button />
-          </MessageTrigger>
-        </div>
-      </From>
+      </Form>
     )
 
     wrapper.find('button').simulate('click')
@@ -116,22 +74,49 @@ describe('Trigger', () => {
 
   it('should trigger a submit', function(done) {
     let wrapper = mount(
-      <From schema={schema} onSubmit={() => done()}>
+      <Form schema={schema} onSubmit={() => done()}>
         <div>
-          <MessageTrigger for={'fieldA'} group="foo">
-            <input />
-          </MessageTrigger>
-          <MessageTrigger for={'fieldB'}>
-            <input />
-          </MessageTrigger>
+          <Form.Trigger for={'fieldA'} group="foo">
+            {({ props }) => <input {...props} />}
+          </Form.Trigger>
 
-          <MessageTrigger events="onClick" group="@submit">
-            <button />
-          </MessageTrigger>
+          <Form.Trigger for={'fieldB'}>
+            {({ props }) => <input {...props} />}
+          </Form.Trigger>
+
+          <Form.Trigger events="onClick" group="@submit">
+          {({ props }) => <button {...props} />}
+          </Form.Trigger>
         </div>
-      </From>
+      </Form>
     )
 
     wrapper.find('button').simulate('click')
+  })
+
+  it('should handle submitting state', async () => {
+    let spy = sinon.spy(() => sleep(50))
+
+    let wrapper = mount(
+      <Form schema={schema} submitForm={spy} formKey="foo">
+        <div>
+          <Form.Trigger for="fieldA">
+            {({ submitting }) => `submitting: ${submitting}`}
+          </Form.Trigger>
+        </div>
+      </Form>
+    )
+
+    let trigger = wrapper.find(Form.Trigger)
+
+    trigger.text().should.equal('submitting: false')
+
+    let promise = wrapper.instance().submit()
+
+    trigger.text().should.equal('submitting: true')
+
+    await promise
+
+    trigger.text().should.equal('submitting: false')
   })
 })

@@ -11,25 +11,18 @@ import reach from 'yup/lib/util/reach'
 
 import errorManager from './errorManager'
 import errToJSON from './utils/errToJSON'
-import createTimeoutManager from './utils/timeoutManager'
 import * as ErrorUtils from './utils/ErrorUtils'
 
 import FormContext from './FormContext'
 
 let BindingContext = BC.ControlledComponent
 
-const ALL_FIELDS = '@all'
-
 let done = e =>
   setTimeout(() => {
     throw e
   })
 
-let uniq = array => array.filter((item, idx) => array.indexOf(item) === idx)
 
-let add = (array, item) => array.indexOf(item) === -1 && array.push(item)
-
-let remove = (array, item) => array.filter(i => i !== item)
 
 let splitPath = path => {
   let parts = expr.split(path)
@@ -362,7 +355,6 @@ class Form extends React.PureComponent {
 
     this.queue = []
     this.groups = Object.create(null)
-    this.timeouts = createTimeoutManager(this)
     this.errors = errorManager(this.validatePath)
 
     this.state = Form.getDerivedStateFromProps(props, {
@@ -375,7 +367,20 @@ class Form extends React.PureComponent {
       },
     })
 
-    props.publish('messages', this.getMessageContext(props.errors))
+    props.publish('messages', props.errors)
+    props.publish('groups', this.groups)
+    props.publish('form', {
+      onSubmit: this.submit,
+      onValidate: this.handleValidationRequest,
+      addToGroup: (name, grpName) => {
+        let group = this.groups[grpName] || (this.groups[grpName] = [])
+        if (group.indexOf(name) !== -1) return
+
+        group.push(name)
+        setTimeout(() => props.publish('groups', this.groups))
+        return () => name => group.filter(i => i !== name)
+      }
+    })
   }
 
   componentDidUpdate(prevProps) {
@@ -383,16 +388,23 @@ class Form extends React.PureComponent {
     const schemaChanged = schema !== prevProps.schema
 
     if (errors !== prevProps.errors)
-      publish('messages', this.getMessageContext(errors))
+      publish('messages', errors)
 
     if (schemaChanged) {
       this.enqueue(Object.keys(errors || {}))
     }
+
     this.flush(delay)
   }
 
   componentWillReceiveProps(nextProps) {
     this.setState(Form.getDerivedStateFromProps(nextProps, this.state))
+  }
+
+  componentWillUnmount() {
+    this.unmounted = true;
+    clearTimeout(this.submitTimer)
+    clearTimeout(this.validationTimer)
   }
 
   getSchemaForPath = (path, props = this.props) => {
@@ -401,48 +413,13 @@ class Form extends React.PureComponent {
     return schema && path && reach(schema, path, value, context)
   }
 
-  getMessageContext(errors) {
-    const { groups: allGroups } = this
-
-    return {
-      messages: errors,
-      onSubmit: this.submit,
-      onValidate: this.handleValidationRequest,
-      namesForGroup(groups) {
-        groups = groups ? [].concat(groups) : []
-
-        if (groups.indexOf(ALL_FIELDS) !== -1) {
-          groups = Object.keys(allGroups)
-        }
-        return uniq(
-          groups.reduce((fields, group) => fields.concat(allGroups[group]), [])
-        )
-      },
-      addToGroup(grpName, names) {
-        if (grpName === ALL_FIELDS) return
-
-        grpName = grpName || '@@unassigned-group'
-
-        names = names && [].concat(names)
-
-        let group = allGroups[grpName]
-
-        if (!names || !names.length) return
-        if (!group) group = allGroups[grpName] = []
-
-        names.forEach(name => add(group, name))
-        return () => names.forEach(name => remove(group, name))
-      },
-    }
-  }
-
   handleValidationRequest = (fields, type, args) => {
     let { noValidate, delay } = this.props
-    if (noValidate || !fields || !fields.length) return
+    fields = [].concat(fields)
+    if (noValidate) return
 
     this.notify('onValidate', { type, fields, args })
     this.enqueue(fields)
-
     if (type !== 'onChange') this.flush(delay)
   }
 
@@ -462,7 +439,10 @@ class Form extends React.PureComponent {
     const { submitForm } = this.props
     this.notify('onSubmit', validatedValue)
 
-    return Promise.resolve(submitForm && submitForm(validatedValue))
+    return Promise.resolve(submitForm && submitForm(validatedValue)).then(
+      () => this.setSubmitting(false),
+      () => this.setSubmitting(false),
+    )
   }
 
   handleSubmitError = err => {
@@ -474,6 +454,7 @@ class Form extends React.PureComponent {
 
     this.notify('onError', errors)
     this.notify('onInvalidSubmit', errors)
+    this.setSubmitting(false)
   }
 
   handleSubmit = e => {
@@ -492,9 +473,8 @@ class Form extends React.PureComponent {
   }
 
   flush(delay) {
-    this.timeouts.set(
-      'flush-validations',
-      () => {
+    clearTimeout(this.validationTimer)
+    this.validationTimer = setTimeout(() => {
         let fields = this.queue
         let props = this.props
 
@@ -523,12 +503,18 @@ class Form extends React.PureComponent {
     if (noValidate)
       return Promise.resolve(true).then(() => this.notify('onSubmit', value))
 
+    this.setSubmitting(true)
     return (
       schema
         .validate(value, options)
         // no catch, we aren't interested in errors from onSubmit handlers
         .then(this.handleSubmitSuccess, this.handleSubmitError)
     )
+  }
+
+  setSubmitting(submitting) {
+    if (this.unmounted) return
+    this.props.publish('submitting', submitting)
   }
 
   notify(event, ...args) {
@@ -597,6 +583,10 @@ class Form extends React.PureComponent {
   }
 }
 
+/**
+ * Wraps each Form in it's own Context, so it can pass context state to
+ * it's own children.
+ */
 class FormContainer extends React.Component {
   static propTypes = {
     formKey: PropTypes.string,

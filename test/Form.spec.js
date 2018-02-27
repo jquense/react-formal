@@ -175,7 +175,7 @@ describe('Form', () => {
     }, 100)
   })
 
-  it('calls submitForm on success', done => {
+  it("doesn't call submitForm on error", done => {
     let onSubmit = sinon.spy()
     let submitForm = sinon.spy(() => Promise.resolve())
 
@@ -184,7 +184,7 @@ describe('Form', () => {
         submitForm={submitForm}
         onInvalidSubmit={onSubmit}
         schema={schema.shape({
-          foo: yup.string().required()
+          foo: yup.string().required(),
         })}
         defaultValue={{}}
       >
@@ -202,7 +202,7 @@ describe('Form', () => {
     })
   })
 
-  it("doesn't call submitForm on error", done => {
+  it('calls submitForm on success', done => {
     let onSubmit = sinon.spy()
     let submitForm = sinon.spy(() => Promise.resolve())
 

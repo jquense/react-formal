@@ -89,7 +89,7 @@ describe('Form Context', () => {
       .map(n => n.simulate('click'))
   })
 
-  it.only('should not submit to different channels', function(done) {
+  it('should not submit to different channels', function(done) {
     let stub = sinon.stub(console, 'error')
     mount(
       <Form.Context>

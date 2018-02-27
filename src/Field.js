@@ -9,8 +9,7 @@ import config from './config'
 import { Consumer } from './Form'
 import isNativeType from './utils/isNativeType'
 import resolveFieldComponent from './utils/resolveFieldComponent'
-import shallowEqual from './shallowEqual'
-import MessageTrigger from './MessageTrigger'
+import FormTrigger from './FormTrigger'
 import isReactComponent from './utils/isReactComponent'
 import { inclusiveMapMessages } from './utils/ErrorUtils'
 
@@ -74,13 +73,10 @@ class Field extends React.PureComponent {
     fieldRef: null,
   }
 
-  componentWillMount() {
+  constructor(...args) {
+    super(...args)
     this.eventHandlers = {}
     this.createEventHandlers(this.props)
-  }
-
-  onError = errors => {
-    this.formContext.onFieldError(this.props.name, errors)
   }
 
   bindTo = (_value, getter) => {
@@ -107,7 +103,7 @@ class Field extends React.PureComponent {
     })
   }
 
-  constructComponent = (bindingProps, triggerProps = {}) => {
+  constructComponent = (bindingProps, triggerMeta = {}) => {
     let { formContext } = this
     let {
       name,
@@ -124,14 +120,14 @@ class Field extends React.PureComponent {
       { name },
       (this._fieldProps = fieldProps),
       (this._bindingProps = bindingProps),
-      (this._triggerProps = triggerProps),
+      (this._triggerProps = triggerMeta.props || {}),
       this.eventHandlers
     )
 
     let schema
     try {
       schema = name && formContext.getSchemaForPath(name)
-    } catch (err) {}
+    } catch (err) { /* ignore */}
 
     if (process.env.NODE_ENV !== 'production')
       invariant(
@@ -148,7 +144,7 @@ class Field extends React.PureComponent {
       resolvedType,
       errorClass,
       schema,
-      onError: this.onError,
+      onError: errors => formContext.onFieldError(name, errors),
     }
 
     if (formContext.context) {
@@ -156,16 +152,15 @@ class Field extends React.PureComponent {
     }
 
     if (this.shouldValidate()) {
-      let { messages } = fieldProps
+      let messages = triggerMeta.messages;
       let invalid = messages && !!Object.keys(messages).length
 
       meta.errors = messages
       meta.invalid = invalid
       meta.valid = !meta.invalid
+      meta.submitting = triggerMeta.submitting
 
       fieldProps.className = cn(className, invalid && errorClass)
-
-      delete fieldProps.messages
     }
 
     if (!this.props.noMeta) fieldProps.meta = meta
@@ -218,17 +213,17 @@ class Field extends React.PureComponent {
     return (
       <Binding bindTo={this.bindTo} mapValue={mapFromValue}>
         {bindingProps => (
-          <MessageTrigger
+          <FormTrigger
             for={name}
             group={group}
             events={events}
             triggers={triggers}
             mapMessages={mapMessages}
           >
-            {triggerProps =>
-              this.constructComponent(bindingProps, triggerProps)
+            {triggerMeta =>
+              this.constructComponent(bindingProps, triggerMeta)
             }
-          </MessageTrigger>
+          </FormTrigger>
         )}
       </Binding>
     )

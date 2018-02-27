@@ -13,9 +13,7 @@
     "url": "https://github.com/jquense/react-formal"
   },
   "license": "MIT",
-  "files": [
-    "lib"
-  ],
+  "files": ["lib"],
   "keywords": [
     "react-formal",
     "react",
@@ -29,13 +27,8 @@
     "yup"
   ],
   "jest": {
-    "roots": [
-      "<rootDir>/test"
-    ],
+    "roots": ["<rootDir>/test"],
     "setupTestFrameworkScriptFile": "./test/index.js"
-  },
-  "release-script": {
-    "defaultDryRun": "false"
   },
   "scripts": {
     "test": "jest",
@@ -52,17 +45,13 @@
   "dependencies": {
     "chain-function": "^1.0.0",
     "classnames": "^2.2.5",
-    "create-react-context": "^0.1.4",
-    "invariant": "^2.2.1",
+    "create-react-context": "^0.2.0",
+    "invariant": "^2.2.3",
     "lodash": "^4.17.5",
-    "prop-types": "^15.5.0",
+    "prop-types": "^15.6.1",
     "property-expr": "^1.4.0",
-    "react-input-message": "^0.15.1",
-    "react-prop-types": "^0.4.0",
-    "react-pure-render": "^1.0.2",
-    "spy-on-component": "^1.0.2",
-    "topeka": "^2.0.1",
-    "uncontrollable": "^4.0.3",
+    "topeka": "^2.1.0",
+    "uncontrollable": "^5.0.0",
     "warning": "^3.0.0",
     "yup": "^0.24.1"
   },
@@ -71,8 +60,8 @@
     "@babel/core": "^7.0.0-beta.40",
     "@monastic.panic/component-playground": "*",
     "babel-core": "^7.0.0-0",
-    "babel-eslint": "^8.2.1",
-    "babel-jest": "^22.2.2",
+    "babel-eslint": "^8.2.2",
+    "babel-jest": "^22.4.1",
     "babel-preset-jason": "^4.0.0",
     "chai": "^4.1.2",
     "chai-as-promised": "^7.1.1",
@@ -80,17 +69,17 @@
     "dirty-chai": "^2.0.1",
     "enzyme": "^3.3.0",
     "enzyme-adapter-react-16": "^1.1.1",
-    "eslint": "^4.17.0",
+    "eslint": "^4.18.1",
     "eslint-config-jason": "^4.0.0",
     "eslint-import-resolver-webpack": "^0.8.4",
-    "eslint-plugin-import": "^2.7.0",
-    "eslint-plugin-react": "^7.6.1",
+    "eslint-plugin-import": "^2.9.0",
+    "eslint-plugin-react": "^7.7.0",
     "globalize": "^0.1.1",
     "handlebars": "^4.0.5",
     "history": "^3.0.0",
-    "jest": "^22.3.0",
+    "jest": "^22.4.2",
     "markdown-jsx-loader": "^3.0.2",
-    "marked": "^0.3.12",
+    "marked": "^0.3.17",
     "prismjs": "^1.11.0",
     "react": "^16.2.0",
     "react-bootstrap": "^0.32.1",
@@ -100,10 +89,10 @@
     "react-router-dom": "^4.2.2",
     "release-script": "^1.0.2",
     "rimraf": "^2.5.2",
-    "sinon": "^4.3.0",
+    "sinon": "^4.4.2",
     "sinon-chai": "^2.8.0",
     "webpack": "^3.11.0",
-    "webpack-atoms": "^5.0.0",
+    "webpack-atoms": "^5.1.0",
     "webpack-dev-server": "^2.11.1"
   }
 }

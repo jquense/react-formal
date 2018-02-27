@@ -16,9 +16,15 @@ describe('Form Button', () => {
 
     mount(<Form.Button onClick={spy} />).simulate('click')
 
+    spy.should.have.been.calledOnce()
+
     stub.should.have.been.calledOnce();
     stub.restore();
+  })
 
-    spy.should.have.been.calledOnce()
+  it('should render with child function', () => {
+    mount(<Form.Button>{isBusy => `busy: ${isBusy}`}</Form.Button>)
+      .find('button')
+      .text().should.equal('busy: false')
   })
 })

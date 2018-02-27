@@ -1,7 +1,7 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 
-import ValidationMessage from './ValidationMessage'
+import Message from './Message'
 
 /**
  * Display all Form validation `errors` in a single summary list.
@@ -20,9 +20,8 @@ import ValidationMessage from './ValidationMessage'
  *   <Form.Button>Validate</Form.Button>
  * </Form>
  * ```
- * @alias Summary
  */
-class ValidationSummary extends React.PureComponent {
+class Summary extends React.PureComponent {
   static propTypes = {
     /**
      * An error message renderer, Should return a `ReactElement`
@@ -62,11 +61,11 @@ class ValidationSummary extends React.PureComponent {
     let { formatMessage, ...props } = this.props
 
     return (
-      <ValidationMessage {...props}>
+      <Message {...props}>
         {messages => messages.map(formatMessage)}
-      </ValidationMessage>
+      </Message>
     )
   }
 }
 
-export default ValidationSummary
+export default Summary

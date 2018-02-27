@@ -3,9 +3,11 @@ import PropTypes from 'prop-types'
 import cn from 'classnames'
 
 import uniq from './utils/uniqMessage'
-import MessageContext from './MessageContext'
+import { filterAndMapMessages, namesForGroup } from './utils/ErrorUtils'
+import FormContext from './FormContext'
 
 let flatten = (arr, next) => arr.concat(next)
+const channels = ['messages', 'groups']
 
 /**
  * Represents a Form validation error message. Only renders when the
@@ -19,10 +21,8 @@ class Message extends React.PureComponent {
       PropTypes.string,
       PropTypes.arrayOf(PropTypes.string),
     ]),
-    group: PropTypes.oneOfType([
-      PropTypes.string,
-      PropTypes.arrayOf(PropTypes.string),
-    ]),
+    group: PropTypes.string,
+    formKey: PropTypes.string,
 
     /**
      * A function that maps an array of message strings
@@ -45,6 +45,8 @@ class Message extends React.PureComponent {
      * Map the passed in message object for the field to a string to display
      */
     extract: PropTypes.func,
+
+    filter: PropTypes.func,
   }
 
   static defaultProps = {
@@ -58,8 +60,9 @@ class Message extends React.PureComponent {
 
   render() {
     let {
-      for: fieldFor,
+      for: names,
       group,
+      formKey,
       className,
       errorClass,
       extract,
@@ -69,8 +72,13 @@ class Message extends React.PureComponent {
     } = this.props
 
     return (
-      <MessageContext.Consumer for={fieldFor} group={group}>
-        {messages => {
+      <FormContext.Subscriber formKey={formKey} channels={channels}>
+        {(messages, groups) => {
+          messages = filterAndMapMessages({
+            messages,
+            names: names || namesForGroup(group, groups),
+          })
+
           if (!messages || !Object.keys(messages).length) return null
 
           return children(
@@ -84,7 +92,7 @@ class Message extends React.PureComponent {
             }
           )
         }}
-      </MessageContext.Consumer>
+      </FormContext.Subscriber>
     )
   }
 }

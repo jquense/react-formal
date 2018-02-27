@@ -1,9 +1,9 @@
 import Form from './Form'
 import Field from './Field'
 import Context from './FormContext'
-import Trigger from './MessageTrigger'
-import ValidationMessage from './ValidationMessage'
-import ValidationSummary from './ValidationSummary'
+import Trigger from './FormTrigger'
+import Message from './Message'
+import Summary from './Summary'
 import errToJSON from './utils/errToJSON'
 import FormButton from './FormButton'
 import addType from './addInputType'
@@ -11,8 +11,8 @@ import config from './config'
 import invariant from 'invariant'
 
 Form.Field = Field
-Form.Message = ValidationMessage
-Form.Summary = ValidationSummary
+Form.Message = Message
+Form.Summary = Summary
 Form.Button = FormButton
 Form.Context = Context
 Form.Trigger = Trigger

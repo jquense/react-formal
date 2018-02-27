@@ -1,7 +1,10 @@
-import PropTypes from 'prop-types';
+import PropTypes from 'prop-types'
+import pick from 'lodash/pick'
 import React from 'react'
 
-const DEFAULT_CHANNEL = '@@parent'
+import { Consumer as FormConsumer } from './Form'
+
+export const DEFAULT_CHANNEL = '@@parent'
 
 const contextKey = `@@react-formal-subscription-key`
 const contextTypes = () => {}
@@ -68,7 +71,6 @@ class FormContext extends React.Component {
   }
   shouldHandleChannel(channel, force) {
     const group = splitChannel(channel)[0]
-
     return !this.getParent() || (group === DEFAULT_CHANNEL && !force)
   }
 
@@ -118,32 +120,48 @@ class Publisher extends React.Component {
 
 class Subscriber extends React.Component {
   static propTypes = {
-    channel: PropTypes.string,
+    channels: PropTypes.array.isRequired,
+    formKey: PropTypes.oneOfType([
+      PropTypes.string.isRequired,
+      PropTypes.array.isRequired,
+    ]),
   }
+
   static contextTypes = {
     [contextKey]: contextTypes,
   }
-
-  constructor(...args) {
-    super(...args)
-    this.channel = this.props.channel
-
-    if (this.context[contextKey])
-      this.unsubscribe = this.context[contextKey].subscribe(this.channel, () =>
-        this.forceUpdate()
-      )
-  }
   componentWillUnmount() {
-    this.unsubscribe && this.unsubscribe()
+    this.subs && this.subs.forEach(fn => fn())
+  }
+  update = () => {
+    this.forceUpdate()
+  }
+  subscribe(contextFormKey) {
+    if (this.subs || !this.context[contextKey]) return
+    const { formKey, channels } = this.props
+
+    let key = formKey || contextFormKey || DEFAULT_CHANNEL
+    this.channels = []
+    channels.map(channel => {
+      this.channels.push(`${key}:${channel}`)
+      this.context[contextKey].subscribe(`${key}:${channel}`, this.update)
+    })
   }
 
   get() {
-    if (this.context[contextKey])
-      return this.context[contextKey].get(this.channel)
+    if (!this.context[contextKey]) return []
+    return this.channels.map(channel => this.context[contextKey].get(channel))
   }
 
   render() {
-    return this.props.children(this.get())
+    return (
+      <FormConsumer>
+        {({ formKey }) => {
+          this.subscribe(formKey)
+          return this.props.children(...this.get())
+        }}
+      </FormConsumer>
+    )
   }
 }
 

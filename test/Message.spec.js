@@ -1,9 +1,7 @@
 import React from 'react'
 import { mount } from 'enzyme'
 
-import Form from '../src/Form'
-import MessageTrigger from '../src/MessageTrigger'
-import Message from '../src/ValidationMessage'
+import Form from '../src'
 
 describe('Message', () => {
   it('should allow empty for', () => {
@@ -14,7 +12,7 @@ describe('Message', () => {
     mount(
       <Form noValidate defaultErrors={{ fieldA: 'hi', fieldB: 'good day' }}>
         <div>
-          <Message className="msg">{renderSpy}</Message>
+          <Form.Message className="msg">{renderSpy}</Form.Message>
         </div>
       </Form>
     )
@@ -22,7 +20,7 @@ describe('Message', () => {
     renderSpy.should.have.been.called()
   })
 
-  it('should allow group summaries', () => {
+  it('should allow group summaries', done => {
     let renderSpy = sinon.spy(msgs => {
       msgs.should.eql(['foo', 'hi'])
       return null
@@ -34,16 +32,19 @@ describe('Message', () => {
         defaultErrors={{ fieldA: ['foo', 'hi'], fieldB: 'good day' }}
       >
         <div>
-          <MessageTrigger for="fieldA" group="test">
-            <input />
-          </MessageTrigger>
-          <Message group="test" className="msg">
+          <Form.Message group="test" className="msg">
             {renderSpy}
-          </Message>
+          </Form.Message>
+          <Form.Trigger for="fieldA" group="test">
+            {() => <input />}
+          </Form.Trigger>
         </div>
       </Form>
     )
 
-    renderSpy.should.have.been.called()
+    setTimeout(() => {
+      renderSpy.should.have.been.called()
+      done()
+    }, 10)
   })
 })
