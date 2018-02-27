@@ -13,7 +13,9 @@
     "url": "https://github.com/jquense/react-formal"
   },
   "license": "MIT",
-  "files": ["lib"],
+  "files": [
+    "lib"
+  ],
   "keywords": [
     "react-formal",
     "react",
@@ -27,7 +29,9 @@
     "yup"
   ],
   "jest": {
-    "roots": ["<rootDir>/test"],
+    "roots": [
+      "<rootDir>/test"
+    ],
     "setupTestFrameworkScriptFile": "./test/index.js"
   },
   "scripts": {
