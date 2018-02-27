@@ -11,9 +11,13 @@ describe('Form Button', () => {
   })
 
   it('should chain events', () => {
+    let stub = sinon.stub(console, 'error')
     let spy = sinon.spy()
 
     mount(<Form.Button onClick={spy} />).simulate('click')
+
+    stub.should.have.been.calledOnce();
+    stub.restore();
 
     spy.should.have.been.calledOnce()
   })

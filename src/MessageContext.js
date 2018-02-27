@@ -1,48 +1,50 @@
 import pick from 'lodash/pick'
-import PropTypes from 'prop-types'
 import React from 'react'
-import createContext from 'create-react-context'
 
-import isReactComponent from './utils/isReactComponent'
-
-const MessageContext = createContext({
-  messages: {},
-  addToGroup() {},
-  namesForGroup() {},
-  onValidate() {},
-})
+import { Consumer as FormConsumer } from './Form'
+import FormContext from './FormContext'
 
 function messagesForNames(messages, names) {
   if (!names.length) return messages
   return pick(messages, names)
 }
 
+
+/* eslint-disable react/prop-types */
 function Consumer({
   children,
   for: names,
   group,
   resolveNames,
   mapMessages = messagesForNames,
+  formKey: propFormKey,
 }) {
   return (
-    <MessageContext.Consumer>
-      {({ messages, ...container }) => {
-        names = resolveNames
-          ? resolveNames()
-          : names || container.namesForGroup(group)
+    <FormConsumer>
+      {({ formKey }) => (
+        <FormContext.Subscriber channel={`${propFormKey || formKey || '@@parent'}:messages`}>
+          {data => {
+            if (!data) return children({}, null)
 
-        const mappedMessages = mapMessages(
-          messages,
-          names ? [].concat(names) : []
-        )
+            const { messages, ...container } = data
+            names = resolveNames
+              ? resolveNames()
+              : names || container.namesForGroup(group)
 
-        return children(mappedMessages, container)
-      }}
-    </MessageContext.Consumer>
+            const mappedMessages = mapMessages(
+              messages,
+              names ? [].concat(names) : []
+            )
+
+            return children(mappedMessages, container)
+          }}
+        </FormContext.Subscriber>
+      )}
+    </FormConsumer>
   )
 }
+/* eslint-enable react/prop-types */
 
 export default {
   Consumer,
-  Provider: MessageContext.Provider,
 }

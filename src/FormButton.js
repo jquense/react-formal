@@ -4,7 +4,6 @@ import warning from 'warning'
 
 import mergeWithEvents from './utils/chainEvents'
 import Trigger from './MessageTrigger'
-import { Consumer } from './Form'
 
 /**
  * A Form Button, for triggering validations for specific Field groups
@@ -45,13 +44,6 @@ class Button extends React.Component {
     events: ['onClick'],
   }
 
-  handleSubmit = (...args) => {
-    let { formKey, onClick } = this.props
-
-    if (onClick) onClick(...args)
-    this.formContext.submitForm(formKey || '@@parent')
-  }
-
   renderChildren(isBusy = false) {
     const { children } = this.props
     if (typeof children === 'function') return children(isBusy)
@@ -60,7 +52,7 @@ class Button extends React.Component {
   }
 
   render() {
-    let { type, group, events, component: Component, ...props } = this.props
+    let { type, group, events, component: Component, formKey, ...props } = this.props
 
     warning(
       !group || type.toLowerCase() !== 'submit',
@@ -71,24 +63,10 @@ class Button extends React.Component {
         '` use type="button" instead.'
     )
 
-    delete props.formKey
-
-    if (type.toLowerCase() === 'submit')
-      return (
-        <Consumer>
-          {formContext => {
-            this.formContext = formContext
-            return (
-              <Component {...props} onClick={this.handleSubmit}>
-                {this.renderChildren(this.formContext.isBusy)}
-              </Component>
-            )
-          }}
-        </Consumer>
-      )
+    if (type.toLowerCase() === 'submit') group = '@submit'
 
     return (
-      <Trigger group={group || '@all'} events={events}>
+      <Trigger formKey={formKey} group={group || '@all'} events={events}>
         {({ messages: _, ...triggerProps }) => (
           <Component
             {...mergeWithEvents(events, [props, triggerProps])}

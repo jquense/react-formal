@@ -17,7 +17,7 @@ let LeakySubmit = () => (
 )
 
 describe('Form', () => {
-  var schema = yup.object({
+  let schema = yup.object({
     name: yup.object({
       first: yup.string().default(''),
       last: yup.string().default(''),
@@ -91,7 +91,7 @@ describe('Form', () => {
   })
 
   it('should pass updated paths', function() {
-    var paths,
+    let paths,
       change = sinon.spy((_, p) => (paths = p)),
       wrapper = mount(
         <Form schema={schema} defaultValue={schema.default()} onChange={change}>
@@ -117,7 +117,7 @@ describe('Form', () => {
   })
 
   it('should respect noValidate', () => {
-    var change = sinon.spy(),
+    let change = sinon.spy(),
       wrapper = mount(
         <Form
           noValidate
@@ -146,32 +146,28 @@ describe('Form', () => {
     change.should.have.been.called()
   })
 
-  it('should let native submits simulate onSubmit', function(done) {
-    var spy = sinon.spy(() => done())
-    var wrapper = mount(
+  it('should let native submits simulate onSubmit', done => {
+    let spy = sinon.spy(() => done())
+    let wrapper = mount(
       <Form onSubmit={spy} schema={schema} defaultValue={{}}>
         <Form.Field name="name" type="text" className="test" />
         <button type="submit">Submit</button>
       </Form>
     )
 
-    wrapper
-      .assertSingle('button')
-      .simulate('submit')
+    wrapper.assertSingle('button').simulate('submit')
   })
 
-  it('should deduplicate form submissions', function(done) {
-    var spy = sinon.spy()
-    var wrapper = mount(
+  it('should deduplicate form submissions', done => {
+    let spy = sinon.spy()
+    let wrapper = mount(
       <Form onSubmit={spy} schema={schema} defaultValue={{}}>
         <Form.Field name="name" type="text" className="test" />
         <LeakySubmit />
       </Form>
     )
 
-    wrapper
-      .assertSingle(LeakySubmit)
-      .simulate('submit')
+    wrapper.assertSingle(LeakySubmit).simulate('submit')
 
     setTimeout(() => {
       spy.should.have.been.calledOnce()
@@ -179,9 +175,62 @@ describe('Form', () => {
     }, 100)
   })
 
+  it('calls submitForm on success', done => {
+    let onSubmit = sinon.spy()
+    let submitForm = sinon.spy(() => Promise.resolve())
+
+    let wrapper = mount(
+      <Form
+        submitForm={submitForm}
+        onInvalidSubmit={onSubmit}
+        schema={schema.shape({
+          foo: yup.string().required()
+        })}
+        defaultValue={{}}
+      >
+        <Form.Field name="name" type="text" className="test" />
+        <Form.Button type="submit" />
+      </Form>
+    )
+
+    wrapper.assertSingle(Form.Button).simulate('click')
+
+    setTimeout(() => {
+      onSubmit.should.have.been.calledOnce()
+      submitForm.should.not.have.been.called()
+      done()
+    })
+  })
+
+  it("doesn't call submitForm on error", done => {
+    let onSubmit = sinon.spy()
+    let submitForm = sinon.spy(() => Promise.resolve())
+
+    let wrapper = mount(
+      <Form
+        onSubmit={onSubmit}
+        submitForm={submitForm}
+        schema={schema}
+        defaultValue={{}}
+      >
+        <Form.Field name="name" type="text" className="test" />
+        <Form.Button type="submit" />
+      </Form>
+    )
+
+    wrapper.assertSingle(Form.Button).simulate('click')
+
+    setTimeout(() => {
+      onSubmit.should.have.been.calledOnce()
+      submitForm.should.have.been.calledOnce()
+      submitForm.should.have.been.calledAfter(onSubmit)
+      done()
+    })
+  })
+
   it('should only report ValidationErrors', () => {
-    var spy = sinon.spy()
-    var wrapper = mount(
+    let spy = sinon.spy()
+    let wrapper = mount(
       <Form
         onSubmit={() => {
           throw 'foo!'
@@ -195,13 +244,12 @@ describe('Form', () => {
       </Form>
     )
 
-    return wrapper
-      .instance()
-      .submit()
-      .catch(err => {
-        err.should.equal('foo!')
-        spy.should.not.have.been.called()
-      })
+    let inst = wrapper.instance()
+
+    return inst.submit().catch(err => {
+      err.should.equal('foo!')
+      spy.should.not.have.been.called()
+    })
   })
 
   it('return hash of errors from a assertSingle error', () => {

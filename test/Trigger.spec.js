@@ -113,4 +113,25 @@ describe('Trigger', () => {
 
     wrapper.find('button').simulate('click')
   })
+
+  it('should trigger a submit', function(done) {
+    let wrapper = mount(
+      <From schema={schema} onSubmit={() => done()}>
+        <div>
+          <MessageTrigger for={'fieldA'} group="foo">
+            <input />
+          </MessageTrigger>
+          <MessageTrigger for={'fieldB'}>
+            <input />
+          </MessageTrigger>
+
+          <MessageTrigger events="onClick" group="@submit">
+            <button />
+          </MessageTrigger>
+        </div>
+      </From>
+    )
+
+    wrapper.find('button').simulate('click')
+  })
 })

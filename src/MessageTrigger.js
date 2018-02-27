@@ -1,6 +1,7 @@
 import PropTypes from 'prop-types'
 import React from 'react'
 import createBridge from 'topeka/createChildBridge'
+import warning from 'warning'
 import MessageContext from './MessageContext'
 
 let stringOrArrayOfStrings = PropTypes.oneOfType([
@@ -12,14 +13,14 @@ const noop = () => {}
 
 class MessageTrigger extends React.Component {
   static propTypes = {
-    container: PropTypes.object,
+    formKey: PropTypes.string,
 
     noValidate: PropTypes.bool.isRequired,
-
     events: stringOrArrayOfStrings,
-
     for: stringOrArrayOfStrings,
+    triggers: stringOrArrayOfStrings,
 
+    mapMessages: PropTypes.func,
     children: PropTypes.oneOfType([PropTypes.func, PropTypes.element]),
 
     group: (props, name, compName, ...args) => {
@@ -42,6 +43,7 @@ class MessageTrigger extends React.Component {
     super(...args)
 
     this.removeFromGroup = noop
+
     this.renderChild = createBridge(this.handleEvent, props => {
       let { children } = this.props
 
@@ -58,30 +60,50 @@ class MessageTrigger extends React.Component {
   }
 
   handleEvent = (event, ...args) => {
-    let { children, noValidate, for: names, group } = this.props
+    let {
+      children,
+      noValidate,
+      for: fieldFor,
+      formKey,
+      triggers,
+      group,
+    } = this.props
 
     let handler = React.isValidElement(children) && children.props[event]
     handler && handler.apply(this, args)
 
-    if (noValidate || !this.container) return
+    if (noValidate) return
+    if (!this.container) {
+      let name = triggers || fieldFor || group
 
-    names = names || this.container.namesForGroup(group)
+      return warning(
+        false,
+        (name === '@submit' ? 'A Form submit event ' : `A validation for ${name} `) +
+        `was triggered from a component outside the context of a Form. ` +
+          `The Field, Button, or Trigger should be wrapped in a Form or Form.Context component` +
+          (formKey ? ` with the formKey: "${formKey}" ` : '.')
+      )
+    }
+    if (group === '@submit') return this.container.onSubmit()
+
+    let names = triggers || fieldFor || this.container.namesForGroup(group)
     names = names ? [].concat(names) : []
 
     this.container.onValidate(names, event, args)
   }
 
   render() {
-    let { for: names, group, mapMessages } = this.props
+    let { for: names, group, mapMessages, formKey } = this.props
 
     return (
       <MessageContext.Consumer
         for={names}
         group={group}
+        formKey={formKey}
         mapMessages={mapMessages}
       >
         {(messages, container) => {
-          if (names) {
+          if (names && container) {
             this.removeFromGroup()
             this.removeFromGroup = container.addToGroup(group, names)
           }

@@ -46,14 +46,14 @@ describe('Form Context', () => {
       <Form.Context>
         <Form
           formKey="foo"
-          onSubmit={sinon.spy(() => setTimeout(() => done()))}
+          onSubmit={() => setTimeout(() => done())}
           schema={schema}
           defaultValue={{}}
         >
           <Form.Field name="name" type="text" className="test" />
         </Form>
         <Form
-          onSubmit={sinon.spy(() => done(new Error('submitted wrong form!')))}
+          onSubmit={() => done(new Error('submitted wrong form!'))}
           schema={schema}
           defaultValue={{}}
         >
@@ -89,7 +89,8 @@ describe('Form Context', () => {
       .map(n => n.simulate('click'))
   })
 
-  it('should not submit to different channels', function(done) {
+  it.only('should not submit to different channels', function(done) {
+    let stub = sinon.stub(console, 'error')
     mount(
       <Form.Context>
         <Form
@@ -108,7 +109,12 @@ describe('Form Context', () => {
       .find(Form.Button)
       .simulate('click')
 
-    setTimeout(() => done(), 10)
+    setTimeout(() => {
+      stub.should.have.been.calledOnce();
+      stub.restore();
+      done()
+    }, 10)
+
   })
 
   it('should fall-through to next context', done => {
@@ -140,23 +146,46 @@ describe('Form Context', () => {
       .simulate('click')
   })
 
+  it('should update subscribers', done => {
+    mount(
+      <Form.Context>
+        <Form.Button type="submit" formKey="bar" />
+        <Form
+          schema={schema}
+          defaultValue={{}}
+          formKey="bar"
+          onSubmit={() => done()}
+        >
+          {/* <Form.Field name="name" type="text" className="test" /> */}
+        </Form>
+      </Form.Context>
+    )
+      .find(Form.Button)
+      .simulate('click')
+  })
+
   it('should not allow submit past form', done => {
-    try {
-      mount(
-        <Form.Context>
-          <Form schema={schema} defaultValue={{}}>
-            <Form.Button type="submit" formKey="bar" />
-            <Form.Field name="name" type="text" className="test" />
-          </Form>
-        </Form.Context>
-      )
-        .find(Form.Button)
-        .simulate('click')
-    } catch (err) {
-      err.message.should.equal(
-        'Cannot trigger a submit for a Form from within a different form'
-      )
-      done()
-    }
+    mount(
+      <Form.Context>
+        <Form
+          schema={schema}
+          defaultValue={{}}
+          onSubmit={() => done(new Error('submitted wrong form!'))}
+        >
+          <Form.Button type="submit" formKey="bar" />
+          <Form.Field name="name" type="text" className="test" />
+        </Form>
+        <Form
+          schema={schema}
+          defaultValue={{}}
+          formKey="bar"
+          onSubmit={() => done()}
+        >
+          <Form.Field name="name" type="text" className="test" />
+        </Form>
+      </Form.Context>
+    )
+      .find(Form.Button)
+      .simulate('click')
   })
 })

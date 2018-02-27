@@ -210,8 +210,9 @@ class Field extends React.PureComponent {
       )
     }
 
+    let triggers
     if (alsoValidates != null) {
-      name = [name].concat(alsoValidates)
+      triggers = [name].concat(alsoValidates)
     }
 
     return (
@@ -221,6 +222,7 @@ class Field extends React.PureComponent {
             for={name}
             group={group}
             events={events}
+            triggers={triggers}
             mapMessages={mapMessages}
           >
             {triggerProps =>

@@ -13,7 +13,8 @@ import errorManager from './errorManager'
 import errToJSON from './utils/errToJSON'
 import createTimeoutManager from './utils/timeoutManager'
 import * as ErrorUtils from './utils/ErrorUtils'
-import MessageContext from './MessageContext'
+
+import FormContext from './FormContext'
 
 let BindingContext = BC.ControlledComponent
 
@@ -39,14 +40,10 @@ let splitPath = path => {
 let isValidationError = err => err && err.name === 'ValidationError'
 
 export const { Provider, Consumer } = createContext({
-  options: null,
+  context: null,
   noValidate: false,
   onFieldError() {},
   getSchemaForPath() {},
-  registerForm() {},
-  submitForm() {},
-  isBusy: null,
-  onBusy: null,
 })
 
 const YUP_OPTIONS = [
@@ -57,17 +54,10 @@ const YUP_OPTIONS = [
   'strict',
 ]
 
-function maybeWarn(debug, errors, target) {
-  if (!debug) return
+const getter = (path, model) =>
+  path ? expr.getter(path, true)(model || {}) : model
 
-  if (process.env.NODE_ENV !== 'production') {
-    let keys = Object.keys(errors)
-    warning(
-      !keys.length,
-      `[react-formal] (${target}) invalid fields: ${keys.join(', ')}`
-    )
-  }
-}
+const setter = BindingContext.defaultProps.setter
 
 /**
  * Form component renders a `value` to be updated and validated by child Fields.
@@ -336,6 +326,9 @@ class Form extends React.PureComponent {
      * toggle debug mode, which `console.warn`s validation errors
      */
     debug: PropTypes.bool,
+
+    /** @private */
+    publish: PropTypes.func.isRequired,
   }
 
   static defaultProps = {
@@ -344,8 +337,24 @@ class Form extends React.PureComponent {
     strict: false,
     delay: 300,
     errors: Object.create(null),
-    getter: (path, model) =>
-      path ? expr.getter(path, true)(model || {}) : model,
+    getter,
+    setter,
+  }
+
+  static getDerivedStateFromProps({ schema, context, noValidate }, prevState) {
+    if (schema === prevState.schema && prevState.noValidate === noValidate)
+      return prevState
+
+    return {
+      ...prevState,
+      schema,
+      noValidate,
+      formContext: {
+        ...prevState.formContext,
+        context,
+        noValidate,
+      },
+    }
   }
 
   constructor(props, context) {
@@ -356,46 +365,48 @@ class Form extends React.PureComponent {
     this.timeouts = createTimeoutManager(this)
     this.errors = errorManager(this.validatePath)
 
-    this._staticFormContext = {
-      registerForm: null,
-      submitForm: this.handleContextSubmit,
-      getSchemaForPath: this.getSchemaForPath,
-      onFieldError: this.handleFieldError,
-      onBusy: this.handleIsBusy,
-      isBusy: false,
-      noValidate: props.noValidate,
-      context: props.context,
-    }
+    this.state = Form.getDerivedStateFromProps(props, {
+      formContext: {
+        formKey: props.formKey,
+        getSchemaForPath: this.getSchemaForPath,
+        onFieldError: this.handleFieldError,
+        noValidate: props.noValidate,
+        context: props.context,
+      },
+    })
 
-    this.messageContext = this.getMessageContext(props)
+    props.publish('messages', this.getMessageContext(props.errors))
+  }
+
+  componentDidUpdate(prevProps) {
+    const { errors, publish, delay, schema } = this.props
+    const schemaChanged = schema !== prevProps.schema
+
+    if (errors !== prevProps.errors)
+      publish('messages', this.getMessageContext(errors))
+
+    if (schemaChanged) {
+      this.enqueue(Object.keys(errors || {}))
+    }
+    this.flush(delay)
   }
 
   componentWillReceiveProps(nextProps) {
-    const schemaChanged = nextProps.schema !== this.props.schema
-
-    if (nextProps.errors !== this.props.errors)
-      this.messageContext = this.getMessageContext(nextProps)
-
-    if (schemaChanged || nextProps.noValidate !== this.props.noValidate) {
-      this._staticFormContext = {
-        ...this._staticFormContext,
-        context: nextProps.context,
-        noValidate: nextProps.noValidate,
-      }
-    }
-
-    if (schemaChanged) {
-      this.enqueue(Object.keys(nextProps.errors || {}))
-    }
-
-    this.flush(nextProps.delay)
+    this.setState(Form.getDerivedStateFromProps(nextProps, this.state))
   }
 
-  getMessageContext({ errors }) {
+  getSchemaForPath = (path, props = this.props) => {
+    let { schema, value, context } = props
+
+    return schema && path && reach(schema, path, value, context)
+  }
+
+  getMessageContext(errors) {
     const { groups: allGroups } = this
 
     return {
       messages: errors,
+      onSubmit: this.submit,
       onValidate: this.handleValidationRequest,
       namesForGroup(groups) {
         groups = groups ? [].concat(groups) : []
@@ -423,27 +434,6 @@ class Form extends React.PureComponent {
         return () => names.forEach(name => remove(group, name))
       },
     }
-  }
-
-  getFormContext() {
-    return this._staticFormContext
-  }
-
-  validatePath = (path, { props }) => {
-    let options = pick(props, YUP_OPTIONS)
-    let abortEarly = options.abortEarly == null ? false : options.abortEarly
-
-    let { value, getter } = props
-    let schema = this.getSchemaForPath(path, props)
-
-    let [parentPath, currentPath] = splitPath(path)
-    let parent = getter(parentPath, value) || {}
-    let pathValue = parent != null ? parent[currentPath] : value
-
-    return schema
-      .validate(pathValue, { ...options, abortEarly, parent, path })
-      .then(() => null)
-      .catch(err => err)
   }
 
   handleValidationRequest = (fields, type, args) => {
@@ -486,22 +476,15 @@ class Form extends React.PureComponent {
     this.notify('onInvalidSubmit', errors)
   }
 
-  handleContextSubmit = formName => {
-    let key = this.props.formKey || '@@parent'
-
-    if (formName && formName !== key)
-      throw new Error(
-        'Cannot trigger a submit for a Form from within a different form'
-      )
-
-    this.handleSubmit()
-  }
-
   handleSubmit = e => {
     if (e && e.preventDefault) e.preventDefault()
 
     clearTimeout(this.submitTimer)
     this.submitTimer = setTimeout(() => this.submit().catch(done), 0)
+  }
+
+  collectErrors(fields, props = this.props) {
+    return this.errors.collect(fields, props.errors, { props })
   }
 
   enqueue(fields) {
@@ -531,12 +514,6 @@ class Form extends React.PureComponent {
     )
   }
 
-  getSchemaForPath = (path, props = this.props) => {
-    let { schema, value, context } = props
-
-    return schema && path && reach(schema, path, value, context)
-  }
-
   submit = () => {
     var { schema, noValidate, value, ...options } = this.props
 
@@ -554,10 +531,6 @@ class Form extends React.PureComponent {
     )
   }
 
-  collectErrors(fields, props = this.props) {
-    return this.errors.collect(fields, props.errors, { props })
-  }
-
   notify(event, ...args) {
     if (this.props[event]) this.props[event](...args)
   }
@@ -566,12 +539,24 @@ class Form extends React.PureComponent {
     return this.collectErrors(fields)
   }
 
-  validateGroup(groups) {
-    let fields = this._container.fieldsForGroup(groups)
-    return this.validate(fields)
+  validatePath = (path, { props }) => {
+    let options = pick(props, YUP_OPTIONS)
+    let abortEarly = options.abortEarly == null ? false : options.abortEarly
+
+    let { value, getter } = props
+    let schema = this.getSchemaForPath(path, props)
+
+    let [parentPath, currentPath] = splitPath(path)
+    let parent = getter(parentPath, value) || {}
+    let pathValue = parent != null ? parent[currentPath] : value
+
+    return schema
+      .validate(pathValue, { ...options, abortEarly, parent, path })
+      .then(() => null)
+      .catch(err => err)
   }
 
-  renderForm(formContext) {
+  render() {
     var {
       children,
       onChange,
@@ -586,6 +571,8 @@ class Form extends React.PureComponent {
       ...Object.keys(Form.propTypes),
     ])
 
+    delete props.publish
+
     if (Element === 'form') props.noValidate = true // disable html5 validation
 
     props.onSubmit = this.handleSubmit
@@ -596,37 +583,68 @@ class Form extends React.PureComponent {
       children = <Element {...props}>{children}</Element>
     }
     return (
-      <Provider value={formContext}>
-        <MessageContext.Provider value={this.messageContext}>
-          <BindingContext
-            value={value}
-            onChange={onChange}
-            getter={getter}
-            setter={setter}
-          >
-            {children}
-          </BindingContext>
-        </MessageContext.Provider>
+      <Provider value={this.state.formContext}>
+        <BindingContext
+          value={value}
+          onChange={onChange}
+          getter={getter}
+          setter={setter}
+        >
+          {children}
+        </BindingContext>
       </Provider>
-    )
-  }
-  render() {
-    return (
-      <Consumer>
-        {formContext => {
-          formContext.registerForm(this.props.formKey, this.submit)
-          return this.renderForm(this.getFormContext(formContext))
-        }}
-      </Consumer>
     )
   }
 }
 
-export default uncontrollable(
-  Form,
+class FormContainer extends React.Component {
+  static propTypes = {
+    formKey: PropTypes.string,
+  }
+  attachRef = ref => {
+    this.inner = ref
+  }
+  submit() {
+    return this.inner.submit()
+  }
+  validate(fields) {
+    return this.inner.validate(fields)
+  }
+  render() {
+    return (
+      <FormContext>
+        <FormContext.Publisher bubbles group={this.props.formKey}>
+          {publish => (
+            <Form {...this.props} publish={publish} ref={this.attachRef} />
+          )}
+        </FormContext.Publisher>
+      </FormContext>
+    )
+  }
+}
+
+function maybeWarn(debug, errors, target) {
+  if (!debug) return
+
+  if (process.env.NODE_ENV !== 'production') {
+    let keys = Object.keys(errors)
+    warning(
+      !keys.length,
+      `[react-formal] (${target}) invalid fields: ${keys.join(', ')}`
+    )
+  }
+}
+
+const ControlledForm = uncontrollable(
+  FormContainer,
   {
     value: 'onChange',
     errors: 'onError',
   },
-  ['submit', 'validateGroup', 'validate']
+  ['submit', 'validate']
 )
+
+ControlledForm.getter = getter
+ControlledForm.setter = setter
+
+export default ControlledForm

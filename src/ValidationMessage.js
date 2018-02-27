@@ -70,7 +70,7 @@ class Message extends React.PureComponent {
 
     return (
       <MessageContext.Consumer for={fieldFor} group={group}>
-        {(messages, container) => {
+        {messages => {
           if (!messages || !Object.keys(messages).length) return null
 
           return children(
