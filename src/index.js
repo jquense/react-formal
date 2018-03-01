@@ -1,5 +1,6 @@
 import Form from './Form'
 import Field from './Field'
+import FieldArray from './FieldArray'
 import Context from './FormContext'
 import Trigger from './FormTrigger'
 import Message from './Message'
@@ -11,15 +12,18 @@ import config from './config'
 import invariant from 'invariant'
 
 Form.Field = Field
+Form.FieldArray = FieldArray
 Form.Message = Message
 Form.Summary = Summary
 Form.Button = FormButton
 Form.Context = Context
 Form.Trigger = Trigger
 
-
 Form.toErrors = err => {
-  invariant(err && err.name === 'ValidationError', '`toErrors()` only works with ValidationErrors.')
+  invariant(
+    err && err.name === 'ValidationError',
+    '`toErrors()` only works with ValidationErrors.'
+  )
 
   return errToJSON(err)
 }

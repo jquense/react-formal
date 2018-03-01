@@ -1,5 +1,4 @@
 import PropTypes from 'prop-types'
-import pick from 'lodash/pick'
 import React from 'react'
 
 import { Consumer as FormConsumer } from './Form'
@@ -131,10 +130,11 @@ class Subscriber extends React.Component {
     [contextKey]: contextTypes,
   }
   componentWillUnmount() {
+    this.unmounted = true
     this.subs && this.subs.forEach(fn => fn())
   }
   update = () => {
-    this.forceUpdate()
+    if (!this.unmounted) this.forceUpdate()
   }
   subscribe(contextFormKey) {
     if (this.subs || !this.context[contextKey]) return

@@ -111,6 +111,7 @@ class Field extends React.PureComponent {
       children,
       className,
       fieldRef,
+      noResolveType,
       errorClass = config.errorClass,
     } = this.props
 
@@ -127,7 +128,9 @@ class Field extends React.PureComponent {
     let schema
     try {
       schema = name && formContext.getSchemaForPath(name)
-    } catch (err) { /* ignore */}
+    } catch (err) {
+      /* ignore */
+    }
 
     if (process.env.NODE_ENV !== 'production')
       invariant(
@@ -136,7 +139,9 @@ class Field extends React.PureComponent {
           "Each Field's `name` prop must be a valid path defined by the parent Form schema"
       )
 
-    let [Component, resolvedType] = resolveFieldComponent(type, schema)
+    let [Component, resolvedType] = !noResolveType
+      ? resolveFieldComponent(type, schema)
+      : [null, type]
 
     fieldProps.type = isNativeType(resolvedType) ? resolvedType : undefined
 
@@ -152,7 +157,7 @@ class Field extends React.PureComponent {
     }
 
     if (this.shouldValidate()) {
-      let messages = triggerMeta.messages;
+      let messages = triggerMeta.messages
       let invalid = messages && !!Object.keys(messages).length
 
       meta.errors = messages
@@ -220,9 +225,7 @@ class Field extends React.PureComponent {
             triggers={triggers}
             mapMessages={mapMessages}
           >
-            {triggerMeta =>
-              this.constructComponent(bindingProps, triggerMeta)
-            }
+            {triggerMeta => this.constructComponent(bindingProps, triggerMeta)}
           </FormTrigger>
         )}
       </Binding>
@@ -475,6 +478,9 @@ Field.propTypes = {
    * Attach a ref to the rendered input component
    */
   fieldRef: PropTypes.func,
+
+  /** @private */
+  noResolveType: PropTypes.bool,
 }
 
 export default Field

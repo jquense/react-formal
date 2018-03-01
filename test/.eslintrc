@@ -1,2 +1,4 @@
 parser: babel-eslint
 extends: jason/jest
+rules
+  react/prop-types: off

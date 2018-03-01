@@ -22,8 +22,6 @@ let done = e =>
     throw e
   })
 
-
-
 let splitPath = path => {
   let parts = expr.split(path)
   let tail = parts.pop()
@@ -379,7 +377,7 @@ class Form extends React.PureComponent {
         group.push(name)
         setTimeout(() => props.publish('groups', this.groups))
         return () => name => group.filter(i => i !== name)
-      }
+      },
     })
   }
 
@@ -387,8 +385,7 @@ class Form extends React.PureComponent {
     const { errors, publish, delay, schema } = this.props
     const schemaChanged = schema !== prevProps.schema
 
-    if (errors !== prevProps.errors)
-      publish('messages', errors)
+    if (errors !== prevProps.errors) publish('messages', errors)
 
     if (schemaChanged) {
       this.enqueue(Object.keys(errors || {}))
@@ -402,7 +399,7 @@ class Form extends React.PureComponent {
   }
 
   componentWillUnmount() {
-    this.unmounted = true;
+    this.unmounted = true
     clearTimeout(this.submitTimer)
     clearTimeout(this.validationTimer)
   }
@@ -441,7 +438,7 @@ class Form extends React.PureComponent {
 
     return Promise.resolve(submitForm && submitForm(validatedValue)).then(
       () => this.setSubmitting(false),
-      () => this.setSubmitting(false),
+      () => this.setSubmitting(false)
     )
   }
 
@@ -475,23 +472,21 @@ class Form extends React.PureComponent {
   flush(delay) {
     clearTimeout(this.validationTimer)
     this.validationTimer = setTimeout(() => {
-        let fields = this.queue
-        let props = this.props
+      let fields = this.queue
+      let props = this.props
 
-        if (!fields.length) return
+      if (!fields.length) return
 
-        this.queue = []
-        this.collectErrors(fields, this.props)
-          .then(errors => {
-            if (errors !== this.props.errors) {
-              maybeWarn(props.debug, errors, 'field validation')
-              this.notify('onError', errors)
-            }
-          })
-          .catch(done)
-      },
-      delay
-    )
+      this.queue = []
+      this.collectErrors(fields, this.props)
+        .then(errors => {
+          if (errors !== this.props.errors) {
+            maybeWarn(props.debug, errors, 'field validation')
+            this.notify('onError', errors)
+          }
+        })
+        .catch(done)
+    }, delay)
   }
 
   submit = () => {

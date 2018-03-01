@@ -56,7 +56,6 @@ export function pickMessages(messages, names) {
   return pick(messages, names)
 }
 
-
 export function namesForGroup(group, allGroups) {
   if (!group || !allGroups) return []
   group = group ? [].concat(group) : []
@@ -64,17 +63,6 @@ export function namesForGroup(group, allGroups) {
   return uniq(
     group.reduce((fields, group) => fields.concat(allGroups[group]), [])
   )
-}
-
-
-export function filterAndMapMessages({
-  messages,
-  names,
-  resolveNames,
-  mapMessages = pickMessages,
-}) {
-  names = resolveNames ? resolveNames() : names
-  return mapMessages(messages, names ? [].concat(names) : [])
 }
 
 export function filter(messages, baseName) {
@@ -88,6 +76,16 @@ export function filter(messages, baseName) {
   })
 
   return result
+}
+
+export function filterAndMapMessages({
+  messages,
+  names,
+  resolveNames,
+  mapMessages = pickMessages,
+}) {
+  names = resolveNames ? resolveNames() : names
+  return mapMessages(messages, names ? [].concat(names) : [])
 }
 
 export function remove(messages, ...basePaths) {
