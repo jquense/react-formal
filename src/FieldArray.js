@@ -1,7 +1,7 @@
 import invariant from 'invariant'
 import PropTypes from 'prop-types'
 import React from 'react'
-import { remove, shift, unshift } from './utils/ErrorUtils'
+import { move, remove, shift, swap, unshift } from './utils/ErrorUtils'
 
 import Field from './Field'
 
@@ -69,10 +69,12 @@ class FieldArray extends React.Component {
       '`onMove` must be called with an item in the array'
     )
 
-    newValue.splice(toIndex, ...newValue.splice(fromIndex, 1))
+    newValue.splice(toIndex, 0, ...newValue.splice(fromIndex, 1))
 
     // FIXME: doesn't handle syncing error state.
     onChange(newValue, { action: 'move', toIndex, fromIndex })
+
+    this.sendErrors((errors, name) => move(errors, name, fromIndex, toIndex))
   }
 
   onRemove = item => {

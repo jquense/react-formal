@@ -16,7 +16,6 @@ function mapKeys(messages, baseName, fn) {
 
     if (isChildPath(baseName, path)) {
       const matches = path.slice(baseName.length).match(/\[(\d+)\](.*)$/)
-
       newKey = fn(+matches[1], matches[2] || '', path) || path
     }
 
@@ -110,6 +109,32 @@ export function unshift(messages, baseName, atIndex) {
       return `${baseName}[${index + 1}]${tail}`
     }
 
+    return null
+  })
+}
+
+export function move(messages, baseName, fromIndex, toIndex) {
+  return mapKeys(messages, baseName, (index, tail) => {
+    if (fromIndex > toIndex) {
+      if (index === fromIndex) return `${baseName}[${toIndex}]${tail}`
+      // increment everything above the pivot
+      if (index >= toIndex && index < fromIndex)
+        return `${baseName}[${index + 1}]${tail}`
+    } else if (fromIndex < toIndex) {
+      if (index === fromIndex) return `${baseName}[${toIndex}]${tail}`
+      // decrement everything above the from item we moved
+      if (index >= fromIndex && index < toIndex)
+        return `${baseName}[${index - 1}]${tail}`
+    }
+
+    return null
+  })
+}
+
+export function swap(messages, baseName, indexA, indexB) {
+  return mapKeys(messages, baseName, (index, tail) => {
+    if (index === indexA) return `${baseName}[${indexB}]${tail}`
+    if (index === indexB) return `${baseName}[${indexA}]${tail}`
     return null
   })
 }
