@@ -28,7 +28,8 @@ class FieldArray extends React.Component {
   }
 
   onAdd = item => {
-    this.onInsert(item, this.fieldProps.value.length)
+    const { value } = this.fieldProps
+    this.onInsert(item, value ? value.length : 0)
   }
 
   onItemError(name, errors) {
@@ -41,7 +42,7 @@ class FieldArray extends React.Component {
   onUpdate = (updatedItem, oldItem) => {
     const { value, onChange } = this.fieldProps
     const index = value.indexOf(oldItem)
-    const newValue = [...value]
+    const newValue = value == null ? [] : [...value]
 
     newValue.splice(index, 1, updatedItem)
 
@@ -50,7 +51,7 @@ class FieldArray extends React.Component {
 
   onInsert = (item, index) => {
     const { value, onChange } = this.fieldProps
-    const newValue = [...value]
+    const newValue = value == null ? [] : [...value]
 
     newValue.splice(index, 0, item)
 
@@ -61,7 +62,7 @@ class FieldArray extends React.Component {
   onMove = (item, toIndex) => {
     const { value, onChange } = this.fieldProps
     const fromIndex = value.indexOf(item)
-    const newValue = [...value]
+    const newValue = value == null ? [] : [...value]
 
     invariant(
       fromIndex !== -1,
@@ -76,8 +77,9 @@ class FieldArray extends React.Component {
 
   onRemove = item => {
     const { value, onChange } = this.fieldProps
-    const index = value.indexOf(item)
+    if (value == null) return
 
+    const index = value.indexOf(item)
     onChange(value.filter(v => v !== item))
 
     this.sendErrors((errors, name) => shift(errors, name, index))
@@ -98,23 +100,25 @@ class FieldArray extends React.Component {
   items = () => {
     const { value: values, name } = this.fieldProps
 
-    return values.map((value, index) => {
-      const itemName = `${name}[${index}]`
-      const itemErrors = filter(this.meta.errors, itemName)
+    return !values
+      ? []
+      : values.map((value, index) => {
+          const itemName = `${name}[${index}]`
+          const itemErrors = filter(this.meta.errors, itemName)
 
-      return {
-        value,
-        name: itemName,
-        onChange: item => this.onUpdate(item, values[index]),
-        meta: {
-          ...this.meta,
-          errors: itemErrors,
-          valid: !Object.keys(itemErrors).length,
-          invalid: !!Object.keys(itemErrors).length,
-          onError: errors => this.onItemError(itemName, errors),
-        },
-      }
-    })
+          return {
+            value,
+            name: itemName,
+            onChange: item => this.onUpdate(item, values[index]),
+            meta: {
+              ...this.meta,
+              errors: itemErrors,
+              valid: !Object.keys(itemErrors).length,
+              invalid: !!Object.keys(itemErrors).length,
+              onError: errors => this.onItemError(itemName, errors),
+            },
+          }
+        })
   }
 
   render() {
@@ -130,7 +134,7 @@ class FieldArray extends React.Component {
             arrayHelpers: {
               items: this.items,
               add: this.onAdd,
-              move: this.move,
+              move: this.onMove,
               insert: this.onInsert,
               remove: this.onRemove,
               update: this.onUpdate,
