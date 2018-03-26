@@ -185,55 +185,59 @@ class Field extends React.PureComponent {
     )
   }
 
-  renderField = formContext => {
-    let {
-      name,
-      group,
-      exclusive,
-      mapFromValue,
-      alsoValidates,
-      events = config.events,
-    } = this.props
-
-    this.formContext = formContext
-
-    let mapMessages = !exclusive ? inclusiveMapMessages : undefined
-
-    if (typeof mapFromValue !== 'object')
-      mapFromValue = { [name]: mapFromValue }
-
-    if (!this.shouldValidate()) {
-      return (
-        <Binding bindTo={this.bindTo} mapValue={mapFromValue}>
-          {this.constructComponent}
-        </Binding>
-      )
-    }
-
-    let triggers
-    if (alsoValidates != null) {
-      triggers = [name].concat(alsoValidates)
-    }
-
-    return (
-      <Binding bindTo={this.bindTo} mapValue={mapFromValue}>
-        {bindingProps => (
-          <FormTrigger
-            for={name}
-            group={group}
-            events={events}
-            triggers={triggers}
-            mapMessages={mapMessages}
-          >
-            {triggerMeta => this.constructComponent(bindingProps, triggerMeta)}
-          </FormTrigger>
-        )}
-      </Binding>
-    )
-  }
-
   render() {
-    return <Consumer>{this.renderField}</Consumer>
+    return (
+      <Consumer>
+        {formContext => {
+          let {
+            name,
+            group,
+            exclusive,
+            mapFromValue,
+            alsoValidates,
+            events = config.events,
+          } = this.props
+
+          this.formContext = formContext
+
+          let mapMessages = !exclusive ? inclusiveMapMessages : undefined
+
+          if (typeof mapFromValue !== 'object')
+            mapFromValue = { [name]: mapFromValue }
+
+          if (!this.shouldValidate()) {
+            return (
+              <Binding bindTo={this.bindTo} mapValue={mapFromValue}>
+                {this.constructComponent}
+              </Binding>
+            )
+          }
+
+          let triggers
+          if (alsoValidates != null) {
+            triggers = [name].concat(alsoValidates)
+          }
+
+          return (
+            <Binding bindTo={this.bindTo} mapValue={mapFromValue}>
+              {bindingProps => (
+                <FormTrigger
+                  for={name}
+                  group={group}
+                  events={events}
+                  triggers={triggers}
+                  mapMessages={mapMessages}
+                >
+                  {triggerMeta =>
+                    this.constructComponent(bindingProps, triggerMeta)
+                  }
+                </FormTrigger>
+              )}
+            </Binding>
+          )
+        }}
+      </Consumer>
+    )
   }
 
   shouldValidate() {
