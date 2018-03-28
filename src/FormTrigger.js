@@ -2,6 +2,7 @@ import PropTypes from 'prop-types'
 import React from 'react'
 import createBridge from 'topeka/createChildBridge'
 import warning from 'warning'
+
 import FormContext from './FormContext'
 import { filterAndMapMessages, namesForGroup } from './utils/ErrorUtils'
 
@@ -35,13 +36,7 @@ class FormTrigger extends React.Component {
   constructor(...args) {
     super(...args)
 
-    this.renderChild = createBridge(this.handleEvent, props =>
-      this.props.children({
-        props,
-        messages: this.messages || {},
-        submitting: this.submitting,
-      })
-    )
+    this.getBridgeProps = createBridge(this.handleEvent)
   }
 
   componentWillUnmount() {
@@ -96,7 +91,12 @@ class FormTrigger extends React.Component {
           })
 
           this.submitting = !!submitting
-          return this.renderChild(this.props.events)
+
+          return this.props.children({
+            props: this.getBridgeProps(this.props.events),
+            messages: this.messages || {},
+            submitting: this.submitting,
+          })
         }}
       </FormContext.Subscriber>
     )
