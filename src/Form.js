@@ -1,12 +1,13 @@
+import createContext from 'create-react-context'
+import { BindingContext as BC } from 'topeka'
 import omit from 'lodash/omit'
 import pick from 'lodash/pick'
 import expr from 'property-expr'
-import React from 'react'
 import PropTypes from 'prop-types'
-import { BindingContext as BC } from 'topeka'
 import uncontrollable from 'uncontrollable'
+import polyfill from 'react-lifecycles-compat'
+import React from 'react'
 import warning from 'warning'
-import createContext from 'create-react-context'
 import reach from 'yup/lib/util/reach'
 
 import errorManager from './errorManager'
@@ -332,16 +333,21 @@ class Form extends React.PureComponent {
     setter,
   }
 
-  static getDerivedStateFromProps({ schema, context, noValidate }, prevState) {
+  static getDerivedStateFromProps(
+    { formKey, schema, context, noValidate },
+    prevState
+  ) {
     if (schema === prevState.schema && prevState.noValidate === noValidate)
-      return prevState
+      return null
 
+    const { getSchemaForPath, onFieldError } = prevState.formContext
     return {
-      ...prevState,
       schema,
       noValidate,
       formContext: {
-        ...prevState.formContext,
+        getSchemaForPath,
+        onFieldError,
+        formKey,
         context,
         noValidate,
       },
@@ -355,7 +361,7 @@ class Form extends React.PureComponent {
     this.groups = Object.create(null)
     this.errors = errorManager(this.validatePath)
 
-    this.state = Form.getDerivedStateFromProps(props, {
+    this.state = {
       formContext: {
         formKey: props.formKey,
         getSchemaForPath: this.getSchemaForPath,
@@ -363,7 +369,7 @@ class Form extends React.PureComponent {
         noValidate: props.noValidate,
         context: props.context,
       },
-    })
+    }
 
     props.publish('messages', props.errors)
     props.publish('groups', this.groups)
@@ -392,10 +398,6 @@ class Form extends React.PureComponent {
     }
 
     this.flush(delay)
-  }
-
-  componentWillReceiveProps(nextProps) {
-    this.setState(Form.getDerivedStateFromProps(nextProps, this.state))
   }
 
   componentWillUnmount() {
@@ -621,7 +623,7 @@ function maybeWarn(debug, errors, target) {
 }
 
 const ControlledForm = uncontrollable(
-  FormContainer,
+  polyfill(FormContainer),
   {
     value: 'onChange',
     errors: 'onError',

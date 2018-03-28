@@ -38,7 +38,6 @@ describe('FieldArray', () => {
   }
 
   it('should render forms correctly', () => {
-    console.log(schema.default())
     mount(
       <Form
         schema={schema}

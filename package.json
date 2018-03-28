@@ -54,6 +54,7 @@
     "lodash": "^4.17.5",
     "prop-types": "^15.6.1",
     "property-expr": "^1.4.0",
+    "react-lifecycles-compat": "^1.0.2",
     "topeka": "^2.1.0",
     "uncontrollable": "^5.0.0",
     "warning": "^3.0.0",

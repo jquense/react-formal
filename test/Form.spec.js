@@ -116,7 +116,7 @@ describe('Form', () => {
     paths.should.eql(['name.first', 'name.last'])
   })
 
-  it('should respect noValidate', () => {
+  xit('should respect noValidate', () => {
     let change = sinon.spy(),
       wrapper = mount(
         <Form
