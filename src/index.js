@@ -34,7 +34,7 @@ const statics = {
 
 Object.assign(Form, statics)
 
+Form.statics = statics
+
 export { statics }
 export default Form
-
-module.exports = Form

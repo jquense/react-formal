@@ -2,7 +2,8 @@
   "name": "react-formal",
   "version": "0.27.0",
   "description": "Classy HTML form management for React",
-  "main": "lib/index.js",
+  "main": "lib/index.cjs.js",
+  "modules": "es/index.js",
   "author": {
     "name": "Jason Quense",
     "email": "monastic.panic@gmail.com"
@@ -13,9 +14,7 @@
     "url": "https://github.com/jquense/react-formal"
   },
   "license": "MIT",
-  "files": [
-    "lib"
-  ],
+  "files": ["lib", "es"],
   "keywords": [
     "react-formal",
     "react",
@@ -29,9 +28,7 @@
     "yup"
   ],
   "jest": {
-    "roots": [
-      "<rootDir>/test"
-    ],
+    "roots": ["<rootDir>/test"],
     "setupTestFrameworkScriptFile": "./test/index.js"
   },
   "scripts": {
@@ -40,7 +37,8 @@
     "lint": "eslint src",
     "docs": "webpack --config docs/webpack.config.js --progress",
     "docs:watch": "webpack-dev-server --config docs/webpack.config.js",
-    "build": " babel src --out-dir lib --copy-files",
+    "build:esm": "BABEL_ENV=esm babel src --out-dir es --copy-files",
+    "build": " babel src --out-dir lib --copy-files && npm run build:esm",
     "release": "release"
   },
   "peerDependencies": {
@@ -89,6 +87,7 @@
     "react-bootstrap": "^0.32.1",
     "react-component-metadata": "^3.0.0",
     "react-dom": "^16.3.2",
+    "react-formal": "^0.27.0",
     "react-router": "^4.2.0",
     "react-router-dom": "^4.2.2",
     "release-script": "^1.0.2",

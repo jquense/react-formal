@@ -6633,6 +6633,22 @@ react-dom@^16.3.2:
     object-assign "^4.1.1"
     prop-types "^15.6.0"
 
+react-formal@^0.27.0:
+  version "0.27.0"
+  resolved "https://registry.yarnpkg.com/react-formal/-/react-formal-0.27.0.tgz#16ed6423eab27cbe005418f46d55b4f530b8b0d8"
+  dependencies:
+    chain-function "^1.0.0"
+    classnames "^2.2.5"
+    invariant "^2.2.4"
+    lodash "^4.17.10"
+    prop-types "^15.6.1"
+    property-expr "^1.4.0"
+    react-lifecycles-compat "^3.0.2"
+    topeka "^3.0.0"
+    uncontrollable "^6.0.0"
+    warning "^3.0.0"
+    yup "^0.24.1"
+
 react-is@^16.3.2:
   version "16.3.2"
   resolved "https://registry.yarnpkg.com/react-is/-/react-is-16.3.2.tgz#f4d3d0e2f5fbb6ac46450641eb2e25bf05d36b22"
