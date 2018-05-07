@@ -1,6 +1,6 @@
 {
   "name": "react-formal",
-  "version": "0.27.1",
+  "version": "0.28.0",
   "description": "Classy HTML form management for React",
   "main": "lib/index.cjs.js",
   "modules": "es/index.js",
