@@ -1,4 +1,3 @@
-import createContext from 'create-react-context'
 import { BindingContext as BC } from 'topeka'
 import omit from 'lodash/omit'
 import pick from 'lodash/pick'
@@ -31,7 +30,7 @@ let splitPath = path => {
 
 let isValidationError = err => err && err.name === 'ValidationError'
 
-export const { Provider, Consumer } = createContext({
+export const { Provider, Consumer } = React.createContext({
   context: null,
   noValidate: false,
   onFieldError() {},

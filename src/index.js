@@ -6,32 +6,35 @@ import Trigger from './FormTrigger'
 import Message from './Message'
 import Summary from './Summary'
 import errToJSON from './utils/errToJSON'
-import FormButton from './FormButton'
-import addType from './addInputType'
+import Button from './FormButton'
+import addInputTypes from './addInputType'
 import config from './config'
 import invariant from 'invariant'
 
-Form.Field = Field
-Form.FieldArray = FieldArray
-Form.Message = Message
-Form.Summary = Summary
-Form.Button = FormButton
-Form.Context = Context
-Form.Trigger = Trigger
-
-Form.toErrors = err => {
-  invariant(
-    err && err.name === 'ValidationError',
-    '`toErrors()` only works with ValidationErrors.'
-  )
-
-  return errToJSON(err)
+const statics = {
+  Field,
+  FieldArray,
+  Message,
+  Summary,
+  Button,
+  Context,
+  Trigger,
+  addInputTypes,
+  setDefaults(defaults = {}) {
+    Object.assign(config, defaults)
+  },
+  toErrors(err) {
+    invariant(
+      err && err.name === 'ValidationError',
+      '`toErrors()` only works with ValidationErrors.'
+    )
+    return errToJSON(err)
+  },
 }
 
-Form.addInputTypes = addType
-Form.setDefaults = (defaults = {}) => {
-  Object.assign(config, defaults)
-}
+Object.assign(Form, statics)
+
+export { statics }
+export default Form
 
 module.exports = Form
-export default Form
