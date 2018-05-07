@@ -6,7 +6,7 @@ import Form from '../src'
 import { Consumer } from '../src/Form'
 import errorManager from '../src/errorManager'
 
-let LeakySubmit = () => (
+let LeakySubmit = props => (
   <Consumer>
     {({ onSubmit }) => (
       <button type="submit" onClick={onSubmit}>
@@ -17,11 +17,21 @@ let LeakySubmit = () => (
 )
 
 describe('Form', () => {
+  let attachTo
   let schema = yup.object({
     name: yup.object({
       first: yup.string().default(''),
       last: yup.string().default(''),
     }),
+  })
+
+  beforeEach(() => {
+    attachTo = document.createElement('div')
+    document.body.appendChild(attachTo)
+  })
+
+  afterEach(() => {
+    document.body.removeChild(attachTo)
   })
 
   it('should expose setter', () => {
@@ -163,16 +173,20 @@ describe('Form', () => {
     let wrapper = mount(
       <Form onSubmit={spy} schema={schema} defaultValue={{}}>
         <Form.Field name="name" type="text" className="test" />
-        <LeakySubmit />
-      </Form>
+        <Form.Button type="submit" />
+      </Form>,
+      { attachTo }
     )
 
-    wrapper.assertSingle(LeakySubmit).simulate('submit')
+    wrapper
+      .assertSingle('button')
+      .getDOMNode()
+      .click()
 
     setTimeout(() => {
       spy.should.have.been.calledOnce()
       done()
-    }, 100)
+    }, 10)
   })
 
   it("doesn't call submitForm on error", done => {
@@ -199,7 +213,7 @@ describe('Form', () => {
       onSubmit.should.have.been.calledOnce()
       submitForm.should.not.have.been.called()
       done()
-    })
+    }, 100)
   })
 
   it('calls submitForm on success', done => {
@@ -225,7 +239,7 @@ describe('Form', () => {
       submitForm.should.have.been.calledOnce()
       submitForm.should.have.been.calledAfter(onSubmit)
       done()
-    })
+    }, 10)
   })
 
   it('should only report ValidationErrors', () => {

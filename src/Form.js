@@ -215,6 +215,8 @@ class Form extends React.PureComponent {
      */
     onSubmit: PropTypes.func,
 
+    onSubmitFinished: PropTypes.func,
+
     /* */
     submitForm: PropTypes.func,
 
@@ -373,7 +375,7 @@ class Form extends React.PureComponent {
     props.publish('messages', props.errors)
     props.publish('groups', this.groups)
     props.publish('form', {
-      onSubmit: this.submit,
+      onSubmit: this.handleSubmit,
       onValidate: this.handleValidationRequest,
       addToGroup: (name, grpName) => {
         let group = this.groups[grpName] || (this.groups[grpName] = [])
@@ -438,8 +440,15 @@ class Form extends React.PureComponent {
     this.notify('onSubmit', validatedValue)
 
     return Promise.resolve(submitForm && submitForm(validatedValue)).then(
-      () => this.setSubmitting(false),
-      () => this.setSubmitting(false)
+      () => {
+        this.setSubmitting(false)
+        this.notify('onSubmitFinished')
+      },
+      err => {
+        this.setSubmitting(false)
+        this.notify('onSubmitFinished', err)
+        throw err
+      }
     )
   }
 
@@ -491,7 +500,7 @@ class Form extends React.PureComponent {
   }
 
   submit = () => {
-    var { schema, noValidate, value, ...options } = this.props
+    var { schema, noValidate, value, onSubmitFinished, ...options } = this.props
 
     options.abortEarly = false
     options.strict = false
@@ -505,6 +514,7 @@ class Form extends React.PureComponent {
         .validate(value, options)
         // no catch, we aren't interested in errors from onSubmit handlers
         .then(this.handleSubmitSuccess, this.handleSubmitError)
+        .then(onSubmitFinished)
     )
   }
 

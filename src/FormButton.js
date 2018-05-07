@@ -66,7 +66,6 @@ class FormButton extends React.Component {
 
   render() {
     let {
-      type,
       group,
       events,
       component: Component,
@@ -75,20 +74,22 @@ class FormButton extends React.Component {
       ...props
     } = this.props
 
-    if (type.toLowerCase() === 'submit') group = '@submit'
+    if (props.type.toLowerCase() === 'submit') group = '@submit'
 
     return (
       <Trigger formKey={formKey} group={group} events={events}>
-        {meta => (
-          <Component
-            {...mergeWithEvents(events, [props, meta.props])}
-            type={type}
-          >
-            {typeof children === 'function'
-              ? children(meta.submitting)
-              : children}
-          </Component>
-        )}
+        {meta =>
+          typeof children === 'function' ? (
+            children({
+              ...meta,
+              props: mergeWithEvents(events, [props, meta.props]),
+            })
+          ) : (
+            <Component {...mergeWithEvents(events, [props, meta.props])}>
+              children
+            </Component>
+          )
+        }
       </Trigger>
     )
   }

@@ -18,13 +18,18 @@ describe('Form Button', () => {
 
     spy.should.have.been.calledOnce()
 
-    stub.should.have.been.calledOnce();
-    stub.restore();
+    stub.should.have.been.calledOnce()
+    stub.restore()
   })
 
   it('should render with child function', () => {
-    mount(<Form.Button>{isBusy => `busy: ${isBusy}`}</Form.Button>)
+    mount(
+      <Form.Button>
+        {({ submitting }) => <button>{`busy: ${submitting}`}</button>}
+      </Form.Button>
+    )
       .find('button')
-      .text().should.equal('busy: false')
+      .text()
+      .should.equal('busy: false')
   })
 })
