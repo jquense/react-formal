@@ -14,10 +14,7 @@
     "url": "https://github.com/jquense/react-formal"
   },
   "license": "MIT",
-  "files": [
-    "lib",
-    "es"
-  ],
+  "files": ["lib", "es"],
   "keywords": [
     "react-formal",
     "react",
@@ -31,9 +28,7 @@
     "yup"
   ],
   "jest": {
-    "roots": [
-      "<rootDir>/test"
-    ],
+    "roots": ["<rootDir>/test"],
     "setupTestFrameworkScriptFile": "./test/index.js"
   },
   "scripts": {
@@ -44,6 +39,7 @@
     "docs:watch": "webpack-dev-server --config docs/webpack.config.js",
     "build:esm": "BABEL_ENV=esm babel src --out-dir es --copy-files",
     "build": " babel src --out-dir lib --copy-files && npm run build:esm",
+    "prepublishOnly": "npm run build",
     "release": "release"
   },
   "peerDependencies": {
