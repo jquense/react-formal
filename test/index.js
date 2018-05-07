@@ -1,6 +1,6 @@
 global.requestAnimationFrame = cb => setTimeout(cb, 0)
 const { configure, ShallowWrapper, ReactWrapper } = require('enzyme')
-const Adapter = require('enzyme-adapter-react-16')
+const Adapter = require('@monastic.panic/enzyme-adapter-react-16')
 
 global.chai = require('chai')
 global.sinon = require('sinon')
@@ -10,7 +10,7 @@ global.chai.use(require('sinon-chai'))
 global.chai.use(require('chai-as-promised'))
 global.chai.should()
 
-global.expect = global.chai.expect;
+global.expect = global.chai.expect
 
 configure({ adapter: new Adapter() })
 

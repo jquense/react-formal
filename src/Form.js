@@ -5,7 +5,7 @@ import pick from 'lodash/pick'
 import expr from 'property-expr'
 import PropTypes from 'prop-types'
 import uncontrollable from 'uncontrollable'
-import polyfill from 'react-lifecycles-compat'
+import { polyfill } from 'react-lifecycles-compat'
 import React from 'react'
 import warning from 'warning'
 import reach from 'yup/lib/util/reach'
@@ -580,35 +580,7 @@ class Form extends React.PureComponent {
   }
 }
 
-/**
- * Wraps each Form in it's own Context, so it can pass context state to
- * it's own children.
- */
-class FormContainer extends React.Component {
-  static propTypes = {
-    formKey: PropTypes.string,
-  }
-  attachRef = ref => {
-    this.inner = ref
-  }
-  submit() {
-    return this.inner.submit()
-  }
-  validate(fields) {
-    return this.inner.validate(fields)
-  }
-  render() {
-    return (
-      <FormContext>
-        <FormContext.Publisher bubbles group={this.props.formKey}>
-          {publish => (
-            <Form {...this.props} publish={publish} ref={this.attachRef} />
-          )}
-        </FormContext.Publisher>
-      </FormContext>
-    )
-  }
-}
+const PolyFilledForm = polyfill(Form)
 
 function maybeWarn(debug, errors, target) {
   if (!debug) return
@@ -623,7 +595,17 @@ function maybeWarn(debug, errors, target) {
 }
 
 const ControlledForm = uncontrollable(
-  polyfill(FormContainer),
+  /**
+   * Wraps each Form in it's own Context, so it can pass context state to
+   * it's own children.
+   */
+  React.forwardRef((props, ref) => (
+    <FormContext>
+      <FormContext.Publisher bubbles group={props.formKey}>
+        {publish => <PolyFilledForm {...props} publish={publish} ref={ref} />}
+      </FormContext.Publisher>
+    </FormContext>
+  )),
   {
     value: 'onChange',
     errors: 'onError',

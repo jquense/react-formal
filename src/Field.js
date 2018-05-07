@@ -10,7 +10,6 @@ import { Consumer } from './Form'
 import isNativeType from './utils/isNativeType'
 import resolveFieldComponent from './utils/resolveFieldComponent'
 import FormTrigger from './FormTrigger'
-import isReactComponent from './utils/isReactComponent'
 import { inclusiveMapMessages } from './utils/ErrorUtils'
 
 function notify(handler, args) {
@@ -169,20 +168,14 @@ class Field extends React.PureComponent {
     }
 
     if (!this.props.noMeta) fieldProps.meta = meta
+    if (fieldRef) fieldProps.ref = fieldRef
 
     // Escape hatch for more complex Field types.
     if (typeof children === 'function') {
       return children(fieldProps, Component)
     }
 
-    return (
-      <Component
-        {...fieldProps}
-        ref={isReactComponent(Component) ? fieldRef : null}
-      >
-        {children}
-      </Component>
-    )
+    return <Component {...fieldProps}>{children}</Component>
   }
 
   render() {
@@ -487,4 +480,6 @@ Field.propTypes = {
   noResolveType: PropTypes.bool,
 }
 
-export default Field
+export default React.forwardRef((props, ref) => (
+  <Field fieldRef={ref} {...props} />
+))

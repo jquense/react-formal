@@ -1,7 +1,7 @@
 import invariant from 'invariant'
 import PropTypes from 'prop-types'
 import React from 'react'
-import { move, remove, shift, swap, unshift } from './utils/ErrorUtils'
+import { move, remove, shift, unshift } from './utils/ErrorUtils'
 
 import Field from './Field'
 

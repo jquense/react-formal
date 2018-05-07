@@ -92,19 +92,6 @@ describe('Field', () => {
     wrapper.find(inputs.Input).length.should.equal(2)
   })
 
-  it('should not warn about refs on stateless components', function() {
-    sinon.spy(console, 'error')
-
-    mount(
-      <Form schema={schema} defaultValue={{}}>
-        <Form.Field name="name" type={() => null} fieldRef={() => {}} />
-      </Form>
-    )
-
-    console.error.should.not.have.been.called()
-    console.error.restore()
-  })
-
   it('should fire onChange', function(done) {
     mount(
       <Form schema={schema} defaultValue={{}}>
@@ -443,6 +430,22 @@ describe('Field', () => {
           name="name"
           type={TestInput}
           fieldRef={r => {
+            inst = r
+          }}
+        />
+      </Form>
+    )
+    ;(inst instanceof TestInput).should.be.true()
+  })
+
+  it('should forward inner ref', function() {
+    let inst
+    mount(
+      <Form schema={schema} defaultValue={{}}>
+        <Form.Field
+          name="name"
+          type={TestInput}
+          ref={r => {
             inst = r
           }}
         />

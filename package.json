@@ -13,9 +13,7 @@
     "url": "https://github.com/jquense/react-formal"
   },
   "license": "MIT",
-  "files": [
-    "lib"
-  ],
+  "files": ["lib"],
   "keywords": [
     "react-formal",
     "react",
@@ -29,9 +27,7 @@
     "yup"
   ],
   "jest": {
-    "roots": [
-      "<rootDir>/test"
-    ],
+    "roots": ["<rootDir>/test"],
     "setupTestFrameworkScriptFile": "./test/index.js"
   },
   "scripts": {
@@ -49,14 +45,13 @@
   "dependencies": {
     "chain-function": "^1.0.0",
     "classnames": "^2.2.5",
-    "create-react-context": "^0.2.1",
     "invariant": "^2.2.4",
-    "lodash": "^4.17.5",
+    "lodash": "^4.17.10",
     "prop-types": "^15.6.1",
     "property-expr": "^1.4.0",
-    "react-lifecycles-compat": "^1.0.2",
-    "topeka": "^2.1.2",
-    "uncontrollable": "^5.0.0",
+    "react-lifecycles-compat": "^3.0.2",
+    "topeka": "^2.1.5",
+    "uncontrollable": "^6.0.0",
     "warning": "^3.0.0",
     "yup": "^0.24.1"
   },
@@ -73,7 +68,7 @@
     "component-metadata-loader": "^4.0.0",
     "dirty-chai": "^2.0.1",
     "enzyme": "^3.3.0",
-    "enzyme-adapter-react-16": "^1.1.1",
+    "@monastic.panic/enzyme-adapter-react-16": "^1.2.1",
     "eslint": "^4.19.1",
     "eslint-config-jason": "^4.0.0",
     "eslint-import-resolver-webpack": "^0.8.4",
@@ -86,10 +81,10 @@
     "markdown-jsx-loader": "^3.0.2",
     "marked": "^0.3.19",
     "prismjs": "^1.13.0",
-    "react": "^16.2.0",
+    "react": "^16.3.2",
     "react-bootstrap": "^0.32.1",
     "react-component-metadata": "^3.0.0",
-    "react-dom": "^16.2.0",
+    "react-dom": "^16.3.2",
     "react-router": "^4.2.0",
     "react-router-dom": "^4.2.2",
     "release-script": "^1.0.2",
