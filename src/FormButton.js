@@ -86,7 +86,7 @@ class FormButton extends React.Component {
             })
           ) : (
             <Component {...mergeWithEvents(events, [props, meta.props])}>
-              children
+            {children}
             </Component>
           )
         }
