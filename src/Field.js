@@ -103,6 +103,7 @@ class Field extends React.PureComponent {
   }
 
   constructComponent = (bindingProps, triggerMeta = {}) => {
+    console.log('trigger', triggerMeta)
     let { formContext } = this
     let {
       name,

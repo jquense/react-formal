@@ -7,6 +7,7 @@ import Form from '../src'
 describe('Form Context', () => {
   let schema = yup.object({
     name: yup.string().default(''),
+    other: yup.string().default(''),
   })
 
   it('should simulate an onSubmit in the Form', function(done) {
@@ -24,7 +25,7 @@ describe('Form Context', () => {
       .simulate('click')
   })
 
-  it('should simulate an onSubmit from outside the form', function(done) {
+  it.only('should simulate an onSubmit from outside the form', function(done) {
     mount(
       <Form.Context>
         <Form
@@ -36,6 +37,85 @@ describe('Form Context', () => {
         </Form>
         <Form.Button type="submit" />
       </Form.Context>
+    )
+      .find(Form.Button)
+      .simulate('click')
+  })
+
+  it('should not conflate unkeyed forms', function(done) {
+    mount(
+      <Form.Context>
+        <Form
+          schema={schema}
+          defaultValue={{}}
+          onSubmit={sinon.spy(() => setTimeout(done, 10))}
+        >
+          <Form.Field name="name" type="text" className="test" />
+          <Form.Button type="submit" />
+        </Form>
+
+        <Form
+          onSubmit={sinon.spy(() => done(new Error('ooops')))}
+          schema={schema}
+          defaultValue={{}}
+        >
+          <Form.Field name="name" type="text" className="test" />
+        </Form>
+      </Form.Context>
+    )
+      .find(Form.Button)
+      .simulate('click')
+  })
+
+  it('should not submit multiple unkeyed forms (last wins)', function(done) {
+    mount(
+      <Form.Context>
+        <Form
+          onSubmit={sinon.spy(() => done(new Error('ooops')))}
+          schema={schema}
+          defaultValue={{}}
+        >
+          <Form.Field name="name" type="text" className="test" />
+        </Form>
+
+        <Form
+          schema={schema}
+          defaultValue={{}}
+          onSubmit={sinon.spy(() => setTimeout(done, 10))}
+        >
+          <Form.Field name="other" type="text" className="test" />
+        </Form>
+
+        <Form.Button type="submit" />
+      </Form.Context>
+    )
+      .find(Form.Button)
+      .simulate('click')
+  })
+  it('should not conflate unkeyed forms in different trees', done => {
+    mount(
+      <div>
+        <Form.Context>
+          <Form
+            onSubmit={sinon.spy(() => done(new Error('ooops')))}
+            schema={schema}
+            defaultValue={{}}
+          >
+            <Form.Field name="name" type="text" className="test" />
+          </Form>
+        </Form.Context>
+
+        <Form.Context>
+          <Form
+            schema={schema}
+            defaultValue={{}}
+            onSubmit={sinon.spy(() => setTimeout(done, 10))}
+          >
+            <Form.Field name="other" type="text" className="test" />
+          </Form>
+          <Form.Button type="submit" />
+        </Form.Context>
+      </div>
     )
       .find(Form.Button)
       .simulate('click')
@@ -110,11 +190,10 @@ describe('Form Context', () => {
       .simulate('click')
 
     setTimeout(() => {
-      stub.should.have.been.calledOnce();
-      stub.restore();
+      stub.should.have.been.calledOnce()
+      stub.restore()
       done()
     }, 10)
-
   })
 
   it('should fall-through to next context', done => {

@@ -4,7 +4,7 @@ import cn from 'classnames'
 
 import uniq from './utils/uniqMessage'
 import { filterAndMapMessages, namesForGroup } from './utils/ErrorUtils'
-import FormContext from './FormContext'
+import { withState } from './FormContext'
 
 let flatten = (arr, next) => arr.concat(next)
 const channels = ['messages', 'groups']
@@ -97,4 +97,40 @@ class Message extends React.PureComponent {
   }
 }
 
-export default Message
+function render(
+  messages,
+  groups,
+  {
+    for: names,
+    group,
+    className,
+    errorClass,
+    extract,
+    filter,
+    children,
+    ...props
+  }
+) {
+  messages = filterAndMapMessages({
+    messages,
+    names: names || namesForGroup(group, groups),
+  })
+
+  if (!messages || !Object.keys(messages).length) return null
+
+  return children(
+    Object.values(messages)
+      .reduce(flatten, [])
+      .filter((...args) => filter(...args, extract))
+      .map(extract),
+    {
+      ...props,
+      className: cn(className, errorClass),
+    }
+  )
+}
+
+export default withState(render, [
+  state => state.messages,
+  state => state.groups,
+])

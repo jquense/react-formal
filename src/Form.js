@@ -13,7 +13,7 @@ import errorManager from './errorManager'
 import errToJSON from './utils/errToJSON'
 import * as ErrorUtils from './utils/ErrorUtils'
 
-import FormContext from './FormContext'
+import FormContext, { withPublish } from './FormContext'
 
 let BindingContext = BC.ControlledComponent
 
@@ -372,19 +372,21 @@ class Form extends React.PureComponent {
       },
     }
 
-    props.publish('messages', props.errors)
-    props.publish('groups', this.groups)
-    props.publish('form', {
-      onSubmit: this.handleSubmit,
-      onValidate: this.handleValidationRequest,
-      addToGroup: (name, grpName) => {
-        let group = this.groups[grpName] || (this.groups[grpName] = [])
-        if (group.indexOf(name) !== -1) return
+    props.publish(state => {
+      state.messages = props.errors
+      state.groups = this.groups
+      state.form = {
+        onSubmit: this.handleSubmit,
+        onValidate: this.handleValidationRequest,
+        addToGroup: (name, grpName) =>
+          props.publish(state => {
+            let group = state.groups[grpName] || (state.groups[grpName] = [])
+            if (group.indexOf(name) !== -1) return
 
-        group.push(name)
-        setTimeout(() => props.publish('groups', this.groups))
-        return () => name => group.filter(i => i !== name)
-      },
+            group.push(name)
+            return () => name => group.filter(i => i !== name)
+          }),
+      }
     })
   }
 
@@ -392,7 +394,10 @@ class Form extends React.PureComponent {
     const { errors, publish, delay, schema } = this.props
     const schemaChanged = schema !== prevProps.schema
 
-    if (errors !== prevProps.errors) publish('messages', errors)
+    if (errors !== prevProps.errors)
+      publish(state => {
+        state.messages = errors
+      })
 
     if (schemaChanged) {
       this.enqueue(Object.keys(errors || {}))
@@ -520,7 +525,9 @@ class Form extends React.PureComponent {
 
   setSubmitting(submitting) {
     if (this.unmounted) return
-    this.props.publish('submitting', submitting)
+    this.props.publish(s => {
+      s.submitting = submitting
+    })
   }
 
   notify(event, ...args) {
@@ -589,7 +596,7 @@ class Form extends React.PureComponent {
   }
 }
 
-const PolyFilledForm = polyfill(Form)
+let DecoratedForm = withPublish(polyfill(Form))
 
 function maybeWarn(debug, errors, target) {
   if (!debug) return
@@ -610,9 +617,7 @@ const ControlledForm = uncontrollable(
    */
   React.forwardRef((props, ref) => (
     <FormContext>
-      <FormContext.Publisher bubbles group={props.formKey}>
-        {publish => <PolyFilledForm {...props} publish={publish} ref={ref} />}
-      </FormContext.Publisher>
+      <DecoratedForm {...props} ref={ref} />
     </FormContext>
   )),
   {
