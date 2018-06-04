@@ -3,7 +3,7 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import ReactDOM from 'react-dom'
 import types from 'react-formal-inputs'
-import yup from 'yup'
+import * as yup from 'yup'
 import Form from 'react-formal'
 
 import { LiveProvider, LiveEditor, LiveError, LivePreview } from 'react-live'

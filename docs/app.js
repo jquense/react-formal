@@ -7,7 +7,7 @@ import types from 'react-formal-inputs'
 import Form from '../src'
 import DateInput from '../src/inputs/Date'
 import Intro from './pages/intro.md'
-import yup from 'yup'
+import * as yup from 'yup'
 import { Router, Route, IndexRoute, Link } from 'react-router'
 
 import '@monastic.panic/component-playground/codemirror.css'

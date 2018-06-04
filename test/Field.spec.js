@@ -1,7 +1,7 @@
 import { mount } from 'enzyme'
 import React from 'react'
 import ReactDOMServer from 'react-dom/server'
-import yup from 'yup'
+import * as yup from 'yup'
 
 import inputs from '../src/inputs'
 import Form from '../src'

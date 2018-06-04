@@ -1,6 +1,6 @@
 import React from 'react'
 import { mount } from 'enzyme'
-import yup from 'yup'
+import * as yup from 'yup'
 
 import Form from '../src'
 

@@ -1,11 +1,11 @@
-module.exports = {
+module.exports = api => ({
   presets: [
     [
       'jason',
       {
         runtime: false,
-        modules: process.env.BABEL_ENV === 'esm' ? false : 'commonjs',
+        modules: api.env() === 'esm' ? false : 'commonjs',
       },
     ],
   ],
-}
+})
