@@ -3,7 +3,7 @@
   "version": "0.28.3",
   "description": "Classy HTML form management for React",
   "main": "lib/index.cjs.js",
-  "modules": "lib/index.mjs",
+  "modules": "es/index.js",
   "author": {
     "name": "Jason Quense",
     "email": "monastic.panic@gmail.com"
@@ -42,8 +42,8 @@
     "lint": "eslint src",
     "docs": "webpack --config docs/webpack.config.js --progress",
     "docs:watch": "webpack-dev-server --config docs/webpack.config.js",
-    "build:esm": " babel src --out-dir lib --delete-dir-on-start --env-name esm && file-butler mjs lib -d lib && rimraf lib/**/*.js lib/*.js lib/*.cjs.mjs",
-    "build": "npm run build:esm && babel src --out-dir lib --copy-files",
+    "build:esm": " babel src --out-dir es --delete-dir-on-start --env-name esm",
+    "build": "babel src --out-dir lib --delete-dir-on-start --copy-files && npm run build:esm",
     "prepublishOnly": "npm run build",
     "release": "release"
   },
@@ -58,13 +58,12 @@
     "prop-types": "^15.6.1",
     "property-expr": "^1.4.0",
     "react-lifecycles-compat": "^3.0.4",
-    "topeka": "^3.0.1",
+    "topeka": "^3.0.2",
     "uncontrollable": "^6.0.0",
     "warning": "^4.0.1",
     "yup": "^0.25.1"
   },
   "devDependencies": {
-    "@4c/file-butler": "^1.0.2",
     "@babel/cli": "^7.0.0-beta.49",
     "@babel/core": "^7.0.0-beta.49",
     "@monastic.panic/component-playground": "*",

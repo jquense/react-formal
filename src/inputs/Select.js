@@ -1,42 +1,40 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import { findDOMNode } from 'react-dom';
-import Input from './Input';
+import React from 'react'
+import PropTypes from 'prop-types'
+import ReactDOM from 'react-dom'
+import Input from './Input'
 
-let toArray = React.Children.toArray || function (children) {
-  let result = [];
-  React.Children.map(children, c => result.push(c))
-  return result;
-}
-
+let toArray =
+  React.Children.toArray ||
+  function(children) {
+    let result = []
+    React.Children.map(children, c => result.push(c))
+    return result
+  }
 
 class Select extends React.Component {
   static propTypes = {
     value: PropTypes.any,
     multiple: PropTypes.bool,
     onChange: PropTypes.func,
-    tagName: PropTypes.oneOfType([
-      PropTypes.string,
-      PropTypes.func,
-    ]),
+    tagName: PropTypes.oneOfType([PropTypes.string, PropTypes.func]),
   }
 
   handleChange = () => {
-    let { onChange, children } = this.props;
-    let node = findDOMNode(this)
+    let { onChange, children } = this.props
+    let node = ReactDOM.findDOMNode(this)
 
-    children = toArray(children);
+    children = toArray(children)
 
     if (!this.props.multiple) {
-      let selected = children[node.selectedIndex];
+      let selected = children[node.selectedIndex]
       return this.props.onChange(selected.props.value)
     }
 
-    let values = [];
+    let values = []
 
-    [].forEach.call(node.options, (option, i) => {
+    ;[].forEach.call(node.options, (option, i) => {
       if (option.selected) {
-        let selected = children[i];
+        let selected = children[i]
         values.push(selected.props.value)
       }
     })
@@ -45,10 +43,9 @@ class Select extends React.Component {
   }
 
   render() {
-    let { value, children, tagName = 'select', ...props } = this.props;
+    let { value, children, tagName = 'select', ...props } = this.props
 
-    if (value === null)
-      value = props.multiple ? [] : '';
+    if (value === null) value = props.multiple ? [] : ''
 
     return (
       <Input
@@ -57,11 +54,10 @@ class Select extends React.Component {
         value={value}
         onChange={this.handleChange}
       >
-        { children }
+        {children}
       </Input>
-    );
+    )
   }
-
 }
 
-export default Select;
+export default Select
