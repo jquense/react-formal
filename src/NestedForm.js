@@ -17,7 +17,7 @@ class NestedForm extends React.Component {
     name: PropTypes.string.isRequired,
     schema: PropTypes.object,
     errors: PropTypes.object,
-    onError: PropTypes.func.isRequired,
+    onError: PropTypes.func,
     meta: PropTypes.shape({
       errors: PropTypes.object.isRequired,
       onError: PropTypes.func.isRequired,
