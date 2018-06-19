@@ -55,14 +55,14 @@ export function pickMessages(messages, names) {
   return pick(messages, names)
 }
 
-export function namesForGroup(group, allGroups) {
-  if (!group || !allGroups) return []
-  group = group ? [].concat(group) : []
+// export function namesForGroup(group, allGroups) {
+//   if (!group || !allGroups) return []
+//   group = group ? [].concat(group) : []
 
-  return uniq(
-    group.reduce((fields, group) => fields.concat(allGroups[group]), [])
-  )
-}
+//   return uniq(
+//     group.reduce((fields, group) => fields.concat(allGroups[group]), [])
+//   )
+// }
 
 export function filter(messages, baseName) {
   const paths = Object.keys(messages)

@@ -10,7 +10,7 @@ describe('Form Context', () => {
     other: yup.string().default(''),
   })
 
-  it('should simulate an onSubmit in the Form', function(done) {
+  it.only('should simulate an onSubmit in the Form', function(done) {
     mount(
       <Form
         onSubmit={sinon.spy(() => done())}
@@ -25,7 +25,7 @@ describe('Form Context', () => {
       .simulate('click')
   })
 
-  it.only('should simulate an onSubmit from outside the form', function(done) {
+  it('should simulate an onSubmit from outside the form', function(done) {
     mount(
       <Form.Context>
         <Form
@@ -67,7 +67,7 @@ describe('Form Context', () => {
       .simulate('click')
   })
 
-  it('should not submit multiple unkeyed forms (last wins)', function(done) {
+  it('should not submit multiple unkeyed forms (last wins)', done => {
     mount(
       <Form.Context>
         <Form
@@ -131,6 +131,7 @@ describe('Form Context', () => {
           defaultValue={{}}
         >
           <Form.Field name="name" type="text" className="test" />
+          <Form.Message name="name" />
         </Form>
         <Form
           onSubmit={() => done(new Error('submitted wrong form!'))}

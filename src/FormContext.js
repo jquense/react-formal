@@ -1,51 +1,41 @@
 import PropTypes from 'prop-types'
 import React from 'react'
-import produce from 'immer'
 import mapContextToProps from 'react-context-toolbox/lib/mapContextToProps'
+import forwardRef from 'react-context-toolbox/lib/forwardRef'
 
-import { Consumer as FormConsumer } from './Form'
+// import { Consumer as FormConsumer } from './Form'
 
 export const DEFAULT_CHANNEL = '@@parent'
 
-// const ContextPublisher = React.createContext({ publish() {}, stop() {} })
-const State = React.createContext({})
-
+const State = React.createContext(/*{
+  formState: {},
+  combinedState: {},
+} */)
+let id = 0
 class FormContext extends React.Component {
   constructor(...args) {
     super(...args)
-
-    const publisher = {
-      stop: (channel, propagateIfPossible) => {
-        if (!this.shouldHandleChannel(channel, propagateIfPossible)) {
-          return this.getParent().stop(channel)
-        }
-
-        this.update(this.state, draft => {
-          draft.formState[channel] = null
-        })
-      },
-      publish: (channel, fn, propagateIfPossible) => {
-        if (!this.shouldHandleChannel(channel, propagateIfPossible))
-          return this.getParent().publish(channel, args)
-
-        this.update(this.state, draft => {
-          draft.formState[channel] = draft.formState[channel] || {}
-          fn(draft.formState[channel])
-        })
-      },
-    }
+    this.id = id++
 
     this.state = {
       formState: {},
       combinedState: {},
-      publisher,
+      update: this.update,
+      defaultKey: this.props.defaultKey || DEFAULT_CHANNEL,
     }
   }
 
-  static getDerivededStateFromProps({ parentContext }, prevState) {
-    if (!parentContext) return
+  static getDerivedStateFromProps(
+    { parentContext, defaultKey = DEFAULT_CHANNEL },
+    prevState
+  ) {
+    if (!parentContext)
+      return {
+        combinedState: prevState.formState,
+      }
+
     return {
-      parentContext,
+      defaultKey,
       combinedState: {
         ...parentContext.combinedState,
         ...prevState.formState,
@@ -53,38 +43,47 @@ class FormContext extends React.Component {
     }
   }
 
-  update = (channel, fn) => {
-    const nextState = produce(this.state, draft => {
-      fn(draft)
-      if (!draft.parentContext) {
-        draft.combinedState = draft.formState
-        return
-      }
-
-      draft.combinedState = {
-        ...draft.parentContext.combinedState,
-        ...draft.formState,
-      }
-    })
-
-    if (nextState !== this.state) {
-      console.log('updating state', nextState)
-      this.setState(nextState)
-    }
-  }
-
   getParent() {
     return this.props.parentContext && this.props.parentContext.publisher
   }
 
-  shouldHandleChannel(channel, force) {
-    return !this.getParent() || (channel === DEFAULT_CHANNEL && !force)
+  update = (channel, fn, propagateIfPossible) => {
+    const { parentContext } = this.props
+
+    if (parentContext) {
+      parentContext.update(channel, fn, false)
+
+      if (!propagateIfPossible) return
+      // console.log('publish to parent', this.id)
+    }
+
+    this.setState(({ formState }) => {
+      const channelState = formState[channel]
+      const nextChannelState = fn(channelState || {})
+      // TODO: optimize the nullish case
+      if (nextChannelState === channelState) return null
+      // console.log(this.id, 'updating for channel: ', channel)
+      return {
+        formState: {
+          ...formState,
+          [channel]: nextChannelState,
+        },
+      }
+    })
+  }
+
+  publish = fn => {
+    this.update(this.props.defaultKey || DEFAULT_CHANNEL, fn, true)
   }
 
   render() {
-    console.log('Reeender', this.state)
+    // console.log('Reeender', this.id)
     return (
-      <State.Provider value={this.state}>{this.props.children}</State.Provider>
+      <State.Provider value={this.state}>
+        {typeof this.props.children === 'function'
+          ? this.props.children(this.publish)
+          : this.props.children}
+      </State.Provider>
     )
   }
 }
@@ -95,7 +94,6 @@ export const withPublish = Component =>
     ({ publisher }, props) => ({
       publish: fn =>
         publisher.publish(props.formKey || DEFAULT_CHANNEL, fn, true),
-      stop: () => publisher.stop(props.formKey || DEFAULT_CHANNEL, true),
     }),
     Component
   )
@@ -106,119 +104,72 @@ class ConsumerIndirection extends React.Component {
     return state.some((observedState, i) => observedState !== currentState[i])
   }
   render() {
-    const { children, state } = this.props
+    const {
+      children,
+      state,
+      Component,
+      mapToProps,
+      innerRef,
+      props,
+    } = this.props
+    if (Component)
+      return <Component ref={innerRef} {...mapToProps(state, props)} />
+
     return children(state)
   }
 }
 
-export const withState = (render, selectors) => {
-  return React.forwardRef((props, ref) => (
-    <FormConsumer.Consumer>
-      {({ formKey }) => {
-        const key = props.formKey || formKey || DEFAULT_CHANNEL
-        return (
-          <State.Consumer>
-            {fullState =>
-              fullState.combinedState[key] ? (
-                <ConsumerIndirection
-                  state={selectors.map(fn => fn(fullState.combinedState[key]))}
-                >
-                  {state => render(...state, props, ref)}
-                </ConsumerIndirection>
-              ) : null
-            }
-          </State.Consumer>
-        )
-      }}
-    </FormConsumer.Consumer>
-  ))
+export const withState = (render, selectors, { displayName, ...rest } = {}) => {
+  const fn = (props, ref) => {
+    return (
+      <State.Consumer>
+        {context => {
+          const key =
+            props.formKey || (context ? context.defaultKey : DEFAULT_CHANNEL)
+          const state = context && context.combinedState[key]
+
+          return (
+            <ConsumerIndirection state={selectors.map(fn => fn(state, props))}>
+              {state => render(...state, props, ref)}
+            </ConsumerIndirection>
+          )
+        }}
+      </State.Consumer>
+    )
+  }
+  fn.displayName = displayName
+  return Object.assign(React.forwardRef(fn), rest)
 }
 
-// class Publisher extends React.Component {
-//   static propTypes = {
-//     group: PropTypes.string,
-//     bubbles: PropTypes.bool,
-//   }
-//   static contextTypes = {
-//     [contextKey]: contextTypes,
-//   }
+export const withState2 = (Component, selectors, mapToProps, staticProps) => {
+  return forwardRef((props, ref) => {
+    return (
+      <State.Consumer>
+        {context => {
+          const key =
+            props.formKey || (context ? context.defaultKey : DEFAULT_CHANNEL)
 
-//   constructor(...args) {
-//     super(...args)
-//     this.group = this.props.group || DEFAULT_CHANNEL
-//     this.bubbles = this.props.bubbles
-//     this.channels = []
-//   }
+          const state = selectors.map(fn =>
+            fn(context && context.combinedState[key], props)
+          )
 
-//   componentWillUnmount() {
-//     if (!this.context[contextKey]) return
-//     this.channels.forEach(channel =>
-//       this.context[contextKey].stop(channel, this.bubbles)
-//     )
-//   }
+          return (
+            <ConsumerIndirection
+              state={state}
+              mapToProps={mapToProps}
+              Component={Component}
+              innerRef={ref}
+              props={props}
+            />
+          )
+        }}
+      </State.Consumer>
+    )
+  }, staticProps)
+}
 
-//   publish = (key, args) => {
-//     if (!this.context[contextKey]) return
-
-//     const channel = `${this.group}:${key}`
-//     this.channels.push(channel)
-//     this.context[contextKey].publish(channel, args, this.bubbles)
-//   }
-
-//   render() {
-//     return this.props.children(this.publish)
-//   }
-// }
-
-// class Subscriber extends React.Component {
-//   static propTypes = {
-//     channels: PropTypes.array.isRequired,
-//     formKey: PropTypes.oneOfType([
-//       PropTypes.string.isRequired,
-//       PropTypes.array.isRequired,
-//     ]),
-//   }
-
-//   static contextTypes = {
-//     [contextKey]: contextTypes,
-//   }
-//   componentWillUnmount() {
-//     this.unmounted = true
-//     this.subs && this.subs.forEach(fn => fn())
-//   }
-//   update = () => {
-//     if (!this.unmounted) this.forceUpdate()
-//   }
-//   subscribe(contextFormKey) {
-//     if (this.subs || !this.context[contextKey]) return
-//     const { formKey, channels } = this.props
-
-//     let key = formKey || contextFormKey || DEFAULT_CHANNEL
-//     this.channels = []
-//     channels.map(channel => {
-//       this.channels.push(`${key}:${channel}`)
-//       this.context[contextKey].subscribe(`${key}:${channel}`, this.update)
-//     })
-//   }
-
-//   get() {
-//     if (!this.context[contextKey]) return []
-//     return this.channels.map(channel => this.context[contextKey].get(channel))
-//   }
-
-//   render() {
-//     return (
-//       <FormConsumer>
-//         {({ formKey }) => {
-//           this.subscribe(formKey)
-//           return this.props.children(...this.get())
-//         }}
-//       </FormConsumer>
-//     )
-//   }
-// }
-
-// FormContext.Publisher = Publisher
-// FormContext.Subscriber = Subscriber
-
-export default FormContext
+export default mapContextToProps(
+  State.Consumer,
+  parentContext => ({ parentContext }),
+  FormContext
+)

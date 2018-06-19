@@ -9,7 +9,6 @@ const sleep = ms => new Promise(y => setTimeout(() => y(), ms))
 describe('Trigger', () => {
   const schema = yup.object({ fieldA: yup.mixed(), fieldB: yup.mixed() })
 
-
   it('should simulate event for name', () => {
     let spy = sinon.spy(),
       wrapper = mount(
@@ -46,7 +45,7 @@ describe('Trigger', () => {
     spy.args[0][0].fields.should.eql(['fieldA', 'fieldB'])
   })
 
-  it('should simulate group', function(done) {
+  it('should simulate for `triggers`', function(done) {
     function spy({ fields }) {
       fields.should.eql(['fieldA'])
       done()
@@ -55,15 +54,15 @@ describe('Trigger', () => {
     let wrapper = mount(
       <Form schema={schema} onValidate={spy}>
         <div>
-          <Form.Trigger for={'fieldA'} group="foo">
+          <Form.Trigger for={'fieldA'}>
             {({ props }) => <input {...props} />}
           </Form.Trigger>
           <Form.Trigger for={'fieldB'}>
             {({ props }) => <input {...props} />}
           </Form.Trigger>
 
-          <Form.Trigger events="onClick" group="foo">
-          {({ props }) => <button {...props} />}
+          <Form.Trigger events="onClick" triggers={['fieldA']}>
+            {({ props }) => <button {...props} />}
           </Form.Trigger>
         </div>
       </Form>
@@ -72,20 +71,20 @@ describe('Trigger', () => {
     wrapper.find('button').simulate('click')
   })
 
-  it('should trigger a submit', function(done) {
+  it('should trigger a submit', done => {
     let wrapper = mount(
       <Form schema={schema} onSubmit={() => done()}>
         <div>
-          <Form.Trigger for={'fieldA'} group="foo">
+          <Form.Trigger for="fieldA">
             {({ props }) => <input {...props} />}
           </Form.Trigger>
 
-          <Form.Trigger for={'fieldB'}>
+          <Form.Trigger for="fieldB">
             {({ props }) => <input {...props} />}
           </Form.Trigger>
 
-          <Form.Trigger events="onClick" group="@submit">
-          {({ props }) => <button {...props} />}
+          <Form.Trigger events="onClick">
+            {({ props }) => <button {...props} />}
           </Form.Trigger>
         </div>
       </Form>
@@ -101,13 +100,13 @@ describe('Trigger', () => {
       <Form schema={schema} submitForm={spy} formKey="foo">
         <div>
           <Form.Trigger for="fieldA">
-            {({ submitting }) => `submitting: ${submitting}`}
+            {({ submitting }) => <span>submitting: {String(submitting)}</span>}
           </Form.Trigger>
         </div>
       </Form>
     )
 
-    let trigger = wrapper.find(Form.Trigger)
+    let trigger = wrapper.find('span')
 
     trigger.text().should.equal('submitting: false')
 

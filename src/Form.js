@@ -30,13 +30,6 @@ let splitPath = path => {
 
 let isValidationError = err => err && err.name === 'ValidationError'
 
-export const { Provider, Consumer } = React.createContext({
-  context: null,
-  noValidate: false,
-  onFieldError() {},
-  getSchemaForPath() {},
-})
-
 const YUP_OPTIONS = [
   'context',
   'stripUnknown',
@@ -334,24 +327,13 @@ class Form extends React.PureComponent {
     setter,
   }
 
-  static getDerivedStateFromProps(
-    { formKey, schema, context, noValidate },
-    prevState
-  ) {
+  static getDerivedStateFromProps({ schema, noValidate }, prevState) {
     if (schema === prevState.schema && prevState.noValidate === noValidate)
       return null
 
-    const { getSchemaForPath, onFieldError } = prevState.formContext
     return {
       schema,
       noValidate,
-      formContext: {
-        getSchemaForPath,
-        onFieldError,
-        formKey,
-        context,
-        noValidate,
-      },
     }
   }
 
@@ -359,35 +341,20 @@ class Form extends React.PureComponent {
     super(props, context)
 
     this.queue = []
-    this.groups = Object.create(null)
     this.errors = errorManager(this.validatePath)
 
-    this.state = {
-      formContext: {
-        formKey: props.formKey,
-        getSchemaForPath: this.getSchemaForPath,
-        onFieldError: this.handleFieldError,
-        noValidate: props.noValidate,
-        context: props.context,
-      },
-    }
+    this.state = {}
 
-    props.publish(state => {
-      state.messages = props.errors
-      state.groups = this.groups
-      state.form = {
-        onSubmit: this.handleSubmit,
-        onValidate: this.handleValidationRequest,
-        addToGroup: (name, grpName) =>
-          props.publish(state => {
-            let group = state.groups[grpName] || (state.groups[grpName] = [])
-            if (group.indexOf(name) !== -1) return
-
-            group.push(name)
-            return () => name => group.filter(i => i !== name)
-          }),
-      }
-    })
+    props.publish(state => ({
+      ...state,
+      messages: props.errors,
+      context: props.context,
+      noValidate: false,
+      onSubmit: this.handleSubmit,
+      onValidate: this.handleValidationRequest,
+      onFieldError: this.handleFieldError,
+      getSchemaForPath: this.getSchemaForPath,
+    }))
   }
 
   componentDidUpdate(prevProps) {
@@ -395,9 +362,10 @@ class Form extends React.PureComponent {
     const schemaChanged = schema !== prevProps.schema
 
     if (errors !== prevProps.errors)
-      publish(state => {
-        state.messages = errors
-      })
+      publish(state => ({
+        ...state,
+        messages: errors,
+      }))
 
     if (schemaChanged) {
       this.enqueue(Object.keys(errors || {}))
@@ -525,9 +493,9 @@ class Form extends React.PureComponent {
 
   setSubmitting(submitting) {
     if (this.unmounted) return
-    this.props.publish(s => {
-      s.submitting = submitting
-    })
+    this.props.publish(
+      s => (s.submitting === submitting ? s : { ...s, submitting })
+    )
   }
 
   notify(event, ...args) {
@@ -568,6 +536,8 @@ class Form extends React.PureComponent {
     let props = omit(this.props, [
       ...YUP_OPTIONS,
       ...Object.keys(Form.propTypes),
+      'stop',
+      'publish',
     ])
 
     delete props.publish
@@ -582,21 +552,19 @@ class Form extends React.PureComponent {
       children = <Element {...props}>{children}</Element>
     }
     return (
-      <Provider value={this.state.formContext}>
-        <BindingContext
-          value={value}
-          onChange={onChange}
-          getter={getter}
-          setter={setter}
-        >
-          {children}
-        </BindingContext>
-      </Provider>
+      <BindingContext
+        value={value}
+        onChange={onChange}
+        getter={getter}
+        setter={setter}
+      >
+        {children}
+      </BindingContext>
     )
   }
 }
 
-let DecoratedForm = withPublish(polyfill(Form))
+polyfill(Form)
 
 function maybeWarn(debug, errors, target) {
   if (!debug) return
@@ -615,11 +583,14 @@ const ControlledForm = uncontrollable(
    * Wraps each Form in it's own Context, so it can pass context state to
    * it's own children.
    */
-  React.forwardRef((props, ref) => (
-    <FormContext>
-      <DecoratedForm {...props} ref={ref} />
-    </FormContext>
-  )),
+  React.forwardRef((props, ref) => {
+    const key = props.formKey
+    return (
+      <FormContext defaultKey={key}>
+        {publish => <Form {...props} ref={ref} publish={publish} />}
+      </FormContext>
+    )
+  }),
   {
     value: 'onChange',
     errors: 'onError',

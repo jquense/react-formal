@@ -242,14 +242,17 @@ describe('Field', () => {
   })
 
   describe('meta', () => {
-    it('should pass meta to form', () => {
+    it('should pass meta to form', done => {
       let Input = ({ meta }) => {
+        //first pass isn't correct since form hasn't propagated it's state yet.
+        if (!meta.invalid) return null
+
         meta.invalid.should.equals(true)
         meta.valid.should.equals(false)
         meta.errors.should.eqls({
           name: 'foo',
         })
-
+        done()
         return null
       }
 

@@ -3,11 +3,11 @@ import PropTypes from 'prop-types'
 import cn from 'classnames'
 
 import uniq from './utils/uniqMessage'
-import { filterAndMapMessages, namesForGroup } from './utils/ErrorUtils'
+import { filterAndMapMessages } from './utils/ErrorUtils'
 import { withState } from './FormContext'
 
 let flatten = (arr, next) => arr.concat(next)
-const channels = ['messages', 'groups']
+const channels = ['messages']
 
 /**
  * Represents a Form validation error message. Only renders when the
@@ -21,7 +21,7 @@ class Message extends React.PureComponent {
       PropTypes.string,
       PropTypes.arrayOf(PropTypes.string),
     ]),
-    group: PropTypes.string,
+
     formKey: PropTypes.string,
 
     /**
@@ -61,7 +61,6 @@ class Message extends React.PureComponent {
   render() {
     let {
       for: names,
-      group,
       formKey,
       className,
       errorClass,
@@ -73,10 +72,10 @@ class Message extends React.PureComponent {
 
     return (
       <FormContext.Subscriber formKey={formKey} channels={channels}>
-        {(messages, groups) => {
+        {messages => {
           messages = filterAndMapMessages({
             messages,
-            names: names || namesForGroup(group, groups),
+            names,
           })
 
           if (!messages || !Object.keys(messages).length) return null
@@ -97,24 +96,11 @@ class Message extends React.PureComponent {
   }
 }
 
-function render(
+function FormMessage(
   messages,
-  groups,
-  {
-    for: names,
-    group,
-    className,
-    errorClass,
-    extract,
-    filter,
-    children,
-    ...props
-  }
+  { for: names, className, errorClass, extract, filter, children, ...props }
 ) {
-  messages = filterAndMapMessages({
-    messages,
-    names: names || namesForGroup(group, groups),
-  })
+  messages = filterAndMapMessages({ messages, names })
 
   if (!messages || !Object.keys(messages).length) return null
 
@@ -130,7 +116,7 @@ function render(
   )
 }
 
-export default withState(render, [
-  state => state.messages,
-  state => state.groups,
-])
+// FormMessage.propTypes = propTypes
+// FormMessage.defaultProps = defaultProps;
+
+export default withState(FormMessage, [state => state && state.messages])

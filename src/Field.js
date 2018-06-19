@@ -10,7 +10,8 @@ import { Consumer } from './Form'
 import isNativeType from './utils/isNativeType'
 import resolveFieldComponent from './utils/resolveFieldComponent'
 import FormTrigger from './FormTrigger'
-import { inclusiveMapMessages } from './utils/ErrorUtils'
+import { inclusiveMapMessages, filterAndMapMessages } from './utils/ErrorUtils'
+import { withState } from './FormContext'
 
 function notify(handler, args) {
   handler && handler(...args)
@@ -103,7 +104,6 @@ class Field extends React.PureComponent {
   }
 
   constructComponent = (bindingProps, triggerMeta = {}) => {
-    console.log('trigger', triggerMeta)
     let { formContext } = this
     let {
       name,
@@ -157,6 +157,8 @@ class Field extends React.PureComponent {
     }
 
     if (this.shouldValidate()) {
+      // console.log('trigger', triggerMeta)
+
       let messages = triggerMeta.messages
       let invalid = messages && !!Object.keys(messages).length
 
@@ -180,57 +182,45 @@ class Field extends React.PureComponent {
   }
 
   render() {
+    let {
+      name,
+      exclusive,
+      mapFromValue,
+      alsoValidates,
+      events = config.events,
+    } = this.props
+
+    let mapMessages = !exclusive ? inclusiveMapMessages : undefined
+
+    if (typeof mapFromValue !== 'object')
+      mapFromValue = { [name]: mapFromValue }
+
+    if (!this.shouldValidate()) {
+      return (
+        <Binding bindTo={this.bindTo} mapValue={mapFromValue}>
+          {this.constructComponent}
+        </Binding>
+      )
+    }
+
+    let triggers
+    if (alsoValidates != null) {
+      triggers = [name].concat(alsoValidates)
+    }
+
     return (
-      <Consumer>
-        {formContext => {
-          let {
-            name,
-            group,
-            exclusive,
-            mapFromValue,
-            alsoValidates,
-            events = config.events,
-          } = this.props
-
-          this.formContext = formContext
-
-          let mapMessages = !exclusive ? inclusiveMapMessages : undefined
-
-          if (typeof mapFromValue !== 'object')
-            mapFromValue = { [name]: mapFromValue }
-
-          if (!this.shouldValidate()) {
-            return (
-              <Binding bindTo={this.bindTo} mapValue={mapFromValue}>
-                {this.constructComponent}
-              </Binding>
-            )
-          }
-
-          let triggers
-          if (alsoValidates != null) {
-            triggers = [name].concat(alsoValidates)
-          }
-
-          return (
-            <Binding bindTo={this.bindTo} mapValue={mapFromValue}>
-              {bindingProps => (
-                <FormTrigger
-                  for={name}
-                  group={group}
-                  events={events}
-                  triggers={triggers}
-                  mapMessages={mapMessages}
-                >
-                  {triggerMeta =>
-                    this.constructComponent(bindingProps, triggerMeta)
-                  }
-                </FormTrigger>
-              )}
-            </Binding>
-          )
-        }}
-      </Consumer>
+      <Binding bindTo={this.bindTo} mapValue={mapFromValue}>
+        {bindingProps => (
+          <FormTrigger
+            for={name}
+            events={events}
+            triggers={triggers}
+            mapMessages={mapMessages}
+          >
+            {triggerMeta => this.constructComponent(bindingProps, triggerMeta)}
+          </FormTrigger>
+        )}
+      </Binding>
     )
   }
 
@@ -259,41 +249,6 @@ Field.propTypes = {
    * ```
    */
   name: PropTypes.string.isRequired,
-
-  /**
-   * Group Fields together with a common `group` name. Groups can be
-   * validated together, helpful for multi-part forms.
-   *
-   * ```editable
-   * <Form
-   *   schema={modelSchema}
-   *   defaultValue={modelSchema.default()}
-   * >
-   *
-   *   <Form.Field
-   *     name='name.first'
-   *     group='name'
-   *     placeholder='first'
-   *   />
-   *   <Form.Field
-   *     name='name.last'
-   *     group='name'
-   *     placeholder='surname'
-   *   />
-   *   <Form.Message for={['name.first', 'name.last']}/>
-   *
-   *   <Form.Field
-   *     name='dateOfBirth'
-   *     placeholder='dob'
-   *   />
-   *
-   *   <Form.Button group='name'>
-   *     Validate Name
-   *   </Form.Button>
-   * </Form>
-   * ```
-   */
-  group: PropTypes.string,
 
   /**
    * The Component Input the form should render. You can sepcify a builtin type
@@ -484,3 +439,7 @@ Field.propTypes = {
 export default React.forwardRef((props, ref) => (
   <Field fieldRef={ref} {...props} />
 ))
+// const _st = {}
+// withState({ messages, submitting }) => {
+
+// }, state => state || _st)
