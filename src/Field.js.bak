@@ -3,10 +3,10 @@ import omit from 'lodash/omit'
 import React from 'react'
 import PropTypes from 'prop-types'
 import { Binding } from 'topeka'
-import warning from 'warning'
-import memoize from 'memoize-one'
+import invariant from 'invariant'
 
 import config from './config'
+import { Consumer } from './Form'
 import isNativeType from './utils/isNativeType'
 import resolveFieldComponent from './utils/resolveFieldComponent'
 import FormTrigger from './FormTrigger'
@@ -15,6 +15,20 @@ import { withState } from './FormContext'
 
 function notify(handler, args) {
   handler && handler(...args)
+}
+
+function getValue(value, bindTo, getter) {
+  if (typeof bindTo === 'function') {
+    return bindTo(value, getter)
+  }
+  if (typeof bindTo === 'string') {
+    return getter(bindTo, value)
+  }
+
+  return Object.keys(bindTo).reduce((obj, key) => {
+    obj[key] = getValue(value, bindTo[key], getter)
+    return obj
+  }, {})
 }
 
 /**
@@ -62,137 +76,101 @@ class Field extends React.PureComponent {
   constructor(...args) {
     super(...args)
     this.eventHandlers = {}
-
     this.createEventHandlers(this.props)
-
-    this.memoFilterAndMapMessages = memoize(
-      filterAndMapMessages,
-      (a, b) =>
-        a.messages === b.messages &&
-        a.names === b.names &&
-        a.mapMessages === b.mapMessages
-    )
   }
 
-  buildMeta() {
-    let {
-      name,
-      exclusive,
-      messages,
-      submitting,
-      noValidate,
-      formMethods,
-      yupContext,
-      errorClass = config.errorClass,
-    } = this.props
+  bindTo = (_value, getter) => {
+    let { mapToValue, name } = this.props
+    let value = getValue(_value, mapToValue || name, getter)
 
-    let schema
-    try {
+    // ensure that no inputs are left uncontrolled
+    if (value === undefined) value = null
 
-      schema = formMethods && name && formMethods.getSchemaForPath(name)
-    } catch (err) { /* ignore */ } // prettier-ignore
-
-    let meta = {
-      schema,
-      errorClass,
-      context: yupContext,
-      onError: this.handleFieldError,
-    }
-
-    if (!noValidate) {
-      const errors = this.memoFilterAndMapMessages({
-        messages,
-        names: name,
-        mapMessages: !exclusive ? inclusiveMapMessages : undefined,
-      })
-
-      meta.errors = errors
-      meta.invalid = !!Object.keys(errors).length
-      meta.valid = !meta.invalid
-      meta.submitting = submitting
-    }
-
-    return meta
+    return value
   }
+
   // create a set of handlers with a stable identity so as not to
   // thwart SCU checks
   createEventHandlers({ events = config.events }) {
     if (events == null) return
     ;[].concat(events).forEach(event => {
       let handler = (...args) => {
-        notify(this.props[event], args)
-        notify(this.props.bindingProps[event], args)
-
-        this.handleValidateField(event, args)
+        notify(this._fieldProps[event], args)
+        notify(this._bindingProps[event], args)
+        notify(this._triggerProps[event], args)
       }
-
       this.eventHandlers[event] = this.eventHandlers[event] || handler
     })
   }
 
-  handleValidateField(event, args) {
-    const { name, alsoValidates, formMethods, noValidate } = this.props
-
-    if (noValidate || !formMethods) return
-
-    let fieldsToValidate = [name]
-    if (alsoValidates != null) fieldsToValidate.concat(alsoValidates)
-
-    formMethods.onValidate(fieldsToValidate, event, args)
-  }
-
-  handleFieldError = errors => {
-    let { name, formMethods } = this.props
-
-    return formMethods.onFieldError(name, errors)
-  }
-
-  render() {
+  constructComponent = (bindingProps, triggerMeta = {}) => {
+    let { formContext } = this
     let {
       name,
       type,
       children,
       className,
       fieldRef,
-      noMeta,
-      noValidate,
       noResolveType,
-      bindingProps,
-      formMethods,
+      errorClass = config.errorClass,
     } = this.props
 
-    let fieldProps = Object.assign(
+    let fieldProps = omit(this.props, Object.keys(Field.propTypes))
+
+    fieldProps = Object.assign(
       { name },
-      omit(this.props, Object.keys(Field.propTypes)),
+      (this._fieldProps = fieldProps),
+      (this._bindingProps = bindingProps),
+      (this._triggerProps = triggerMeta.props || {}),
       this.eventHandlers
     )
 
-    // ensure that no inputs are left uncontrolled
-    fieldProps.value =
-      bindingProps.value === undefined ? null : bindingProps.value
-
-    const meta = this.buildMeta()
+    let schema
+    try {
+      schema = name && formContext.getSchemaForPath(name)
+    } catch (err) {
+      /* ignore */
+    }
 
     if (process.env.NODE_ENV !== 'production')
-      warning(
-        !formMethods || noValidate || !name || meta.schema,
+      invariant(
+        formContext.noValidate || !name || schema,
         `There is no corresponding schema defined for this field: "${name}" ` +
           "Each Field's `name` prop must be a valid path defined by the parent Form schema"
       )
 
     let [Component, resolvedType] = !noResolveType
-      ? resolveFieldComponent(type, meta.schema)
+      ? resolveFieldComponent(type, schema)
       : [null, type]
 
     fieldProps.type = isNativeType(resolvedType) ? resolvedType : undefined
 
-    meta.resolvedType = resolvedType
-
-    if (!noValidate) {
-      fieldProps.className = cn(className, meta.invalid && meta.errorClass)
+    let meta = {
+      resolvedType,
+      errorClass,
+      schema,
+      onError: errors => formContext.onFieldError(name, errors),
     }
 
-    if (!noMeta) fieldProps.meta = meta
+    if (formContext.context) {
+      meta.context = formContext.context // lol
+    }
+
+    if (this.shouldValidate()) {
+      // console.log('trigger', triggerMeta)
+
+      let messages = triggerMeta.messages
+      let invalid = messages && !!Object.keys(messages).length
+
+      meta.errors = messages
+      meta.invalid = invalid
+      meta.valid = !meta.invalid
+      meta.submitting = triggerMeta.submitting
+
+      fieldProps.className = cn(className, invalid && errorClass)
+    }
+
+    if (!this.props.noMeta) fieldProps.meta = meta
     if (fieldRef) fieldProps.ref = fieldRef
 
     // Escape hatch for more complex Field types.
@@ -201,6 +179,44 @@ class Field extends React.PureComponent {
     }
 
     return <Component {...fieldProps}>{children}</Component>
+  }
+
+  render() {
+    let {
+      name,
+      exclusive,
+      mapFromValue,
+      alsoValidates,
+      events = config.events,
+    } = this.props
+
+    let mapMessages = !exclusive ? inclusiveMapMessages : undefined
+
+    if (typeof mapFromValue !== 'object')
+      mapFromValue = { [name]: mapFromValue }
+
+    if (!this.shouldValidate()) {
+      return (
+        <Binding bindTo={this.bindTo} mapValue={mapFromValue}>
+          {this.constructComponent}
+        </Binding>
+      )
+    }
+
+    let triggers
+    if (alsoValidates != null) {
+      triggers = [name].concat(alsoValidates)
+    }
+
+    return (
+      <Binding bindTo={this.bindTo} mapValue={mapFromValue}>
+        {bindingProps => this.constructComponent(bindingProps)}
+      </Binding>
+    )
+  }
+
+  shouldValidate() {
+    return !(this.props.noValidate || this.formContext.noValidate)
   }
 }
 
@@ -330,7 +346,7 @@ Field.propTypes = {
    * />
    * ```
    */
-  mapToValue: PropTypes.func,
+  mapToValue: PropTypes.oneOfType([PropTypes.func, PropTypes.object]),
 
   /**
    * The css class added to the Field Input when it fails validation
@@ -409,55 +425,12 @@ Field.propTypes = {
 
   /** @private */
   noResolveType: PropTypes.bool,
-  /** @private */
-  bindingProps: PropTypes.object,
-  /** @private */
-  yupContext: PropTypes.any,
-  /** @private */
-  messages: PropTypes.object,
-  /** @private */
-  formMethods: PropTypes.object,
-  /** @private */
-  submitting: PropTypes.bool,
 }
 
-export default withState(
-  (
-    formMethods,
-    messages = {},
-    submitting,
-    noValidate,
-    yupContext,
-    props,
-    ref
-  ) => {
-    let { mapToValue, mapFromValue, name, fieldRef, ...rest } = props
+export default React.forwardRef((props, ref) => (
+  <Field fieldRef={ref} {...props} />
+))
+// const _st = {}
+// withState({ messages, submitting }) => {
 
-    return (
-      <Binding bindTo={mapToValue || name} mapValue={mapFromValue}>
-        {bindingProps => (
-          <Field
-            {...rest}
-            name={name}
-            fieldRef={fieldRef || ref}
-            bindingProps={bindingProps}
-            submitting={submitting}
-            messages={messages}
-            yupContext={yupContext}
-            formMethods={formMethods}
-            noValidate={
-              props.noValidate == null ? noValidate : props.noValidate
-            }
-          />
-        )}
-      </Binding>
-    )
-  },
-  [
-    state => state.formMethods,
-    state => state.messages,
-    state => state.submitting,
-    state => state.noValidate,
-    state => state.yupContext,
-  ]
-)
+// }, state => state || _st)

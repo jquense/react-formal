@@ -13,7 +13,7 @@ import errorManager from './errorManager'
 import errToJSON from './utils/errToJSON'
 import * as ErrorUtils from './utils/ErrorUtils'
 
-import FormContext, { withPublish } from './FormContext'
+import FormContext from './FormContext'
 
 let BindingContext = BC.ControlledComponent
 
@@ -348,12 +348,14 @@ class Form extends React.PureComponent {
     props.publish(state => ({
       ...state,
       messages: props.errors,
-      context: props.context,
-      noValidate: false,
-      onSubmit: this.handleSubmit,
-      onValidate: this.handleValidationRequest,
-      onFieldError: this.handleFieldError,
-      getSchemaForPath: this.getSchemaForPath,
+      yupContext: props.context,
+      noValidate: props.noValidate, // FIXME: should update
+      formMethods: {
+        onSubmit: this.handleSubmit,
+        onValidate: this.handleValidationRequest,
+        onFieldError: this.handleFieldError,
+        getSchemaForPath: this.getSchemaForPath,
+      },
     }))
   }
 

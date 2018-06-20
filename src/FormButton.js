@@ -1,17 +1,12 @@
 import chain from 'chain-function'
 import PropTypes from 'prop-types'
 import React from 'react'
+import warning from 'warning'
 
-import Trigger from './FormTrigger'
+import { withState } from './FormContext'
 
-function mergeWithEvents(events, objects) {
-  let result = Object.assign({}, ...objects)
-  if (events)
-    [].concat(events).forEach(event => {
-      let handlers = objects.map(p => p[event])
-      result[event] = chain(...handlers)
-    })
-  return result
+function notify(handler, args) {
+  handler && handler(...args)
 }
 
 /**
@@ -25,11 +20,11 @@ class FormButton extends React.Component {
     type: PropTypes.oneOf(['button', 'submit']),
 
     /**
-     * Specify a group to validate, if empty the entire form will be validated.
+     * Specify particular fields to validate in the related form. If empty the entire form will be validated.
      * If the button type is 'submit' the group will be ignored and the
      * entire form will be validated prior to submission.
      */
-    group: PropTypes.string,
+    triggers: PropTypes.arrayOf(PropTypes.string.isRequired),
 
     /**
      * The key of `Form` that "owns" this button. Validation will be triggered
@@ -64,20 +59,61 @@ class FormButton extends React.Component {
     events: ['onClick'],
   }
 
+  constructor(...args) {
+    super(...args)
+    this.eventHandlers = {}
+
+    const { events } = this.props
+
+    if (events) {
+      ;[].concat(events).forEach(event => {
+        let handler = (...args) => {
+          this.props[event] && this.props[event](args)
+
+          this.handleValidateField(event, args)
+        }
+
+        this.eventHandlers[event] = this.eventHandlers[event] || handler
+      })
+    }
+  }
+
+  handleSubmit(event, args) {
+    const { formMethods, triggers, formKey } = this.props
+    if (!formMethods) {
+      return warning(
+        false,
+        (!triggers ? 'A Form submit event ' : `A validation for ${triggers} `) +
+          `was triggered from a component outside the context of a Form. ` +
+          `The Field, Button, or Trigger should be wrapped in a Form or Form.Context component` +
+          (formKey ? ` with the formKey: "${formKey}" ` : '.')
+      )
+    }
+
+    if (triggers && triggers.length)
+      formMethods.onValidate(triggers, event, args)
+  }
   render() {
     let {
-      group,
       events,
+      triggers,
       component: Component,
       formKey,
       children,
       ...props
     } = this.props
 
-    if (props.type.toLowerCase() === 'submit') group = '@submit'
+    if (events)
+      for (let event of [].concat(events))
+        this.eventHandlers[event] =
+          this.eventHandlers[event] ||
+          ((...args) => {
+            this.props[event] && this.props[event](args)
+            this.handleSubmit()
+          })
 
     return (
-      <Trigger formKey={formKey} group={group} events={events}>
+      <Trigger formKey={formKey} events={events}>
         {meta =>
           typeof children === 'function' ? (
             children({
@@ -86,7 +122,7 @@ class FormButton extends React.Component {
             })
           ) : (
             <Component {...mergeWithEvents(events, [props, meta.props])}>
-            {children}
+              {children}
             </Component>
           )
         }
@@ -95,4 +131,11 @@ class FormButton extends React.Component {
   }
 }
 
-export default FormButton
+export default withState(
+  (formMethods, messages, submitting) => <FormButton />,
+  [
+    state => state.formMethods,
+    state => state.messages,
+    state => state.submitting,
+  ]
+)

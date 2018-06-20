@@ -3,14 +3,10 @@ import React from 'react'
 import mapContextToProps from 'react-context-toolbox/lib/mapContextToProps'
 import forwardRef from 'react-context-toolbox/lib/forwardRef'
 
-// import { Consumer as FormConsumer } from './Form'
-
 export const DEFAULT_CHANNEL = '@@parent'
 
-const State = React.createContext(/*{
-  formState: {},
-  combinedState: {},
-} */)
+const State = React.createContext()
+
 let id = 0
 class FormContext extends React.Component {
   constructor(...args) {
@@ -41,10 +37,6 @@ class FormContext extends React.Component {
         ...prevState.formState,
       },
     }
-  }
-
-  getParent() {
-    return this.props.parentContext && this.props.parentContext.publisher
   }
 
   update = (channel, fn, propagateIfPossible) => {
@@ -104,22 +96,13 @@ class ConsumerIndirection extends React.Component {
     return state.some((observedState, i) => observedState !== currentState[i])
   }
   render() {
-    const {
-      children,
-      state,
-      Component,
-      mapToProps,
-      innerRef,
-      props,
-    } = this.props
-    if (Component)
-      return <Component ref={innerRef} {...mapToProps(state, props)} />
+    const { children, state } = this.props
 
     return children(state)
   }
 }
 
-export const withState = (render, selectors, { displayName, ...rest } = {}) => {
+export const withState = (render, selectors, { displayName } = {}) => {
   const fn = (props, ref) => {
     return (
       <State.Consumer>
@@ -129,7 +112,9 @@ export const withState = (render, selectors, { displayName, ...rest } = {}) => {
           const state = context && context.combinedState[key]
 
           return (
-            <ConsumerIndirection state={selectors.map(fn => fn(state, props))}>
+            <ConsumerIndirection
+              state={selectors.map(fn => state && fn(state, props))}
+            >
               {state => render(...state, props, ref)}
             </ConsumerIndirection>
           )
@@ -137,35 +122,7 @@ export const withState = (render, selectors, { displayName, ...rest } = {}) => {
       </State.Consumer>
     )
   }
-  fn.displayName = displayName
-  return Object.assign(React.forwardRef(fn), rest)
-}
-
-export const withState2 = (Component, selectors, mapToProps, staticProps) => {
-  return forwardRef((props, ref) => {
-    return (
-      <State.Consumer>
-        {context => {
-          const key =
-            props.formKey || (context ? context.defaultKey : DEFAULT_CHANNEL)
-
-          const state = selectors.map(fn =>
-            fn(context && context.combinedState[key], props)
-          )
-
-          return (
-            <ConsumerIndirection
-              state={state}
-              mapToProps={mapToProps}
-              Component={Component}
-              innerRef={ref}
-              props={props}
-            />
-          )
-        }}
-      </State.Consumer>
-    )
-  }, staticProps)
+  return forwardRef(fn, { displayName })
 }
 
 export default mapContextToProps(
