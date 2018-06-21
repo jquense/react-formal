@@ -1,8 +1,13 @@
-import React from 'react'
-import PropTypes from 'prop-types'
-import Input from './Input'
+import React from 'react';
+import PropTypes from 'prop-types';
+import Input from './Input';
 
 let isValid = num => typeof num === 'number' && !isNaN(num)
+
+let isAtDelimiter = (num, str) =>{
+  var next = str.length <= 1 ? false : parseFloat(str.substr(0, str.length - 1))
+  return typeof next === 'number' && !isNaN(next) && next === num
+}
 
 class NumberInput extends React.Component {
   static propTypes = {
@@ -10,20 +15,39 @@ class NumberInput extends React.Component {
     onChange: PropTypes.func,
   }
 
-  handleChange = (value, e) => {
-    let current = this.props.value
-    let number = e.target.valueAsNumber
+  state = {}
 
-    if (!isValid(number)) return this.props.onChange(null)
-    if (number !== current) return this.props.onChange(number)
+  componentWillReceiveProps(nextProps) {
+    let value = nextProps.value;
+
+    value = (value == null || isNaN(value))
+      ? '' : '' + value
+
+    this.setState({ value })
   }
+
+  handleChange = (value) => {
+    var current = this.props.value
+      , number = parseFloat(value)
+
+    if (value == null || value.trim() === '' || !isValid(number) )
+      return this.props.onChange(null)
+
+    if (isValid(number) && number !== current && !isAtDelimiter(number, value))
+      return this.props.onChange(number)
+
+    this.setState({ value })
+  }
+
   render() {
-    let { value, ...props } = this.props
+    var { value, ...props } = this.props
+
+    value = this.state.value || value
 
     return (
       <Input
         {...props}
-        type="number"
+        type='number'
         value={value}
         onChange={this.handleChange}
       />
@@ -31,4 +55,5 @@ class NumberInput extends React.Component {
   }
 }
 
-export default NumberInput
+
+export default NumberInput;
