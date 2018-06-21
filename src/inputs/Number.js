@@ -12,7 +12,7 @@ class NumberInput extends React.Component {
 
   handleChange = (value, e) => {
     let current = this.props.value
-    let number = e.target.valueAsNumber
+    let number = Number(e.target.value)
 
     if (!isValid(number)) return this.props.onChange(null)
     if (number !== current) return this.props.onChange(number)
