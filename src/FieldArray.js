@@ -130,9 +130,7 @@ class FieldArray extends React.Component {
         {({ meta, ...props }) => {
           this.fieldProps = props
           this.meta = meta
-          {
-            /* console.log('ARRRAY RERENDER', props.value) */
-          }
+
           const nextProps = {
             ...props,
             meta,

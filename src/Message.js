@@ -1,6 +1,5 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import cn from 'classnames'
 
 import uniq from './utils/uniqMessage'
 import { filterAndMapMessages } from './utils/ErrorUtils'
@@ -23,7 +22,6 @@ function FormMessage(
   {
     for: names,
     className,
-    errorClass = 'validation-error',
     extract = error => error.message || error,
     filter = uniq,
     children = renderMessage,
@@ -41,7 +39,7 @@ function FormMessage(
       .map(extract),
     {
       ...props,
-      className: cn(className, errorClass),
+      className,
     }
   )
 }
@@ -78,9 +76,6 @@ const propTypes = {
 
   filter: PropTypes.func,
 }
-
-// FormMessage.propTypes = propTypes
-// FormMessage.defaultProps = defaultProps;
 
 export default withState(FormMessage, [state => state && state.messages], {
   propTypes,

@@ -106,7 +106,6 @@ class FormSubmit extends React.Component {
       triggers,
       children,
       messages,
-      type,
       submitting = false,
       as: Component,
       formKey: _0,
@@ -124,7 +123,7 @@ class FormSubmit extends React.Component {
     return typeof children === 'function' ? (
       children({ messages, props, submitting })
     ) : (
-      <Component {...props} type={partial ? 'button' : 'submit'}>
+      <Component type={partial ? 'button' : 'submit'} {...props}>
         {children}
       </Component>
     )

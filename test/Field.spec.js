@@ -2,9 +2,8 @@ import { mount } from 'enzyme'
 import React from 'react'
 import ReactDOMServer from 'react-dom/server'
 import * as yup from 'yup'
-
-import inputs from '../src/inputs'
 import Form from '../src'
+import Input from '../src/Input'
 
 describe('Field', () => {
   let schema = yup.object({
@@ -45,7 +44,6 @@ describe('Field', () => {
       number: yup.number(),
       date: yup.date(),
       bool: yup.bool(),
-      array: yup.array().of(yup.string()),
     })
 
     let wrapper = mount(
@@ -54,16 +52,18 @@ describe('Field', () => {
         <Form.Field name="number" />
         <Form.Field name="date" />
         <Form.Field name="bool" />
-        <Form.Field name="array" />
+        <Form.Field type="select" name="string" />
+        <Form.Field type="textarea" name="string" />
       </Form>
     )
 
-    wrapper.assertSingle(`Input[name='string']`)
+    wrapper.assertSingle(`input[name='string']`)
+    wrapper.assertSingle('input[type="number"]')
+    wrapper.assertSingle('input[type="date"]')
 
-    wrapper.assertSingle(inputs.Number)
-    wrapper.assertSingle(inputs.Bool)
-    wrapper.assertSingle(inputs.Select)
-    wrapper.assertSingle(inputs.Date)
+    wrapper.assertSingle('input[type="checkbox"]')
+    wrapper.assertSingle('select')
+    wrapper.assertSingle('textarea')
   })
 
   it('should use schema metadata', () => {
@@ -77,7 +77,7 @@ describe('Field', () => {
       <Form schema={schema} defaultValue={{}}>
         <Form.Field name="string" />
       </Form>
-    ).assertSingle(inputs.Number)
+    ).assertSingle('input[type="number"]')
   })
 
   it('should use type override', () => {
@@ -89,7 +89,7 @@ describe('Field', () => {
       </Form>
     )
     wrapper.assertSingle(TestInput)
-    wrapper.find(inputs.Input).length.should.equal(2)
+    wrapper.find('Input').length.should.equal(2)
   })
 
   it('should fire onChange', done => {

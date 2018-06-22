@@ -4,7 +4,6 @@ import pick from 'lodash/pick'
 import expr from 'property-expr'
 import PropTypes from 'prop-types'
 import uncontrollable from 'uncontrollable'
-import { polyfill } from 'react-lifecycles-compat'
 import React from 'react'
 import warning from 'warning'
 import reach from 'yup/lib/util/reach'
@@ -566,8 +565,6 @@ class Form extends React.PureComponent {
     )
   }
 }
-
-polyfill(Form)
 
 function maybeWarn(debug, errors, target) {
   if (!debug) return

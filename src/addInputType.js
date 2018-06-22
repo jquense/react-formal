@@ -1,4 +1,4 @@
-import types from './utils/types'
+import { types } from './utils/resolveFieldComponent'
 
 let addType = (type, Component) => {
   let compType = typeof Component
@@ -17,9 +17,5 @@ let addType = (type, Component) => {
 export default function(...args) {
   if (args.length === 2) return addType(...args)
 
-  for (var key in args[0]) if (has(args[0], key)) addType(key, args[0][key])
-}
-
-function has(o, k) {
-  return o ? Object.prototype.hasOwnProperty.call(o, k) : false
+  Object.keys(args[0]).forEach(key => addType(key, args[0][key]))
 }
