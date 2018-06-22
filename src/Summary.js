@@ -17,7 +17,7 @@ import Message from './Message'
  *   <Form.Field name='name.last' placeholder='surname'/>
  *   <Form.Field name='dateOfBirth' placeholder='dob'/>
  *
- *   <Form.Button>Validate</Form.Button>
+ *   <Form.Submit>Validate</Form.Submit>
  * </Form>
  * ```
  */
@@ -38,8 +38,7 @@ class Summary extends React.PureComponent {
     /**
      * A DOM node tag name or Component class the Message should render as.
      */
-    component: PropTypes.oneOfType([PropTypes.func, PropTypes.string])
-      .isRequired,
+    as: PropTypes.oneOfType([PropTypes.func, PropTypes.string]).isRequired,
 
     /**
      * A css class that should be always be applied to the Summary container.
@@ -53,7 +52,7 @@ class Summary extends React.PureComponent {
   }
 
   static defaultProps = {
-    component: 'ul',
+    as: 'ul',
     formatMessage: (message, idx) => <li key={idx}>{message}</li>,
   }
 
@@ -61,9 +60,7 @@ class Summary extends React.PureComponent {
     let { formatMessage, ...props } = this.props
 
     return (
-      <Message {...props}>
-        {messages => messages.map(formatMessage)}
-      </Message>
+      <Message {...props}>{messages => messages.map(formatMessage)}</Message>
     )
   }
 }

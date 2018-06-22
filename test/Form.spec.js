@@ -173,7 +173,7 @@ describe('Form', () => {
     let wrapper = mount(
       <Form onSubmit={spy} schema={schema} defaultValue={{}}>
         <Form.Field name="name" type="text" className="test" />
-        <Form.Button type="submit" />
+        <Form.Submit type="submit" />
       </Form>,
       { attachTo }
     )
@@ -203,11 +203,11 @@ describe('Form', () => {
         defaultValue={{}}
       >
         <Form.Field name="name" type="text" className="test" />
-        <Form.Button type="submit" />
+        <Form.Submit type="submit" />
       </Form>
     )
 
-    wrapper.assertSingle(Form.Button).simulate('click')
+    wrapper.assertSingle(Form.Submit).simulate('click')
 
     setTimeout(() => {
       onSubmit.should.have.been.calledOnce()
@@ -228,11 +228,11 @@ describe('Form', () => {
         defaultValue={{}}
       >
         <Form.Field name="name" type="text" className="test" />
-        <Form.Button type="submit" />
+        <Form.Submit type="submit" />
       </Form>
     )
 
-    wrapper.assertSingle(Form.Button).simulate('click')
+    wrapper.assertSingle(Form.Submit).simulate('click')
 
     setTimeout(() => {
       onSubmit.should.have.been.calledOnce()

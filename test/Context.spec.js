@@ -10,7 +10,7 @@ describe('Form Context', () => {
     other: yup.string().default(''),
   })
 
-  it.only('should simulate an onSubmit in the Form', function(done) {
+  it('should simulate an onSubmit in the Form', function(done) {
     mount(
       <Form
         onSubmit={sinon.spy(() => done())}
@@ -18,10 +18,10 @@ describe('Form Context', () => {
         defaultValue={{}}
       >
         <Form.Field name="name" type="text" className="test" />
-        <Form.Button type="submit" />
+        <Form.Submit type="submit" />
       </Form>
     )
-      .find(Form.Button)
+      .find('button')
       .simulate('click')
   })
 
@@ -35,10 +35,10 @@ describe('Form Context', () => {
         >
           <Form.Field name="name" type="text" className="test" />
         </Form>
-        <Form.Button type="submit" />
+        <Form.Submit type="submit" />
       </Form.Context>
     )
-      .find(Form.Button)
+      .find('button')
       .simulate('click')
   })
 
@@ -51,7 +51,7 @@ describe('Form Context', () => {
           onSubmit={sinon.spy(() => setTimeout(done, 10))}
         >
           <Form.Field name="name" type="text" className="test" />
-          <Form.Button type="submit" />
+          <Form.Submit type="submit" />
         </Form>
 
         <Form
@@ -63,7 +63,7 @@ describe('Form Context', () => {
         </Form>
       </Form.Context>
     )
-      .find(Form.Button)
+      .find('button')
       .simulate('click')
   })
 
@@ -86,10 +86,10 @@ describe('Form Context', () => {
           <Form.Field name="other" type="text" className="test" />
         </Form>
 
-        <Form.Button type="submit" />
+        <Form.Submit type="submit" />
       </Form.Context>
     )
-      .find(Form.Button)
+      .find('button')
       .simulate('click')
   })
   it('should not conflate unkeyed forms in different trees', done => {
@@ -113,11 +113,11 @@ describe('Form Context', () => {
           >
             <Form.Field name="other" type="text" className="test" />
           </Form>
-          <Form.Button type="submit" />
+          <Form.Submit type="submit" />
         </Form.Context>
       </div>
     )
-      .find(Form.Button)
+      .find('button')
       .simulate('click')
   })
 
@@ -141,10 +141,10 @@ describe('Form Context', () => {
           <Form.Field name="name" type="text" className="test" />
         </Form>
 
-        <Form.Button type="submit" formKey="foo" />
+        <Form.Submit type="submit" formKey="foo" />
       </Form.Context>
     )
-      .find(Form.Button)
+      .find('button')
       .simulate('click')
   })
 
@@ -162,11 +162,11 @@ describe('Form Context', () => {
         <Form formKey="bar" onSubmit={spy} schema={schema} defaultValue={{}}>
           <Form.Field name="name" type="text" className="test" />
         </Form>
-        <Form.Button type="submit" formKey="foo" />
-        <Form.Button type="submit" formKey="bar" />
+        <Form.Submit type="submit" formKey="foo" />
+        <Form.Submit type="submit" formKey="bar" />
       </Form.Context>
     )
-      .find(Form.Button)
+      .find('button')
       .map(n => n.simulate('click'))
   })
 
@@ -184,10 +184,10 @@ describe('Form Context', () => {
         >
           <Form.Field name="name" type="text" className="test" />
         </Form>
-        <Form.Button type="submit" formKey="bar" />
+        <Form.Submit type="submit" formKey="bar" />
       </Form.Context>
     )
-      .find(Form.Button)
+      .find('button')
       .simulate('click')
 
     setTimeout(() => {
@@ -218,18 +218,18 @@ describe('Form Context', () => {
           >
             <Form.Field name="name" type="text" className="test" />
           </Form>
-          <Form.Button type="submit" formKey="bar" />
+          <Form.Submit type="submit" formKey="bar" />
         </Form.Context>
       </Form.Context>
     )
-      .find(Form.Button)
+      .find('button')
       .simulate('click')
   })
 
   it('should update subscribers', done => {
     mount(
       <Form.Context>
-        <Form.Button type="submit" formKey="bar" />
+        <Form.Submit type="submit" formKey="bar" />
         <Form
           schema={schema}
           defaultValue={{}}
@@ -240,7 +240,7 @@ describe('Form Context', () => {
         </Form>
       </Form.Context>
     )
-      .find(Form.Button)
+      .find('button')
       .simulate('click')
   })
 
@@ -252,7 +252,7 @@ describe('Form Context', () => {
           defaultValue={{}}
           onSubmit={() => done(new Error('submitted wrong form!'))}
         >
-          <Form.Button type="submit" formKey="bar" />
+          <Form.Submit type="submit" formKey="bar" />
           <Form.Field name="name" type="text" className="test" />
         </Form>
         <Form
@@ -265,7 +265,7 @@ describe('Form Context', () => {
         </Form>
       </Form.Context>
     )
-      .find(Form.Button)
+      .find('button')
       .simulate('click')
   })
 })

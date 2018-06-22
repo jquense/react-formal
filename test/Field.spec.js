@@ -28,7 +28,7 @@ describe('Field', () => {
     }
   }
 
-  it('should pass props to inner type', function() {
+  it('should pass props to inner type', () => {
     mount(
       <Form schema={schema} defaultValue={{}}>
         <Form.Field name="name" type={TestInput} className="test" />
@@ -39,7 +39,7 @@ describe('Field', () => {
       .props.className.should.include('test') // test invalid-field
   })
 
-  it('should fall back to using schema types', function() {
+  it('should fall back to using schema types', () => {
     let schema = yup.object({
       string: yup.string(),
       number: yup.number(),
@@ -66,7 +66,7 @@ describe('Field', () => {
     wrapper.assertSingle(inputs.Date)
   })
 
-  it('should use schema metadata', function() {
+  it('should use schema metadata', () => {
     let schema = yup.object({
       string: yup.string().meta({
         reactFormalType: 'number',
@@ -80,7 +80,7 @@ describe('Field', () => {
     ).assertSingle(inputs.Number)
   })
 
-  it('should use type override', function() {
+  it('should use type override', () => {
     let wrapper = mount(
       <Form schema={schema} defaultValue={{}}>
         <Form.Field name="name" />
@@ -92,7 +92,7 @@ describe('Field', () => {
     wrapper.find(inputs.Input).length.should.equal(2)
   })
 
-  it('should fire onChange', function(done) {
+  it('should fire onChange', done => {
     mount(
       <Form schema={schema} defaultValue={{}}>
         <Form.Field name="name" type={TestInput} onChange={() => done()} />
@@ -102,7 +102,21 @@ describe('Field', () => {
       .simulate('change')
   })
 
-  it('ensures values are never undefined', function() {
+  it('should pull value from event target', () => {
+    let spy = sinon.spy()
+
+    mount(
+      <Form schema={schema} defaultValue={{}} onChange={spy}>
+        <Form.Field name="name" type={TestInput} />
+      </Form>
+    )
+      .assertSingle('input')
+      .simulate('change', { target: { value: 'foo', tagName: 'input' } })
+
+    spy.should.have.been.calledWith({ name: 'foo' })
+  })
+
+  it('ensures values are never undefined', () => {
     let wrapper = mount(
       <Form schema={schema} defaultValue={{}}>
         <Form.Field name="name" />
@@ -112,7 +126,7 @@ describe('Field', () => {
     expect(wrapper.assertSingle('Input').prop('value')).to.equal(null)
   })
 
-  it('maps value from string', function() {
+  it('maps value from string', () => {
     let spy = sinon.spy()
     mount(
       <Form schema={schema} defaultValue={{}} onChange={spy}>
@@ -125,7 +139,7 @@ describe('Field', () => {
     spy.should.have.been.calledOnce.and.calledWith({ name: 'john' })
   })
 
-  it('maps value from function', function() {
+  it('maps value from function', () => {
     let spy = sinon.spy()
     mount(
       <Form schema={schema} defaultValue={{}} onChange={spy}>
@@ -138,7 +152,7 @@ describe('Field', () => {
     spy.should.have.been.calledOnce.and.calledWith({ name: 'john' })
   })
 
-  it('gets value from accessor', function() {
+  it('gets value from accessor', () => {
     let spy = sinon.spy(model => model.other)
     let wrapper = mount(
       <Form schema={schema} defaultValue={{}} onChange={spy}>
@@ -160,7 +174,7 @@ describe('Field', () => {
     spy.should.have.been.and.calledWith({ other: 'john' })
   })
 
-  it('maps values from hash', function() {
+  it('maps values from hash', () => {
     let spy = sinon.spy()
     mount(
       <Form schema={schema} defaultValue={{}} onChange={spy}>
@@ -199,7 +213,7 @@ describe('Field', () => {
       .simulate('change')
   })
 
-  it('should add inner ref', function() {
+  it('should add inner ref', () => {
     let inst
     mount(
       <Form schema={schema} defaultValue={{}}>
@@ -215,7 +229,7 @@ describe('Field', () => {
     ;(inst instanceof TestInput).should.be.true()
   })
 
-  it('should forward inner ref', function() {
+  it('should forward inner ref', () => {
     let inst
     mount(
       <Form schema={schema} defaultValue={{}}>
@@ -231,7 +245,7 @@ describe('Field', () => {
     ;(inst instanceof TestInput).should.be.true()
   })
 
-  it('should work with conditional schema', function() {
+  it('should work with conditional schema', () => {
     const spy = sinon.stub(console, 'error').callsFake(() => {})
 
     let render = name => {
@@ -335,7 +349,7 @@ describe('Field', () => {
   })
 
   describe('inclusive active matching', () => {
-    it('should count path matches', function() {
+    it('should count path matches', () => {
       mount(
         <Form schema={schema} defaultValue={{}} defaultErrors={{ name: 'foo' }}>
           <Form.Field name="name" errorClass="invalid" />
@@ -343,7 +357,7 @@ describe('Field', () => {
       ).assertSingle('input.invalid')
     })
 
-    it('should use inclusive active checking', function() {
+    it('should use inclusive active checking', () => {
       mount(
         <Form
           schema={schema}
@@ -355,7 +369,7 @@ describe('Field', () => {
       ).assertSingle('input.invalid')
     })
 
-    it('should respect `exclusive`', function() {
+    it('should respect `exclusive`', () => {
       mount(
         <Form
           schema={schema}

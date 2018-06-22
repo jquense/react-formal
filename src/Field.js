@@ -9,9 +9,9 @@ import memoize from 'memoize-one'
 import config from './config'
 import isNativeType from './utils/isNativeType'
 import resolveFieldComponent from './utils/resolveFieldComponent'
-import FormTrigger from './FormTrigger'
 import { inclusiveMapMessages, filterAndMapMessages } from './utils/ErrorUtils'
 import { withState } from './FormContext'
+import createEventHandler from './utils/createEventHandler'
 
 function notify(handler, args) {
   handler && handler(...args)
@@ -48,7 +48,7 @@ function notify(handler, args) {
  *     <option value={2}>Blue</option>
  *     <option value={3}>other</option>
  *   </Form.Field>
- *   <Form.Button type='submit'>Submit</Form.Button>
+ *   <Form.Submit type='submit'>Submit</Form.Submit>
  * </Form>
  * ```
  */
@@ -63,7 +63,11 @@ class Field extends React.PureComponent {
     super(...args)
     this.eventHandlers = {}
 
-    this.createEventHandlers(this.props)
+    this.getEventHandlers = createEventHandler(event => (...args) => {
+      notify(this.props[event], args)
+      notify(this.props.bindingProps[event], args)
+      this.handleValidateField(event, args)
+    })
 
     this.memoFilterAndMapMessages = memoize(
       filterAndMapMessages,
@@ -79,10 +83,10 @@ class Field extends React.PureComponent {
       name,
       exclusive,
       messages,
-      submitting,
       noValidate,
       formMethods,
       yupContext,
+      submitting = false,
       errorClass = config.errorClass,
     } = this.props
 
@@ -114,21 +118,6 @@ class Field extends React.PureComponent {
 
     return meta
   }
-  // create a set of handlers with a stable identity so as not to
-  // thwart SCU checks
-  createEventHandlers({ events = config.events }) {
-    if (events == null) return
-    ;[].concat(events).forEach(event => {
-      let handler = (...args) => {
-        notify(this.props[event], args)
-        notify(this.props.bindingProps[event], args)
-
-        this.handleValidateField(event, args)
-      }
-
-      this.eventHandlers[event] = this.eventHandlers[event] || handler
-    })
-  }
 
   handleValidateField(event, args) {
     const { name, alsoValidates, formMethods, noValidate } = this.props
@@ -159,12 +148,13 @@ class Field extends React.PureComponent {
       noResolveType,
       bindingProps,
       formMethods,
+      events = config.events,
     } = this.props
 
     let fieldProps = Object.assign(
       { name },
       omit(this.props, Object.keys(Field.propTypes)),
-      this.eventHandlers
+      this.getEventHandlers(events)
     )
 
     // ensure that no inputs are left uncontrolled
@@ -173,12 +163,13 @@ class Field extends React.PureComponent {
 
     const meta = this.buildMeta()
 
-    if (process.env.NODE_ENV !== 'production')
+    if (process.env.NODE_ENV !== 'production') {
       warning(
         !formMethods || noValidate || !name || meta.schema,
         `There is no corresponding schema defined for this field: "${name}" ` +
           "Each Field's `name` prop must be a valid path defined by the parent Form schema"
       )
+    }
 
     let [Component, resolvedType] = !noResolveType
       ? resolveFieldComponent(type, meta.schema)
@@ -307,7 +298,7 @@ Field.propTypes = {
    *   <label>Age</label>
    *   <Form.Field name='age'/>
    *
-   *   <Form.Button type='submit'>Submit</Form.Button>
+   *   <Form.Submit type='submit'>Submit</Form.Submit>
    * </Form>
    * ```
    */
@@ -432,7 +423,7 @@ export default withState(
     ref
   ) => {
     let { mapToValue, mapFromValue, name, fieldRef, ...rest } = props
-
+    // console.log('field rendern upper', name)
     return (
       <Binding bindTo={mapToValue || name} mapValue={mapFromValue}>
         {bindingProps => (

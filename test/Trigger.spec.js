@@ -6,7 +6,7 @@ import Form from '../src'
 
 const sleep = ms => new Promise(y => setTimeout(() => y(), ms))
 
-describe('Trigger', () => {
+describe('Triggers', () => {
   const schema = yup.object({ fieldA: yup.mixed(), fieldB: yup.mixed() })
 
   it('should simulate event for name', () => {
@@ -14,9 +14,9 @@ describe('Trigger', () => {
       wrapper = mount(
         <Form schema={schema} onValidate={spy}>
           <div>
-            <Form.Trigger for="fieldA">
-              {({ props }) => <input {...props} />}
-            </Form.Trigger>
+            <Form.Field name="fieldA" noMeta>
+              {props => <input {...props} value={props.value || ''} />}
+            </Form.Field>
           </div>
         </Form>
       )
@@ -32,14 +32,14 @@ describe('Trigger', () => {
       wrapper = mount(
         <Form schema={schema} onValidate={spy}>
           <div>
-            <Form.Trigger triggers={['fieldA', 'fieldB']}>
-              {({ props }) => <input {...props} />}
-            </Form.Trigger>
+            <Form.Submit triggers={['fieldA', 'fieldB']}>
+              {({ props: { onClick } }) => <button onClick={onClick} />}
+            </Form.Submit>
           </div>
         </Form>
       )
 
-    wrapper.find('input').simulate('change')
+    wrapper.find('button').simulate('click')
 
     spy.should.have.been.calledOnce()
     spy.args[0][0].fields.should.eql(['fieldA', 'fieldB'])
@@ -54,16 +54,16 @@ describe('Trigger', () => {
     let wrapper = mount(
       <Form schema={schema} onValidate={spy}>
         <div>
-          <Form.Trigger for={'fieldA'}>
-            {({ props }) => <input {...props} />}
-          </Form.Trigger>
-          <Form.Trigger for={'fieldB'}>
-            {({ props }) => <input {...props} />}
-          </Form.Trigger>
+          <Form.Field name={'fieldA'}>
+            {props => <input {...props} value={props.value || ''} />}
+          </Form.Field>
+          <Form.Field name={'fieldB'}>
+            {props => <input {...props} value={props.value || ''} />}
+          </Form.Field>
 
-          <Form.Trigger events="onClick" triggers={['fieldA']}>
+          <Form.Submit events="onClick" triggers={['fieldA']}>
             {({ props }) => <button {...props} />}
-          </Form.Trigger>
+          </Form.Submit>
         </div>
       </Form>
     )
@@ -75,17 +75,15 @@ describe('Trigger', () => {
     let wrapper = mount(
       <Form schema={schema} onSubmit={() => done()}>
         <div>
-          <Form.Trigger for="fieldA">
+          <Form.Field name="fieldA">
             {({ props }) => <input {...props} />}
-          </Form.Trigger>
+          </Form.Field>
 
-          <Form.Trigger for="fieldB">
+          <Form.Field name="fieldB">
             {({ props }) => <input {...props} />}
-          </Form.Trigger>
+          </Form.Field>
 
-          <Form.Trigger events="onClick">
-            {({ props }) => <button {...props} />}
-          </Form.Trigger>
+          <Form.Submit>{({ props }) => <button {...props} />}</Form.Submit>
         </div>
       </Form>
     )
@@ -99,9 +97,9 @@ describe('Trigger', () => {
     let wrapper = mount(
       <Form schema={schema} submitForm={spy} formKey="foo">
         <div>
-          <Form.Trigger for="fieldA">
-            {({ submitting }) => <span>submitting: {String(submitting)}</span>}
-          </Form.Trigger>
+          <Form.Field name="fieldA">
+            {({ meta }) => <span>submitting: {String(meta.submitting)}</span>}
+          </Form.Field>
         </div>
       </Form>
     )

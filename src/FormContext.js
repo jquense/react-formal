@@ -7,11 +7,15 @@ export const DEFAULT_CHANNEL = '@@parent'
 
 const State = React.createContext()
 
-let id = 0
 class FormContext extends React.Component {
+  static propTypes = {
+    /** @private */
+    parentContext: PropTypes.object,
+    /** @private */
+    defaultKey: PropTypes.string,
+  }
   constructor(...args) {
     super(...args)
-    this.id = id++
 
     this.state = {
       formState: {},
@@ -91,9 +95,14 @@ export const withPublish = Component =>
   )
 
 class ConsumerIndirection extends React.Component {
-  shouldComponentUpdate({ state }) {
+  // eslint-disable-next-line react/prop-types
+  shouldComponentUpdate({ state, props }) {
     const currentState = this.props.state
-    return state.some((observedState, i) => observedState !== currentState[i])
+    const shouldUpdate =
+      props !== this.props.props ||
+      state.some((observedState, i) => observedState !== currentState[i])
+
+    return shouldUpdate
   }
   render() {
     const { children, state } = this.props
@@ -108,11 +117,12 @@ export const withState = (render, selectors, { displayName } = {}) => {
       <State.Consumer>
         {context => {
           const key =
-            props.formKey || (context ? context.defaultKey : DEFAULT_CHANNEL)
+            props.formKey || (context ? context.defaultKey : DEFAULT_CHANNEL) // eslint-disable-line react/prop-types
           const state = context && context.combinedState[key]
 
           return (
             <ConsumerIndirection
+              props={props}
               state={selectors.map(fn => state && fn(state, props))}
             >
               {state => render(...state, props, ref)}

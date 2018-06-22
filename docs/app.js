@@ -93,7 +93,7 @@ class Docs extends React.Component {
                 <Link to="/api/summary">Form.Summary</Link>
               </li>
               <li>
-                <Link to="/api/button">Form.Button</Link>
+                <Link to="/api/button">Form.Submit</Link>
               </li>
               <li>
                 <Link to="/api/yup">Schema</Link>
@@ -204,7 +204,7 @@ var routes = (
       />
       <Route
         path="button"
-        component={require('!babel-loader!./loaders/jsx!./loaders/metadata!../src/FormButton')}
+        component={require('!babel-loader!./loaders/jsx!./loaders/metadata!../src/FormSubmit')}
       />
       <Route
         path="context"

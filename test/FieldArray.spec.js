@@ -23,7 +23,7 @@ describe('FieldArray', () => {
 
     render() {
       const { value, name } = this.props
-
+      // console.log('color list', value)
       return (
         <ul>
           {value.map((value, idx) => (

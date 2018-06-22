@@ -107,9 +107,9 @@ const setter = BindingContext.defaultProps.setter
  *     </Form.Field>
  *     <Form.Message for='colorId'/>
  *
- *   <Form.Button type='submit'>
+ *   <Form.Submit type='submit'>
  *     Submit
- *   </Form.Button>
+ *   </Form.Submit>
  * </Form>)
  * ReactDOM.render(form, mountNode);
  * ```
@@ -136,7 +136,7 @@ class Form extends React.PureComponent {
 
     /**
      * A unique key that names a `Form` within a surrounding `Form.Context`.
-     * Corresponding `Form.Button`s with the same `formKey` will trigger validation.
+     * Corresponding `Form.Submit`s with the same `formKey` will trigger validation.
      */
     formKey: PropTypes.string,
 
@@ -179,7 +179,7 @@ class Form extends React.PureComponent {
      *   <Form.Field name='dateOfBirth'/>
      *   <Form.Message for='dateOfBirth'/>
      *
-     *   <Form.Button type='submit'>Submit</Form.Button>
+     *   <Form.Submit type='submit'>Submit</Form.Submit>
      * </Form>
      * ```
      */
@@ -553,6 +553,7 @@ class Form extends React.PureComponent {
     } else {
       children = <Element {...props}>{children}</Element>
     }
+
     return (
       <BindingContext
         value={value}

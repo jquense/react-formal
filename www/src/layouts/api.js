@@ -34,7 +34,7 @@ function ApiLayout({ children, ...props }) {
                 <Link to="/api/summary">Form.Summary</Link>
               </li>
               <li>
-                <Link to="/api/button">Form.Button</Link>
+                <Link to="/api/button">Form.Submit</Link>
               </li>
               <li>
                 <Link to="/api/yup">Schema</Link>

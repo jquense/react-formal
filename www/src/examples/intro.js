@@ -43,6 +43,6 @@ render(
     </Form.Field>
     <Form.Message for="colorId" />
 
-    <Form.Button type="submit">Submit</Form.Button>
+    <Form.Submit type="submit">Submit</Form.Submit>
   </Form>
 )

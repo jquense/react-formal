@@ -3,8 +3,6 @@ import pick from 'lodash/pick'
 
 import { inPath } from './paths'
 
-let uniq = array => array.filter((item, idx) => array.indexOf(item) === idx)
-
 export let isChildPath = (basePath, path) =>
   path !== basePath && inPath(basePath, path)
 
@@ -54,15 +52,6 @@ export function pickMessages(messages, names) {
   if (!names.length) return messages
   return pick(messages, names)
 }
-
-// export function namesForGroup(group, allGroups) {
-//   if (!group || !allGroups) return []
-//   group = group ? [].concat(group) : []
-
-//   return uniq(
-//     group.reduce((fields, group) => fields.concat(allGroups[group]), [])
-//   )
-// }
 
 export function filter(messages, baseName) {
   const paths = Object.keys(messages)

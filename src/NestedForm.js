@@ -1,6 +1,7 @@
 import PropTypes from 'prop-types'
 import React from 'react'
-import Form, { Consumer } from './Form'
+import Form from './Form'
+import Field from './Field'
 
 import { filter, prefix } from './utils/ErrorUtils'
 
@@ -24,8 +25,8 @@ class NestedForm extends React.Component {
     }),
   }
 
-  onError = formErrors => {
-    const { name, meta, onError } = this.props
+  onError = (formErrors, meta) => {
+    const { name, onError } = this.props
 
     if (name) {
       meta.onError(prefix(formErrors, name))
@@ -35,20 +36,23 @@ class NestedForm extends React.Component {
   }
 
   render() {
-    const { name, meta, schema, errors, ...props } = this.props
+    const { name, schema, errors, ...props } = this.props
 
     return (
-      <Consumer>
-        {({ getSchemaForPath, context }) => (
+      <Field name={name} noResolveType noValidate events={null}>
+        {({ meta, value }) => (
           <Form
+            value={value}
             {...props}
-            onError={this.onError}
+            onError={errors => meta.onError(prefix(errors, name))}
             errors={name ? filter(meta.errors, name) : errors}
-            schema={schema || getSchemaForPath(name)}
-            context={name ? { ...context, ...props.context } : props.context}
+            schema={schema || meta.schema}
+            context={
+              name ? { ...meta.context, ...props.context } : props.context
+            }
           />
         )}
-      </Consumer>
+      </Field>
     )
   }
 }
