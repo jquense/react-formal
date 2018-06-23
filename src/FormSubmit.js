@@ -2,6 +2,7 @@ import PropTypes from 'prop-types'
 import React from 'react'
 import warning from 'warning'
 import memoize from 'memoize-one'
+import elementType from 'prop-types-extra/lib/elementType'
 
 import createEventHandler from './utils/createEventHandler'
 import { filterAndMapMessages } from './utils/ErrorUtils'
@@ -40,7 +41,7 @@ class FormSubmit extends React.Component {
     children: PropTypes.oneOfType([PropTypes.node, PropTypes.func]),
 
     /** Control the rendering of the Form Submit component. */
-    as: PropTypes.oneOfType([PropTypes.string, PropTypes.func]),
+    as: elementType,
 
     /**
      * A string or array of event names that trigger validation.

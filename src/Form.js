@@ -6,6 +6,7 @@ import PropTypes from 'prop-types'
 import uncontrollable from 'uncontrollable'
 import React from 'react'
 import warning from 'warning'
+import elementType from 'prop-types-extra/lib/elementType'
 import reach from 'yup/lib/util/reach'
 
 import errorManager from './errorManager'
@@ -275,11 +276,7 @@ class Form extends React.PureComponent {
      * If `null` are `false` the form will simply render it's child. In
      * this instance there must only be one child.
      */
-    component: PropTypes.oneOfType([
-      PropTypes.func,
-      PropTypes.string,
-      PropTypes.oneOf([null, false]),
-    ]),
+    as: PropTypes.oneOfType([elementType, PropTypes.oneOf([null, false])]),
 
     /**
      * A Yup schema  that validates the Form `value` prop. Used to validate the form input values
@@ -318,7 +315,7 @@ class Form extends React.PureComponent {
 
   static defaultProps = {
     ...BindingContext.defaultProps,
-    component: 'form',
+    as: 'form',
     strict: false,
     delay: 300,
     errors: Object.create(null),
@@ -525,14 +522,7 @@ class Form extends React.PureComponent {
   }
 
   render() {
-    var {
-      children,
-      onChange,
-      value,
-      component: Element,
-      getter,
-      setter,
-    } = this.props
+    var { children, onChange, value, as: Element, getter, setter } = this.props
 
     let props = omit(this.props, [
       ...YUP_OPTIONS,

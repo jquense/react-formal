@@ -1,5 +1,6 @@
 import React from 'react'
 import PropTypes from 'prop-types'
+import elementType from 'prop-types-extra/lib/elementType'
 
 import Message from './Message'
 
@@ -38,7 +39,7 @@ class Summary extends React.PureComponent {
     /**
      * A DOM node tag name or Component class the Message should render as.
      */
-    as: PropTypes.oneOfType([PropTypes.func, PropTypes.string]).isRequired,
+    as: elementType.isRequired,
 
     /**
      * A css class that should be always be applied to the Summary container.

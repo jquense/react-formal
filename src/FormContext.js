@@ -84,16 +84,6 @@ class FormContext extends React.Component {
   }
 }
 
-export const withPublish = Component =>
-  mapContextToProps(
-    State.Consumer,
-    ({ publisher }, props) => ({
-      publish: fn =>
-        publisher.publish(props.formKey || DEFAULT_CHANNEL, fn, true),
-    }),
-    Component
-  )
-
 class ConsumerIndirection extends React.Component {
   // eslint-disable-next-line react/prop-types
   shouldComponentUpdate({ state, props }) {
