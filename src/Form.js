@@ -342,7 +342,6 @@ class Form extends React.PureComponent {
     this.state = {}
 
     props.publish(state => ({
-      ...state,
       messages: props.errors,
       yupContext: props.context,
       noValidate: props.noValidate, // FIXME: should update
@@ -359,11 +358,9 @@ class Form extends React.PureComponent {
     const { errors, publish, delay, schema } = this.props
     const schemaChanged = schema !== prevProps.schema
 
-    if (errors !== prevProps.errors)
-      publish(state => ({
-        ...state,
-        messages: errors,
-      }))
+    publish(
+      ({ messages }) => (errors === messages ? null : { messages: errors })
+    )
 
     if (schemaChanged) {
       this.enqueue(Object.keys(errors || {}))
@@ -413,6 +410,9 @@ class Form extends React.PureComponent {
     return Promise.resolve(submitForm && submitForm(validatedValue)).then(
       () => {
         this.setSubmitting(false)
+        this.props.publish(({ submitCount = 0 }) => ({
+          submitCount: submitCount + 1,
+        }))
         this.notify('onSubmitFinished')
       },
       err => {
@@ -499,7 +499,7 @@ class Form extends React.PureComponent {
     // submit state to flush than a user can re-submit which we don't want
     this._submitting = submitting
     this.props.publish(
-      s => (s.submitting === submitting ? s : { ...s, submitting })
+      s => (s.submitting === submitting ? null : { submitting })
     )
   }
 

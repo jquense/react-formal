@@ -107,6 +107,7 @@ class FormSubmit extends React.Component {
       triggers,
       children,
       messages,
+      submitCount,
       submitting = false,
       as: Component,
       formKey: _0,
@@ -122,7 +123,7 @@ class FormSubmit extends React.Component {
     props = Object.assign(props, this.getEventHandlers(events))
 
     return typeof children === 'function' ? (
-      children({ messages, props, submitting })
+      children({ messages, props, submitting, submitCount })
     ) : (
       <Component type={partial ? 'button' : 'submit'} {...props}>
         {children}
@@ -132,17 +133,19 @@ class FormSubmit extends React.Component {
 }
 
 export default withState(
-  (formMethods, messages, submitting, props) => (
+  (formMethods, messages, submitting, submitCount, props) => (
     <FormSubmit
       {...props}
       formMethods={formMethods}
       messages={messages}
       submitting={submitting}
+      submitCount={submitCount || 0}
     />
   ),
   [
     state => state.formMethods,
     state => state.messages,
     state => state.submitting,
+    state => state.submitCount,
   ]
 )

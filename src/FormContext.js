@@ -57,12 +57,13 @@ class FormContext extends React.Component {
       const channelState = formState[channel]
       const nextChannelState = fn(channelState || {})
       // TODO: optimize the nullish case
-      if (nextChannelState === channelState) return null
+      if (nextChannelState === channelState || nextChannelState === null)
+        return null
       // console.log(this.id, 'updating for channel: ', channel)
       return {
         formState: {
           ...formState,
-          [channel]: nextChannelState,
+          [channel]: { ...channelState, ...nextChannelState },
         },
       }
     })

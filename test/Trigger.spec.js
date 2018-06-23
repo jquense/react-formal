@@ -91,7 +91,7 @@ describe('Triggers', () => {
     wrapper.find('button').simulate('click')
   })
 
-  it('should handle submitting state', async () => {
+  it('Field should handle submitting state', async () => {
     let spy = sinon.spy(() => sleep(50))
 
     let wrapper = mount(
@@ -115,5 +115,35 @@ describe('Triggers', () => {
     await promise
 
     trigger.text().should.equal('submitting: false')
+  })
+
+  it('Submit should handle submitting state', async () => {
+    let spy = sinon.spy(() => sleep(50))
+
+    let wrapper = mount(
+      <Form schema={schema} submitForm={spy} formKey="foo">
+        <div>
+          <Form.Submit name="fieldA">
+            {({ submitting, submitCount }) => (
+              <span>
+                {String(submitting)}: {String(submitCount)}
+              </span>
+            )}
+          </Form.Submit>
+        </div>
+      </Form>
+    )
+
+    let trigger = wrapper.find('span')
+
+    trigger.text().should.equal('false: 0')
+
+    let promise = wrapper.instance().submit()
+
+    trigger.text().should.equal('true: 0')
+
+    await promise
+
+    trigger.text().should.equal('false: 1')
   })
 })
