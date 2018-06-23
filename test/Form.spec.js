@@ -3,17 +3,16 @@ import React from 'react'
 import * as yup from 'yup'
 
 import Form from '../src'
-import { Consumer } from '../src/Form'
+import { withState } from '../src/FormContext'
 import errorManager from '../src/errorManager'
 
-let LeakySubmit = props => (
-  <Consumer>
-    {({ onSubmit }) => (
-      <button type="submit" onClick={onSubmit}>
-        Submit
-      </button>
-    )}
-  </Consumer>
+let LeakySubmit = withState(
+  (formMethods = {}) => (
+    <button type="submit" onClick={formMethods.onSubmit}>
+      Submit
+    </button>
+  ),
+  [state => state.formMethods]
 )
 
 describe('Form', () => {
@@ -42,7 +41,7 @@ describe('Form', () => {
     Form.getter('foo', { foo: 5 }).should.equal(5)
   })
 
-  it.only('should pass messages', () => {
+  it('should pass messages', () => {
     let wrapper = mount(
       <Form schema={schema} defaultErrors={{ fieldA: ['hi', 'good day'] }}>
         <div>
@@ -207,7 +206,7 @@ describe('Form', () => {
       </Form>
     )
 
-    wrapper.assertSingle(Form.Submit).simulate('click')
+    wrapper.assertSingle('FormSubmit').simulate('click')
 
     setTimeout(() => {
       onSubmit.should.have.been.calledOnce()
@@ -232,12 +231,42 @@ describe('Form', () => {
       </Form>
     )
 
-    wrapper.assertSingle(Form.Submit).simulate('click')
+    wrapper.assertSingle('FormSubmit').simulate('click')
 
     setTimeout(() => {
       onSubmit.should.have.been.calledOnce()
       submitForm.should.have.been.calledOnce()
       submitForm.should.have.been.calledAfter(onSubmit)
+      done()
+    }, 10)
+  })
+
+  it('does not submit while already submitting', async done => {
+    let onSubmit = sinon.spy()
+    let submitForm = sinon.spy(() => new Promise(r => setTimeout(r, 5)))
+
+    let wrapper = mount(
+      <Form
+        onSubmit={onSubmit}
+        submitForm={submitForm}
+        schema={schema}
+        defaultValue={{}}
+      >
+        <Form.Field name="name" type="text" className="test" />
+        <Form.Submit type="submit" />
+      </Form>
+    )
+
+    wrapper
+      .assertSingle('FormSubmit')
+      .simulate('click')
+      .simulate('click')
+
+    await wrapper.instance().submit()
+
+    setTimeout(() => {
+      onSubmit.should.have.been.calledOnce()
+      submitForm.should.have.been.calledOnce()
       done()
     }, 10)
   })

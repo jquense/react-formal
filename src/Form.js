@@ -471,7 +471,11 @@ class Form extends React.PureComponent {
   }
 
   submit = () => {
-    var { schema, noValidate, value, onSubmitFinished, ...options } = this.props
+    let { schema, noValidate, value, onSubmitFinished, ...options } = this.props
+
+    if (this._submitting) {
+      return Promise.resolve(false)
+    }
 
     options.abortEarly = false
     options.strict = false
@@ -491,6 +495,9 @@ class Form extends React.PureComponent {
 
   setSubmitting(submitting) {
     if (this.unmounted) return
+    // this state is duplicated locally because it can take longer for the
+    // submit state to flush than a user can re-submit which we don't want
+    this._submitting = submitting
     this.props.publish(
       s => (s.submitting === submitting ? s : { ...s, submitting })
     )
