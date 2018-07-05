@@ -262,7 +262,7 @@ describe('Field', () => {
   })
 
   describe('meta', () => {
-    it('should pass meta to form', done => {
+    it('should pass meta to field', done => {
       let Input = ({ meta }) => {
         //first pass isn't correct since form hasn't propagated it's state yet.
         if (!meta.invalid) return null
@@ -279,6 +279,27 @@ describe('Field', () => {
       mount(
         <Form schema={schema} defaultValue={{}} defaultErrors={{ name: 'foo' }}>
           <Form.Field name="name" type={Input} />
+        </Form>
+      )
+    })
+
+    it('should pass meta to field with noValidate', done => {
+      let Input = ({ meta }) => {
+        //first pass isn't correct since form hasn't propagated it's state yet.
+        if (!meta.invalid) return null
+
+        meta.invalid.should.equals(true)
+        meta.valid.should.equals(false)
+        meta.errors.should.eqls({
+          name: 'foo',
+        })
+        done()
+        return null
+      }
+
+      mount(
+        <Form schema={schema} defaultValue={{}} defaultErrors={{ name: 'foo' }}>
+          <Form.Field noValidate name="name" type={Input} />
         </Form>
       )
     })

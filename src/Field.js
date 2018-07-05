@@ -83,7 +83,6 @@ class Field extends React.PureComponent {
       name,
       exclusive,
       messages,
-      noValidate,
       formMethods,
       yupContext,
       submitting = false,
@@ -103,18 +102,16 @@ class Field extends React.PureComponent {
       onError: this.handleFieldError,
     }
 
-    if (!noValidate) {
-      const errors = this.memoFilterAndMapMessages({
-        messages,
-        names: name,
-        mapMessages: !exclusive ? inclusiveMapMessages : undefined,
-      })
+    const errors = this.memoFilterAndMapMessages({
+      messages,
+      names: name,
+      mapMessages: !exclusive ? inclusiveMapMessages : undefined,
+    })
 
-      meta.errors = errors
-      meta.invalid = !!Object.keys(errors).length
-      meta.valid = !meta.invalid
-      meta.submitting = submitting
-    }
+    meta.errors = errors
+    meta.invalid = !!Object.keys(errors).length
+    meta.valid = !meta.invalid
+    meta.submitting = submitting
 
     return meta
   }
