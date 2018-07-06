@@ -1,4 +1,5 @@
 import PropTypes from 'prop-types'
+import ReactDOM from 'react-dom'
 import React from 'react'
 import mapContextToProps from 'react-context-toolbox/lib/mapContextToProps'
 import forwardRef from 'react-context-toolbox/lib/forwardRef'
@@ -13,12 +14,17 @@ class FormContext extends React.Component {
     parentContext: PropTypes.object,
     /** @private */
     defaultKey: PropTypes.string,
+
+    /** @private */
+    initialState: PropTypes.object,
   }
   constructor(...args) {
     super(...args)
 
     this.state = {
-      formState: {},
+      formState: {
+        [this.props.defaultKey || DEFAULT_CHANNEL]: this.props.initialState,
+      },
       combinedState: {},
       update: this.update,
       defaultKey: this.props.defaultKey || DEFAULT_CHANNEL,
@@ -44,35 +50,43 @@ class FormContext extends React.Component {
   }
 
   update = (channel, fn, propagateIfPossible) => {
-    const { parentContext } = this.props
+    ReactDOM.unstable_batchedUpdates(() => {
+      const { parentContext } = this.props
 
-    if (parentContext) {
-      parentContext.update(channel, fn, false)
+      if (parentContext) {
+        parentContext.update(channel, fn, false)
 
-      if (!propagateIfPossible) return
-      // console.log('publish to parent', this.id)
-    }
-
-    this.setState(({ formState }) => {
-      const channelState = formState[channel]
-      const nextChannelState = fn(channelState || {})
-      // TODO: optimize the nullish case
-      if (nextChannelState === channelState || nextChannelState === null)
-        return null
-      // console.log(this.id, 'updating for channel: ', channel)
-      return {
-        formState: {
-          ...formState,
-          [channel]: { ...channelState, ...nextChannelState },
-        },
+        if (!propagateIfPossible) return
+        this.props.__debugName && this.debug('publish to parent')
       }
+
+      this.setState(({ formState }) => {
+        const channelState = formState[channel]
+        const nextChannelState = fn(channelState || {})
+        // TODO: optimize the nullish case
+        if (nextChannelState === channelState || nextChannelState === null) {
+          this.debug('no update for channel: ', channel)
+          return null
+        }
+
+        this.debug('updating for channel: ', channel)
+        return {
+          formState: {
+            ...formState,
+            [channel]: { ...channelState, ...nextChannelState },
+          },
+        }
+      })
     })
   }
 
-  publish = fn => {
-    this.update(this.props.defaultKey || DEFAULT_CHANNEL, fn, true)
+  publish = (fn, mutate) => {
+    this.update(this.props.defaultKey || DEFAULT_CHANNEL, fn, true, mutate)
   }
-
+  debug = (...args) => {
+    if (!this.props.__debugName) return
+    console.log('FormContext:', this.props.__debugName, ...args)
+  }
   render() {
     // console.log('Reeender', this.id)
     return (

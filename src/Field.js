@@ -5,16 +5,31 @@ import PropTypes from 'prop-types'
 import { Binding } from 'topeka'
 import warning from 'warning'
 import memoize from 'memoize-one'
+import shallowequal from 'shallowequal'
 
 import config from './config'
 import isNativeType from './utils/isNativeType'
 import resolveFieldComponent from './utils/resolveFieldComponent'
-import { inclusiveMapMessages, filterAndMapMessages } from './utils/ErrorUtils'
+import {
+  EMPTY_ERRORS,
+  inclusiveMapMessages,
+  filterAndMapMessages,
+} from './utils/ErrorUtils'
 import { withState } from './FormContext'
 import createEventHandler from './utils/createEventHandler'
 
 function notify(handler, args) {
   handler && handler(...args)
+}
+
+function isFilterMessagesEqual(a, b) {
+  let isEqual =
+    (a.messages === b.messages || shallowequal(a.messages, b.messages)) &&
+    a.names === b.names &&
+    a.mapMessages === b.mapMessages
+
+  // !isEqual && console.log('filter equal', a.messages, b.messages)
+  return isEqual
 }
 
 /**
@@ -71,10 +86,7 @@ class Field extends React.PureComponent {
 
     this.memoFilterAndMapMessages = memoize(
       filterAndMapMessages,
-      (a, b) =>
-        a.messages === b.messages &&
-        a.names === b.names &&
-        a.mapMessages === b.mapMessages
+      isFilterMessagesEqual
     )
   }
 
@@ -83,7 +95,7 @@ class Field extends React.PureComponent {
       name,
       exclusive,
       messages,
-      formMethods,
+      getSchemaForPath,
       yupContext,
       submitting = false,
       errorClass = config.errorClass,
@@ -92,7 +104,7 @@ class Field extends React.PureComponent {
     let schema
     try {
 
-      schema = formMethods && name && formMethods.getSchemaForPath(name)
+      schema = getSchemaForPath && name && getSchemaForPath(name)
     } catch (err) { /* ignore */ } // prettier-ignore
 
     let meta = {
@@ -406,13 +418,16 @@ Field.propTypes = {
   /** @private */
   formMethods: PropTypes.object,
   /** @private */
+  getSchemaForPath: PropTypes.func,
+  /** @private */
   submitting: PropTypes.bool,
 }
 
 export default withState(
   (
     formMethods,
-    messages = {},
+    getSchemaForPath,
+    messages = EMPTY_ERRORS,
     submitting,
     noValidate,
     yupContext,
@@ -420,7 +435,7 @@ export default withState(
     ref
   ) => {
     let { mapToValue, mapFromValue, name, fieldRef, ...rest } = props
-    // console.log('field rendern upper', name)
+
     return (
       <Binding bindTo={mapToValue || name} mapValue={mapFromValue}>
         {bindingProps => (
@@ -433,6 +448,7 @@ export default withState(
             messages={messages}
             yupContext={yupContext}
             formMethods={formMethods}
+            getSchemaForPath={getSchemaForPath}
             noValidate={
               props.noValidate == null ? noValidate : props.noValidate
             }
@@ -443,6 +459,7 @@ export default withState(
   },
   [
     state => state.formMethods,
+    state => state.getSchemaForPath,
     state => state.messages,
     state => state.submitting,
     state => state.noValidate,

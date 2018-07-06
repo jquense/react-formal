@@ -3,24 +3,29 @@ import pick from 'lodash/pick'
 
 import { inPath } from './paths'
 
+export const EMPTY_ERRORS = Object.freeze({})
+
 export let isChildPath = (basePath, path) =>
   path !== basePath && inPath(basePath, path)
 
 function mapKeys(messages, baseName, fn) {
-  const newMessages = {}
+  if (messages === EMPTY_ERRORS) return messages
 
+  const newMessages = {}
+  let workDone = false
   Object.keys(messages).forEach(path => {
     let newKey = path
 
     if (isChildPath(baseName, path)) {
       const matches = path.slice(baseName.length).match(/\[(\d+)\](.*)$/)
-      newKey = fn(+matches[1], matches[2] || '', path) || path
+      newKey = fn(+matches[1], matches[2] || '', path)
+      if (!workDone && newKey !== path) workDone = true
     }
 
     newMessages[newKey] = messages[path]
   })
 
-  return newMessages
+  return workDone ? newMessages : messages
 }
 
 const prefixName = (name, baseName) =>
@@ -72,6 +77,8 @@ export function filterAndMapMessages({
   resolveNames,
   mapMessages = pickMessages,
 }) {
+  if (!messages || messages === EMPTY_ERRORS) return messages
+
   names = resolveNames ? resolveNames() : names
   return mapMessages(messages, names ? [].concat(names) : [])
 }
@@ -129,10 +136,9 @@ export function swap(messages, baseName, indexA, indexB) {
 }
 
 export function inclusiveMapMessages(messages, names) {
+  if (!names.length || messages === EMPTY_ERRORS) return EMPTY_ERRORS
+
   let activeMessages = {}
-
-  if (!names.length) return activeMessages
-
   let paths = Object.keys(messages)
 
   names.forEach(name => {

@@ -285,9 +285,6 @@ describe('Field', () => {
 
     it('should pass meta to field with noValidate', done => {
       let Input = ({ meta }) => {
-        //first pass isn't correct since form hasn't propagated it's state yet.
-        if (!meta.invalid) return null
-
         meta.invalid.should.equals(true)
         meta.valid.should.equals(false)
         meta.errors.should.eqls({

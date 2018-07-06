@@ -18,40 +18,32 @@ class NestedForm extends React.Component {
     name: PropTypes.string.isRequired,
     schema: PropTypes.object,
     errors: PropTypes.object,
-    onError: PropTypes.func.isRequired,
     meta: PropTypes.shape({
       errors: PropTypes.object.isRequired,
       onError: PropTypes.func.isRequired,
     }),
   }
 
-  onError = (formErrors, meta) => {
-    const { name, onError } = this.props
-
-    if (name) {
-      meta.onError(prefix(formErrors, name))
-    } else if (onError) {
-      onError(formErrors)
-    }
-  }
-
   render() {
     const { name, schema, errors, ...props } = this.props
 
     return (
-      <Field name={name} noResolveType noValidate events={null}>
-        {({ meta, value }) => (
-          <Form
-            value={value}
-            {...props}
-            onError={errors => meta.onError(prefix(errors, name))}
-            errors={name ? filter(meta.errors, name) : errors}
-            schema={schema || meta.schema}
-            context={
-              name ? { ...meta.context, ...props.context } : props.context
-            }
-          />
-        )}
+      <Field name={name} noResolveType noValidate events="onChange">
+        {({ meta, value, onChange }) => {
+          return (
+            <Form
+              {...props}
+              value={value}
+              onChange={onChange}
+              onError={errors => meta.onError(prefix(errors, name))}
+              errors={name ? meta.errors : errors}
+              schema={schema || meta.schema}
+              context={
+                name ? { ...meta.context, ...props.context } : props.context
+              }
+            />
+          )
+        }}
       </Field>
     )
   }
