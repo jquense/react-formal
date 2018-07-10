@@ -347,6 +347,7 @@ class Form extends React.PureComponent {
         onSubmit: this.handleSubmit,
         onValidate: this.handleValidationRequest,
         onFieldError: this.handleFieldError,
+        getSchemaForPath: this.getSchemaForPath,
       },
     }))
   }

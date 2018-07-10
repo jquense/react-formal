@@ -53,7 +53,6 @@
   "dependencies": {
     "chain-function": "^1.0.0",
     "classnames": "^2.2.5",
-    "fast-equals": "^1.5.3",
     "invariant": "^2.2.4",
     "lodash": "^4.17.10",
     "memoize-one": "^3.1.1",
