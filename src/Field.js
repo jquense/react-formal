@@ -95,7 +95,7 @@ class Field extends React.PureComponent {
       name,
       exclusive,
       messages,
-      getSchemaForPath,
+      formMethods,
       yupContext,
       submitting = false,
       errorClass = config.errorClass,
@@ -104,7 +104,7 @@ class Field extends React.PureComponent {
     let schema
     try {
 
-      schema = getSchemaForPath && name && getSchemaForPath(name)
+      schema = formMethods.getSchemaForPath && name && formMethods.getSchemaForPath(name)
     } catch (err) { /* ignore */ } // prettier-ignore
 
     let meta = {
@@ -426,7 +426,6 @@ Field.propTypes = {
 export default withState(
   (
     formMethods,
-    getSchemaForPath,
     messages = EMPTY_ERRORS,
     submitting,
     noValidate,
@@ -448,7 +447,6 @@ export default withState(
             messages={messages}
             yupContext={yupContext}
             formMethods={formMethods}
-            getSchemaForPath={getSchemaForPath}
             noValidate={
               props.noValidate == null ? noValidate : props.noValidate
             }
@@ -459,7 +457,6 @@ export default withState(
   },
   [
     state => state.formMethods,
-    state => state.getSchemaForPath,
     state => state.messages,
     state => state.submitting,
     state => state.noValidate,

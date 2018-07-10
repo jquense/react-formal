@@ -30,7 +30,9 @@ class FormContext extends React.Component {
       defaultKey: this.props.defaultKey || DEFAULT_CHANNEL,
     }
   }
-
+  componentWillUnmount() {
+    this.unmounted = true
+  }
   static getDerivedStateFromProps(
     { parentContext, defaultKey = DEFAULT_CHANNEL },
     prevState
@@ -51,8 +53,9 @@ class FormContext extends React.Component {
 
   update = (channel, fn, propagateIfPossible) => {
     ReactDOM.unstable_batchedUpdates(() => {
-      const { parentContext } = this.props
+      if (this.unmounted) return
 
+      const { parentContext } = this.props
       if (parentContext) {
         parentContext.update(channel, fn, false)
 
@@ -88,7 +91,6 @@ class FormContext extends React.Component {
     console.log('FormContext:', this.props.__debugName, ...args)
   }
   render() {
-    // console.log('Reeender', this.id)
     return (
       <State.Provider value={this.state}>
         {typeof this.props.children === 'function'

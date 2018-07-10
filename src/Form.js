@@ -594,9 +594,11 @@ const ControlledForm = uncontrollable(
           messages: props.errors,
           yupContext: props.context,
           noValidate: props.noValidate, // FIXME: should update
-          getSchemaForPath(path) {
-            let { schema, value, context } = props
-            return schema && path && reach(schema, path, value, context)
+          formMethods: {
+            getSchemaForPath(path) {
+              let { schema, value, context } = props
+              return schema && path && reach(schema, path, value, context)
+            },
           },
         }}
       >
