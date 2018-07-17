@@ -86,10 +86,12 @@ class FormContext extends React.Component {
   publish = (fn, mutate) => {
     this.update(this.props.defaultKey || DEFAULT_CHANNEL, fn, true, mutate)
   }
+
   debug = (...args) => {
     if (!this.props.__debugName) return
     console.log('FormContext:', this.props.__debugName, ...args)
   }
+
   render() {
     return (
       <State.Provider value={this.state}>

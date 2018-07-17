@@ -10,7 +10,7 @@ import elementType from 'prop-types-extra/lib/elementType'
 import reach from 'yup/lib/util/reach'
 import shallowequal from 'shallowequal'
 
-import errorManager, { EMPTY_ERRORS } from './errorManager'
+import errorManager from './errorManager'
 import errToJSON from './utils/errToJSON'
 import * as ErrorUtils from './utils/ErrorUtils'
 
@@ -198,8 +198,18 @@ class Form extends React.PureComponent {
     onValidate: PropTypes.func,
 
     /**
-     * Callback that is fired when the native onSubmit event is triggered. Only relevant when
-     * the `component` prop renders a `<form/>` tag. onSubmit will trigger only if the form is valid.
+     * Callback that is fired in response to a submit, _before validation runs.
+     *
+     * ```js
+     * function onSubmit(formValue){
+     *   // do something with valid value
+     * }
+     * ```
+     */
+    onBeforeSubmit: PropTypes.func,
+
+    /**
+     * Callback that is fired in response to a submit, after validation runs for the entire form.
      *
      * ```js
      * function onSubmit(formValue){
@@ -319,7 +329,7 @@ class Form extends React.PureComponent {
     as: 'form',
     strict: false,
     delay: 300,
-    errors: EMPTY_ERRORS,
+    errors: ErrorUtils.EMPTY_ERRORS,
     getter,
     setter,
   }
@@ -470,7 +480,14 @@ class Form extends React.PureComponent {
   }
 
   submit = () => {
-    let { schema, noValidate, value, onSubmitFinished, ...options } = this.props
+    let {
+      schema,
+      noValidate,
+      value,
+      onSubmitFinished,
+      errors,
+      ...options
+    } = this.props
 
     if (this._submitting) {
       return Promise.resolve(false)
@@ -478,6 +495,8 @@ class Form extends React.PureComponent {
 
     options.abortEarly = false
     options.strict = false
+
+    this.notify('onBeforeSubmit', { value, errors })
 
     if (noValidate)
       return Promise.resolve(true).then(() => this.notify('onSubmit', value))
