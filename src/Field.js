@@ -129,12 +129,20 @@ class Field extends React.PureComponent {
   }
 
   handleValidateField(event, args) {
-    const { name, alsoValidates, formMethods, noValidate } = this.props
+    const {
+      name,
+      alsoValidates,
+      onlyValidates,
+      formMethods,
+      noValidate,
+    } = this.props
 
     if (noValidate || !formMethods) return
 
     let fieldsToValidate = [name]
-    if (alsoValidates != null) fieldsToValidate.concat(alsoValidates)
+
+    if (onlyValidates != null) fieldsToValidate = onlyValidates
+    else if (alsoValidates != null) fieldsToValidate.concat(alsoValidates)
 
     formMethods.onValidate(fieldsToValidate, event, args)
   }
@@ -349,6 +357,11 @@ Field.propTypes = {
    * ```
    */
   alsoValidates: PropTypes.oneOfType([
+    PropTypes.string,
+    PropTypes.arrayOf(PropTypes.string),
+  ]),
+
+  onlyValidates: PropTypes.oneOfType([
     PropTypes.string,
     PropTypes.arrayOf(PropTypes.string),
   ]),
