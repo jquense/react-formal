@@ -163,6 +163,7 @@ class Field extends React.PureComponent {
     let fieldProps = Object.assign(
       { name },
       omit(this.props, Object.keys(Field.propTypes)),
+      bindingProps,
       this.getEventHandlers(events)
     )
 
