@@ -129,20 +129,11 @@ class Field extends React.PureComponent {
   }
 
   handleValidateField(event, args) {
-    const {
-      name,
-      alsoValidates,
-      onlyValidates,
-      formMethods,
-      noValidate,
-    } = this.props
+    const { name, validates, formMethods, noValidate } = this.props
 
     if (noValidate || !formMethods) return
 
-    let fieldsToValidate = [name]
-
-    if (onlyValidates != null) fieldsToValidate = onlyValidates
-    else if (alsoValidates != null) fieldsToValidate.concat(alsoValidates)
+    let fieldsToValidate = validates != null ? [].concat(validates) : [name]
 
     formMethods.onValidate(fieldsToValidate, event, args)
   }
@@ -347,21 +338,19 @@ Field.propTypes = {
   errorClass: PropTypes.string,
 
   /**
-   * Tells the Field to trigger validation for addition paths as well as its own (`name`).
+   * Tells the Field to trigger validation for specific paths.
    * Useful when used in conjuction with a `mapFromValue` hash that updates more than one value, or
    * if you want to trigger validation for the parent path as well.
    *
+   * > NOTE! This overrides the default behavior of validating the field itself by `name`,
+   * include the `name` if you want the field to validate itself.
+   *
    * ```js
-   * <Form.Field name='name.first' alsoValidates="name" />
-   * <Form.Field name='name.last' alsoValidates={['name', 'surname']} />
+   * <Form.Field name='name.first' validates="name.last" />
+   * <Form.Field name='name' validates={['name', 'surname']} />
    * ```
    */
-  alsoValidates: PropTypes.oneOfType([
-    PropTypes.string,
-    PropTypes.arrayOf(PropTypes.string),
-  ]),
-
-  onlyValidates: PropTypes.oneOfType([
+  validates: PropTypes.oneOfType([
     PropTypes.string,
     PropTypes.arrayOf(PropTypes.string),
   ]),
