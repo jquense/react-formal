@@ -1,5 +1,6 @@
 import React from 'react'
 import PropTypes from 'prop-types'
+import { graphql } from 'gatsby'
 
 import Glyphicon from 'react-bootstrap/lib/Glyphicon'
 import Label from 'react-bootstrap/lib/Label'
@@ -142,7 +143,8 @@ class PropTable extends React.Component {
         <small>
           <em className="text-info">
             <Glyphicon glyph="info-sign" />
-            &nbsp;{text}
+            &nbsp;
+            {text}
           </em>
         </small>
       </div>
@@ -199,15 +201,13 @@ class PropTable extends React.Component {
   }
 }
 
-export const descFragment = graphql`
+export const metadataFragment = graphql`
   fragment Description_markdown on ComponentDescription {
     childMarkdownRemark {
       html
     }
   }
-`
 
-export const metadataFragment = graphql`
   fragment PropTable_metadata on ComponentMetadata {
     composes
     displayName

@@ -1,0 +1,11 @@
+parser: babel-eslint
+extends: jason/react
+rules: {
+  no-unused-vars: [2, {
+      "vars": "all",
+      "args": "after-used",
+      "varsIgnorePattern": "^_",
+      "argsIgnorePattern": "^_",
+    }],
+
+}

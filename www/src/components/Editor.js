@@ -8,7 +8,7 @@ import Form from 'react-formal'
 
 import { LiveProvider, LiveEditor, LiveError, LivePreview } from 'react-live'
 
-import '../css/one-light.less'
+import '../css/one-light.scss'
 
 const MyDateInput = props => <DateInput {...props} type="datetime-local" />
 

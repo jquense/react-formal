@@ -628,8 +628,7 @@ const ControlledForm = uncontrollable(
   {
     value: 'onChange',
     errors: 'onError',
-  },
-  ['submit', 'validate']
+  }
 )
 
 ControlledForm.getter = getter

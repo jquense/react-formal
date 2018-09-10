@@ -16,11 +16,8 @@ module.exports = {
     'gatsby-transformer-react-docgen',
     {
       resolve: 'gatsby-transformer-remark',
-      options: {
-        plugins: ['gatsby-remark-prismjs'],
-      },
     },
     'gatsby-plugin-catch-links',
-    'gatsby-plugin-less',
+    'gatsby-plugin-sass',
   ],
 }

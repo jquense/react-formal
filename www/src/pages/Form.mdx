@@ -1,0 +1,12 @@
+import { graphql } from 'gatsby';
+
+import '../components/PropTable';
+
+export const query = graphql`
+  query {
+    Form: componentMetadata(displayName: { eq: "Form" }) {
+      displayName
+      ...PropTable_metadata
+    }
+  }
+`
