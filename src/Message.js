@@ -3,7 +3,7 @@ import PropTypes from 'prop-types'
 
 import uniq from './utils/uniqMessage'
 import { filterAndMapMessages } from './utils/ErrorUtils'
-import { withState } from './FormContext'
+import { withState, FORM_DATA } from './Contexts'
 
 let flatten = (arr, next) => arr.concat(next)
 
@@ -18,7 +18,7 @@ const renderMessage = (messages, props) => (
  * @alias Message
  */
 function FormMessage(
-  messages,
+  { messages },
   {
     for: names,
     className,
@@ -77,6 +77,6 @@ const propTypes = {
   filter: PropTypes.func,
 }
 
-export default withState(FormMessage, [state => state && state.messages], {
+export default withState(FormMessage, FORM_DATA.MESSAGES, {
   propTypes,
 })

@@ -84,9 +84,6 @@ class Docs extends React.Component {
                 <Link to="/api/field">Form.Field</Link>
               </li>
               <li>
-                <Link to="/api/context">Form.Context</Link>
-              </li>
-              <li>
                 <Link to="/api/message">Form.Message</Link>
               </li>
               <li>
@@ -116,10 +113,9 @@ class Main extends React.Component {
         <div className="jumbotron">
           <div className="container">
             <h1>
-              React&nbsp;<img
-                src="./bow-tie.svg"
-                style={{ width: 75, marginTop: -5 }}
-              />&nbsp;Formal
+              React&nbsp;
+              <img src="./bow-tie.svg" style={{ width: 75, marginTop: -5 }} />
+              &nbsp;Formal
             </h1>
             <p>Classy HTML form management</p>
           </div>
@@ -153,10 +149,12 @@ class App extends React.Component {
             {!home && (
               <span className="navbar-brand">
                 <Link to="/getting-started">
-                  React&nbsp;<img
+                  React&nbsp;
+                  <img
                     src="./bow-tie.svg"
                     style={{ width: 30, marginTop: -5 }}
-                  />&nbsp;Formal
+                  />
+                  &nbsp;Formal
                 </Link>
               </span>
             )}

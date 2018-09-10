@@ -1,6 +1,6 @@
 global.requestAnimationFrame = cb => setTimeout(cb, 0)
 const { configure, ShallowWrapper, ReactWrapper } = require('enzyme')
-const Adapter = require('@monastic.panic/enzyme-adapter-react-16')
+const Adapter = require('enzyme-adapter-react-16')
 
 global.chai = require('chai')
 global.sinon = require('sinon')
@@ -20,6 +20,10 @@ function assertLength(length) {
     result.should.have.length(length)
     return result
   }
+}
+ReactWrapper.prototype.print = function print() {
+  console.log(this.debug())
+  return this
 }
 
 ReactWrapper.prototype.assertSingle = assertLength(1)

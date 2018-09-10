@@ -6,7 +6,7 @@ import elementType from 'prop-types-extra/lib/elementType'
 
 import createEventHandler from './utils/createEventHandler'
 import { filterAndMapMessages } from './utils/ErrorUtils'
-import { withState } from './FormContext'
+import { withState, FORM_DATA, FormActionsContext } from './Contexts'
 
 /**
  * A Form submit button, for triggering validations for the entire form or specific fields.
@@ -22,12 +22,6 @@ class FormSubmit extends React.Component {
      * Specify particular fields to validate in the related form. If empty the entire form will be validated.
      */
     triggers: PropTypes.arrayOf(PropTypes.string.isRequired),
-
-    /**
-     * The key of `Form` that "owns" this button. Validation will be triggered
-     * only for that `Form`.
-     */
-    formKey: PropTypes.string,
 
     /**
      * When a function, `children` is called with the Form submitting state
@@ -56,7 +50,7 @@ class FormSubmit extends React.Component {
     /** @private */
     messages: PropTypes.object,
     /** @private */
-    formMethods: PropTypes.object,
+    actions: PropTypes.object,
     /** @private */
     submitting: PropTypes.bool,
   }
@@ -85,20 +79,18 @@ class FormSubmit extends React.Component {
   }
 
   handleSubmit(event, args) {
-    const { formMethods, triggers, formKey } = this.props
-    if (!formMethods) {
+    const { actions, triggers } = this.props
+    if (!actions) {
       return warning(
         false,
         'A Form submit event ' +
           'was triggered from a component outside the context of a Form. ' +
-          'The Button should be wrapped in a Form or Form.Context component' +
-          (formKey ? ` with the formKey: "${formKey}" ` : '.')
+          'The Button should be wrapped in a Form component'
       )
     }
 
-    if (triggers && triggers.length)
-      formMethods.onValidate(triggers, event, args)
-    else formMethods.onSubmit()
+    if (triggers && triggers.length) actions.onValidate(triggers, event, args)
+    else actions.onSubmit()
   }
 
   render() {
@@ -107,11 +99,9 @@ class FormSubmit extends React.Component {
       triggers,
       children,
       messages,
-      submitCount,
-      submitting = false,
+      submits,
       as: Component,
-      formKey: _0,
-      formMethods: _1,
+      actions: _1,
       ...props
     } = this.props
 
@@ -123,7 +113,7 @@ class FormSubmit extends React.Component {
     props = Object.assign(props, this.getEventHandlers(events))
 
     return typeof children === 'function' ? (
-      children({ messages, props, submitting, submitCount })
+      children({ messages, props, ...submits })
     ) : (
       <Component type={partial ? 'button' : 'submit'} {...props}>
         {children}
@@ -133,19 +123,18 @@ class FormSubmit extends React.Component {
 }
 
 export default withState(
-  (formMethods, messages, submitting, submitCount, props) => (
-    <FormSubmit
-      {...props}
-      formMethods={formMethods}
-      messages={messages}
-      submitting={submitting}
-      submitCount={submitCount || 0}
-    />
+  (ctx, props, ref) => (
+    <FormActionsContext.Consumer>
+      {actions => (
+        <FormSubmit
+          {...props}
+          ref={ref}
+          actions={actions}
+          submits={ctx.submits}
+          messages={ctx.messages}
+        />
+      )}
+    </FormActionsContext.Consumer>
   ),
-  [
-    state => state.formMethods,
-    state => state.messages,
-    state => state.submitting,
-    state => state.submitCount,
-  ]
+  FORM_DATA.MESSAGES | FORM_DATA.SUBMITS
 )

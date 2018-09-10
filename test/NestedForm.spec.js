@@ -3,18 +3,8 @@ import React from 'react'
 import * as yup from 'yup'
 
 import Form from '../src'
-import { withState } from '../src/FormContext'
 import errorManager from '../src/errorManager'
 import NestedForm from '../src/NestedForm'
-
-let LeakySubmit = withState(
-  (formMethods = {}) => (
-    <button type="submit" onClick={formMethods.onSubmit}>
-      Submit
-    </button>
-  ),
-  [state => state.formMethods]
-)
 
 describe('NestedForm', () => {
   let attachTo

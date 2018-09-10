@@ -93,22 +93,25 @@ describe('Triggers', () => {
 
   it('Field should handle submitting state', async () => {
     let spy = sinon.spy(() => sleep(50))
+    let ref = React.createRef()
 
     let wrapper = mount(
-      <Form schema={schema} submitForm={spy} formKey="foo">
-        <div>
-          <Form.Field name="fieldA">
-            {({ meta }) => <span>submitting: {String(meta.submitting)}</span>}
-          </Form.Field>
-        </div>
-      </Form>
+      <div>
+        <Form ref={ref} schema={schema} submitForm={spy}>
+          <div>
+            <Form.Field name="fieldA">
+              {({ meta }) => <span>submitting: {String(meta.submitting)}</span>}
+            </Form.Field>
+          </div>
+        </Form>
+      </div>
     )
 
     let trigger = wrapper.find('span')
 
     trigger.text().should.equal('submitting: false')
 
-    let promise = wrapper.instance().submit()
+    let promise = ref.current.submit()
 
     trigger.text().should.equal('submitting: true')
 
@@ -118,27 +121,30 @@ describe('Triggers', () => {
   })
 
   it('Submit should handle submitting state', async () => {
+    let ref = React.createRef()
     let spy = sinon.spy(() => sleep(50))
 
     let wrapper = mount(
-      <Form schema={schema} submitForm={spy} formKey="foo">
-        <div>
-          <Form.Submit name="fieldA">
-            {({ submitting, submitCount }) => (
-              <span>
-                {String(submitting)}: {String(submitCount)}
-              </span>
-            )}
-          </Form.Submit>
-        </div>
-      </Form>
+      <div>
+        <Form ref={ref} schema={schema} submitForm={spy}>
+          <div>
+            <Form.Submit name="fieldA">
+              {({ submitting, submitCount }) => (
+                <span>
+                  {String(submitting)}: {String(submitCount)}
+                </span>
+              )}
+            </Form.Submit>
+          </div>
+        </Form>
+      </div>
     )
 
     let trigger = wrapper.find('span')
 
     trigger.text().should.equal('false: 0')
 
-    let promise = wrapper.instance().submit()
+    let promise = ref.current.submit()
 
     trigger.text().should.equal('true: 0')
 

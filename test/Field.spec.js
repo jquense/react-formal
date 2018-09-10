@@ -66,20 +66,6 @@ describe('Field', () => {
     wrapper.assertSingle('textarea')
   })
 
-  it('should use schema metadata', () => {
-    let schema = yup.object({
-      string: yup.string().meta({
-        reactFormalType: 'number',
-      }),
-    })
-
-    mount(
-      <Form schema={schema} defaultValue={{}}>
-        <Form.Field name="string" />
-      </Form>
-    ).assertSingle('input[type="number"]')
-  })
-
   it('should use type override', () => {
     let wrapper = mount(
       <Form schema={schema} defaultValue={{}}>
@@ -341,6 +327,41 @@ describe('Field', () => {
         'name.first': 'baz',
         bar: 'baz',
       })
+    })
+
+    it.only('should set events via a function', done => {
+      let schema = yup.object({
+        number: yup.number().min(5),
+      })
+      let spy = sinon.spy()
+      let wrapper = mount(
+        <Form
+          delay={0}
+          schema={schema}
+          onValidate={spy}
+          defaultValue={{ number: 6 }}
+        >
+          <Form.Field
+            name="number"
+            events={({ valid }) => (valid ? ['onBlur'] : ['onChange'])}
+          />
+        </Form>
+      )
+
+      wrapper.find('input').simulate('change', { target: { value: 4 } })
+      wrapper.find('input').simulate('blur', { target: { value: 4 } })
+
+      setTimeout(() => {
+        spy.callCount.should.equal(1)
+        wrapper.find('input').simulate('blur', { target: { value: 4 } })
+
+        spy.callCount.should.equal(1)
+
+        wrapper.find('input').simulate('change', { target: { value: 6 } })
+
+        spy.callCount.should.equal(2)
+        done()
+      }, 10)
     })
 
     it('should field onError should replace field errors', () => {

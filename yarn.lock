@@ -2,6 +2,15 @@
 # yarn lockfile v1
 
 
+"@4c/layout@^0.2.0":
+  version "0.2.0"
+  resolved "https://registry.yarnpkg.com/@4c/layout/-/layout-0.2.0.tgz#456e8ae6183c25debbe9a52f82a15ac079824782"
+  dependencies:
+    "@babel/runtime" "^7.0.0"
+    classnames "^2.2.6"
+    prop-types "^15.6.2"
+    prop-types-extra "^1.1.0"
+
 "@babel/cli@7.0.0":
   version "7.0.0"
   resolved "https://registry.yarnpkg.com/@babel/cli/-/cli-7.0.0.tgz#108b395fd43fff6681d36fb41274df4d8ffeb12e"
@@ -1648,7 +1657,7 @@ entities@^1.1.1, entities@~1.1.1:
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/entities/-/entities-1.1.1.tgz#6e5c2d0a5621b5dadaecef80b90edfb5cd7772f0"
 
-enzyme-adapter-react-16@^1.2.1:
+enzyme-adapter-react-16@^1.5.0:
   version "1.5.0"
   resolved "https://registry.yarnpkg.com/enzyme-adapter-react-16/-/enzyme-adapter-react-16-1.5.0.tgz#50af8d76a45fe0915de932bd95d34cdca75c0be3"
   dependencies:
@@ -4036,6 +4045,13 @@ react-prop-types@^0.4.0:
   resolved "https://registry.yarnpkg.com/react-prop-types/-/react-prop-types-0.4.0.tgz#f99b0bfb4006929c9af2051e7c1414a5c75b93d0"
   dependencies:
     warning "^3.0.0"
+
+react-tackle-box@^2.1.0:
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/react-tackle-box/-/react-tackle-box-2.1.0.tgz#f9e51ba12011f49d00d01099db021b912af36daf"
+  dependencies:
+    "@4c/layout" "^0.2.0"
+    invariant "^2.2.4"
 
 react-test-renderer@^16.0.0-0:
   version "16.5.0"

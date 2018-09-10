@@ -10,12 +10,8 @@ import shallowequal from 'shallowequal'
 import config from './config'
 import isNativeType from './utils/isNativeType'
 import resolveFieldComponent from './utils/resolveFieldComponent'
-import {
-  EMPTY_ERRORS,
-  inclusiveMapMessages,
-  filterAndMapMessages,
-} from './utils/ErrorUtils'
-import { withState } from './FormContext'
+import { inclusiveMapMessages, filterAndMapMessages } from './utils/ErrorUtils'
+import { withState, FORM_DATA, FormActionsContext } from './Contexts'
 import createEventHandler from './utils/createEventHandler'
 
 function notify(handler, args) {
@@ -28,7 +24,7 @@ function isFilterMessagesEqual(a, b) {
     a.names === b.names &&
     a.mapMessages === b.mapMessages
 
-  // !isEqual && console.log('filter equal', a.messages, b.messages)
+  // !isEqual && console.log('filter equalg cm ""', a.messages, b.messages)
   return isEqual
 }
 
@@ -95,16 +91,16 @@ class Field extends React.PureComponent {
       name,
       exclusive,
       messages,
-      formMethods,
+      actions,
       yupContext,
-      submitting = false,
+      submits,
       errorClass = config.errorClass,
     } = this.props
 
     let schema
     try {
 
-      schema = formMethods.getSchemaForPath && name && formMethods.getSchemaForPath(name)
+      schema = actions.getSchemaForPath && name && actions.getSchemaForPath(name)
     } catch (err) { /* ignore */ } // prettier-ignore
 
     let meta = {
@@ -112,6 +108,7 @@ class Field extends React.PureComponent {
       errorClass,
       context: yupContext,
       onError: this.handleFieldError,
+      ...submits,
     }
 
     const errors = this.memoFilterAndMapMessages({
@@ -123,25 +120,24 @@ class Field extends React.PureComponent {
     meta.errors = errors
     meta.invalid = !!Object.keys(errors).length
     meta.valid = !meta.invalid
-    meta.submitting = submitting
 
     return meta
   }
 
   handleValidateField(event, args) {
-    const { name, validates, formMethods, noValidate } = this.props
+    const { name, validates, actions, noValidate } = this.props
 
-    if (noValidate || !formMethods) return
+    if (noValidate || !actions) return
 
     let fieldsToValidate = validates != null ? [].concat(validates) : [name]
 
-    formMethods.onValidate(fieldsToValidate, event, args)
+    actions.onValidate(fieldsToValidate, event, args)
   }
 
   handleFieldError = errors => {
-    let { name, formMethods } = this.props
+    let { name, actions } = this.props
 
-    return formMethods.onFieldError(name, errors)
+    return actions.onFieldError(name, errors)
   }
 
   render() {
@@ -155,26 +151,15 @@ class Field extends React.PureComponent {
       noValidate,
       noResolveType,
       bindingProps,
-      formMethods,
+      actions,
       events = config.events,
     } = this.props
-
-    let fieldProps = Object.assign(
-      { name },
-      omit(this.props, Object.keys(Field.propTypes)),
-      bindingProps,
-      this.getEventHandlers(events)
-    )
-
-    // ensure that no inputs are left uncontrolled
-    fieldProps.value =
-      bindingProps.value === undefined ? null : bindingProps.value
 
     const meta = this.buildMeta()
 
     if (process.env.NODE_ENV !== 'production') {
       warning(
-        !formMethods || noValidate || !name || meta.schema,
+        !actions || noValidate || !name || meta.schema,
         `There is no corresponding schema defined for this field: "${name}" ` +
           "Each Field's `name` prop must be a valid path defined by the parent Form schema"
       )
@@ -184,9 +169,24 @@ class Field extends React.PureComponent {
       ? resolveFieldComponent(type, meta.schema)
       : [null, type]
 
+    meta.resolvedType = resolvedType
+
+    let eventHandlers = this.getEventHandlers(
+      typeof events === 'function' ? events(meta) : events
+    )
+
+    let fieldProps = Object.assign(
+      { name },
+      omit(this.props, Object.keys(Field.propTypes)),
+      bindingProps,
+      eventHandlers
+    )
+
     fieldProps.type = isNativeType(resolvedType) ? resolvedType : undefined
 
-    meta.resolvedType = resolvedType
+    // ensure that no inputs are left uncontrolled
+    fieldProps.value =
+      bindingProps.value === undefined ? null : bindingProps.value
 
     if (!noValidate) {
       fieldProps.className = cn(className, meta.invalid && meta.errorClass)
@@ -257,18 +257,18 @@ Field.propTypes = {
    * ```
    * Custom Inputs should comply with the basic input api contract: set a value via a `value` prop and
    * broadcast changes to that value via an `onChange` handler.
-   *
-   * You can also permenantly map Components to a string `type` name via the top-level
-   * `addInputType()` api.
    */
   type: PropTypes.oneOfType([PropTypes.func, PropTypes.string]),
 
   /**
    * Event name or array of event names that the Field should trigger a validation.
+   * You can also specify a function that receives the Field `meta` object and returns an array of events
+   * in order to change validation strategies based on validity.
    */
   events: PropTypes.oneOfType([
     PropTypes.string,
     PropTypes.arrayOf(PropTypes.string),
+    PropTypes.func,
   ]),
 
   /**
@@ -419,50 +419,40 @@ Field.propTypes = {
   /** @private */
   messages: PropTypes.object,
   /** @private */
-  formMethods: PropTypes.object,
+  actions: PropTypes.object,
   /** @private */
-  getSchemaForPath: PropTypes.func,
-  /** @private */
-  submitting: PropTypes.bool,
+  submits: PropTypes.shape({
+    submitAttempts: PropTypes.number,
+    submitCount: PropTypes.number,
+    submitting: PropTypes.bool,
+  }),
 }
 
-export default withState(
-  (
-    formMethods,
-    messages = EMPTY_ERRORS,
-    submitting,
-    noValidate,
-    yupContext,
-    props,
-    ref
-  ) => {
-    let { mapToValue, mapFromValue, name, fieldRef, ...rest } = props
+export default withState((ctx, props, ref) => {
+  let { mapToValue, mapFromValue, name, fieldRef, ...rest } = props
 
-    return (
-      <Binding bindTo={mapToValue || name} mapValue={mapFromValue}>
-        {bindingProps => (
-          <Field
-            {...rest}
-            name={name}
-            fieldRef={fieldRef || ref}
-            bindingProps={bindingProps}
-            submitting={submitting}
-            messages={messages}
-            yupContext={yupContext}
-            formMethods={formMethods}
-            noValidate={
-              props.noValidate == null ? noValidate : props.noValidate
-            }
-          />
-        )}
-      </Binding>
-    )
-  },
-  [
-    state => state.formMethods,
-    state => state.messages,
-    state => state.submitting,
-    state => state.noValidate,
-    state => state.yupContext,
-  ]
-)
+  return (
+    <Binding bindTo={mapToValue || name} mapValue={mapFromValue}>
+      {bindingProps => (
+        <FormActionsContext.Consumer>
+          {actions => (
+            <Field
+              {...rest}
+              name={name}
+              actions={actions}
+              fieldRef={fieldRef || ref}
+              bindingProps={bindingProps}
+              messages={ctx.messages}
+              yupContext={ctx.yupContext}
+              noValidate={ctx.noValidate}
+              submits={ctx.submits}
+              noValidate={
+                props.noValidate == null ? ctx.noValidate : props.noValidate
+              }
+            />
+          )}
+        </FormActionsContext.Consumer>
+      )}
+    </Binding>
+  )
+}, FORM_DATA.MESSAGES | FORM_DATA.SUBMITS | FORM_DATA.YUP_CONTEXT | FORM_DATA.NO_VALIDATE)

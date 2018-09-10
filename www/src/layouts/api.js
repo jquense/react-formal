@@ -24,9 +24,7 @@ function ApiLayout({ children, ...props }) {
               <li>
                 <Link to="/api/field">Form.Field</Link>
               </li>
-              <li>
-                <Link to="/api/context">Form.Context</Link>
-              </li>
+
               <li>
                 <Link to="/api/message">Form.Message</Link>
               </li>

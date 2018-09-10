@@ -1,18 +1,20 @@
 import { mount } from 'enzyme'
 import React from 'react'
 import * as yup from 'yup'
+import createSlot from 'react-tackle-box/Slot'
 
 import Form from '../src'
-import { withState } from '../src/FormContext'
+import { FormActionsContext } from '../src/Contexts'
 import errorManager from '../src/errorManager'
 
-let LeakySubmit = withState(
-  (formMethods = {}) => (
-    <button type="submit" onClick={formMethods.onSubmit}>
-      Submit
-    </button>
-  ),
-  [state => state.formMethods]
+let LeakySubmit = () => (
+  <FormActionsContext.Consumer>
+    {({ onSubmit }) => (
+      <button type="submit" onClick={onSubmit}>
+        Submit
+      </button>
+    )}
+  </FormActionsContext.Consumer>
 )
 
 describe('Form', () => {
@@ -241,20 +243,58 @@ describe('Form', () => {
     }, 10)
   })
 
+  it('submits through a Slot', done => {
+    let onSubmit = sinon.spy()
+    let submitForm = sinon.spy(() => Promise.resolve())
+
+    let Slot = createSlot()
+
+    let wrapper = mount(
+      <div>
+        <Form
+          onSubmit={onSubmit}
+          submitForm={submitForm}
+          schema={schema}
+          defaultValue={{}}
+        >
+          <Form.Field name="name" type="text" className="test" />
+          <Slot.Entry waitForOutlet>
+            <Form.Submit type="submit" />
+          </Slot.Entry>
+        </Form>
+
+        <Slot.Outlet />
+      </div>
+    )
+
+    wrapper.assertSingle('FormSubmit').simulate('click')
+
+    setTimeout(() => {
+      onSubmit.should.have.been.calledOnce()
+      submitForm.should.have.been.calledOnce()
+      submitForm.should.have.been.calledAfter(onSubmit)
+      done()
+    }, 10)
+  })
+
   it('does not submit while already submitting', async done => {
+    let ref = React.createRef()
     let onSubmit = sinon.spy()
     let submitForm = sinon.spy(() => new Promise(r => setTimeout(r, 5)))
 
     let wrapper = mount(
-      <Form
-        onSubmit={onSubmit}
-        submitForm={submitForm}
-        schema={schema}
-        defaultValue={{}}
-      >
-        <Form.Field name="name" type="text" className="test" />
-        <Form.Submit type="submit" />
-      </Form>
+      <div>
+        <Form
+          ref={ref}
+          onSubmit={onSubmit}
+          submitForm={submitForm}
+          schema={schema}
+          defaultValue={{}}
+        >
+          <Form.Field name="name" type="text" className="test" />
+          <Form.Submit type="submit" />
+        </Form>
+      </div>
     )
 
     wrapper
@@ -262,7 +302,7 @@ describe('Form', () => {
       .simulate('click')
       .simulate('click')
 
-    await wrapper.instance().submit()
+    await ref.current.submit()
 
     setTimeout(() => {
       onSubmit.should.have.been.calledOnce()
@@ -272,24 +312,27 @@ describe('Form', () => {
   })
 
   it('should only report ValidationErrors', () => {
+    let ref = React.createRef()
+
     let spy = sinon.spy()
     let wrapper = mount(
-      <Form
-        onSubmit={() => {
-          throw 'foo!'
-        }}
-        onError={spy}
-        schema={schema}
-        defaultValue={{}}
-      >
-        <Form.Field name="name" type="text" className="test" />
-        <LeakySubmit />
-      </Form>
+      <div>
+        <Form
+          ref={ref}
+          onSubmit={() => {
+            throw 'foo!'
+          }}
+          onError={spy}
+          schema={schema}
+          defaultValue={{}}
+        >
+          <Form.Field name="name" type="text" className="test" />
+          <LeakySubmit />
+        </Form>
+      </div>
     )
 
-    let inst = wrapper.instance()
-
-    return inst.submit().catch(err => {
+    return ref.current.submit().catch(err => {
       err.should.equal('foo!')
       spy.should.not.have.been.called()
     })

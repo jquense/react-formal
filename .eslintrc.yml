@@ -1,5 +1,7 @@
 parser: babel-eslint
 extends: jason/react
+globals:
+  Promise: true
 rules: {
   no-unused-vars: [2, {
       "vars": "all",

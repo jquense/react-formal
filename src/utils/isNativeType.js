@@ -1,26 +1,5 @@
+const types = /^(button|checkbox|color|date|datetime|datetime-local|email|file|month|number|password|radio|range|reset|search|submit|tel|text|time|url|w)$/
 
 export default function isNativeType(type) {
-  return (
-    type === 'button' ||
-    type === 'checkbox' ||
-    type === 'color' ||
-    type === 'date' ||
-    type === 'datetime' ||
-    type === 'datetime-local' ||
-    type === 'email' ||
-    type === 'file' ||
-    type === 'month' ||
-    type === 'number' ||
-    type === 'password' ||
-    type === 'radio' ||
-    type === 'range' ||
-    type === 'reset' ||
-    type === 'search' ||
-    type === 'submit' ||
-    type === 'tel' ||
-    type === 'text' ||
-    type === 'time' ||
-    type === 'url' ||
-    type === 'week'
-  )
+  return typeof type === 'string' && type.match(types)
 }

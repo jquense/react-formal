@@ -33,7 +33,10 @@ let toDateString = (date, part) => {
 }
 
 let isDateType = type =>
-  type === 'date' || type === 'datetime' || type === 'datetime-local'
+  type === 'date' ||
+  type === 'time' ||
+  type === 'datetime' ||
+  type === 'datetime-local'
 
 class Input extends React.Component {
   static propTypes = {
@@ -43,11 +46,12 @@ class Input extends React.Component {
     inputRef: PropTypes.func,
     meta: PropTypes.object,
     multiple: PropTypes.bool,
+    noCast: PropTypes.bool,
     type: PropTypes.string,
   }
 
   handleChange = e => {
-    const { meta, onChange, multiple, value: lastValue } = this.props
+    const { meta, onChange, multiple, value: lastValue, noCast } = this.props
     const { resolvedType, schema, context } = meta
 
     if (resolvedType === 'file') {
@@ -65,7 +69,7 @@ class Input extends React.Component {
     if (value === '') value = null
     if (isDateType(resolvedType)) value = parse(value, lastValue, resolvedType)
 
-    if (schema && schema.isType(value)) {
+    if (schema && schema.isType(value) && !noCast) {
       try {
         value = schema.cast(value, { context })
       } catch (err) {
@@ -77,15 +81,15 @@ class Input extends React.Component {
   }
 
   render() {
-    let { meta, value, inputRef, ...props } = this.props
+    let { meta, value, inputRef: ref, noCast: _, ...props } = this.props
     const { resolvedType } = meta
 
     // not really supported...
     if (resolvedType === 'radio') {
-      return <input {...props} type="radio" />
+      return <input ref={ref} {...props} type="radio" />
     }
     if (resolvedType === 'checkbox' || resolvedType === 'boolean') {
-      return <input {...props} type="checkbox" checked={!!value} />
+      return <input ref={ref} {...props} type="checkbox" checked={!!value} />
     }
 
     let Component = 'input'
@@ -98,8 +102,8 @@ class Input extends React.Component {
     return (
       <Component
         {...props}
+        ref={ref}
         value={value}
-        ref={inputRef}
         onChange={this.handleChange}
       />
     )

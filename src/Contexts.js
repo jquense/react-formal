@@ -1,0 +1,46 @@
+import React from 'react'
+import forwardRef from 'react-context-toolbox/lib/forwardRef'
+import shallowequal from 'shallowequal'
+import { EMPTY_ERRORS } from './utils/ErrorUtils'
+
+export const DEFAULT_CHANNEL = '@@parent'
+
+const isEqualOrNullish = (a, b) => a === b || (a == null && b == null)
+
+export const initial = {
+  messages: EMPTY_ERRORS,
+  submits: {
+    submitCount: 0,
+    submitAttempts: 0,
+    submitting: false,
+  },
+}
+
+export const FORM_DATA = {
+  VALUE: 1,
+  MESSAGES: 2,
+  TOUCHED: 4,
+  SUBMITS: 8,
+  YUP_CONTEXT: 16,
+  NO_VALIDATE: 32,
+}
+
+export const FormActionsContext = React.createContext(null)
+
+export const FormDataContext = React.createContext(initial, (prev, next) => {
+  let changed = 0
+  if (!shallowequal(prev.messages, next.messages)) changed |= FORM_DATA.MESSAGES
+  if (!shallowequal(prev.submitsm, next.submits)) changed |= FORM_DATA.SUBMITS
+  if (!isEqualOrNullish(prev.value, next.value)) changed |= FORM_DATA.VALUE
+
+  return changed
+})
+
+export const withState = (render, bits, opts) =>
+  forwardRef((props, ref) => {
+    return (
+      <FormDataContext.Consumer unstable_observedBits={bits}>
+        {context => render(context, props, ref)}
+      </FormDataContext.Consumer>
+    )
+  }, opts || {})

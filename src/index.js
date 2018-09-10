@@ -1,12 +1,10 @@
 import Form from './Form'
 import Field from './Field'
 import FieldArray from './FieldArray'
-import Context from './FormContext'
 import Message from './Message'
 import Summary from './Summary'
 import errToJSON from './utils/errToJSON'
 import Submit from './FormSubmit'
-import addInputTypes from './addInputType'
 import config from './config'
 import invariant from 'invariant'
 
@@ -16,8 +14,6 @@ const statics = {
   Message,
   Summary,
   Submit,
-  Context,
-  addInputTypes,
   setDefaults(defaults = {}) {
     Object.assign(config, defaults)
   },
