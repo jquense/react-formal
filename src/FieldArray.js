@@ -5,13 +5,13 @@ import { move, remove, shift, unshift } from './utils/ErrorUtils'
 
 import Field from './Field'
 
-function filter(messages, baseName) {
-  const paths = Object.keys(messages || {})
+function filter(errors, baseName) {
+  const paths = Object.keys(errors || {})
   const result = {}
 
   paths.forEach(path => {
     if (path.indexOf(baseName) !== 0) return
-    result[path] = messages[path]
+    result[path] = errors[path]
   })
 
   return result

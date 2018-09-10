@@ -45,7 +45,7 @@
     "build:esm": " babel src --out-dir es --delete-dir-on-start --env-name esm",
     "build": "babel src --out-dir lib --delete-dir-on-start --copy-files && npm run build:esm",
     "prepublishOnly": "npm run build",
-    "release": "release"
+    "release": "rollout"
   },
   "peerDependencies": {
     "react": ">=16.4.0"
@@ -67,6 +67,7 @@
     "yup": "^0.26.3"
   },
   "devDependencies": {
+    "@4c/rollout": "^1.1.0",
     "@babel/cli": "7.0.0",
     "@babel/core": "7.0.0",
     "babel-core": "^7.0.0-0",

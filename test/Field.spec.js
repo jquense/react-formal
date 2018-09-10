@@ -102,6 +102,35 @@ describe('Field', () => {
     spy.should.have.been.calledWith({ name: 'foo' })
   })
 
+  it('should update touched value', () => {
+    let spy = sinon.spy()
+
+    mount(
+      <Form schema={schema} defaultValue={{}} onTouch={spy}>
+        <Form.Field name="name" type={TestInput} />
+      </Form>
+    )
+      .assertSingle('input')
+      .simulate('change', 'foo')
+
+    spy.should.have.been.calledWith({ name: true }, ['name'])
+  })
+
+  it.only('should update touched once per field', () => {
+    let spy = sinon.spy()
+
+    mount(
+      <Form schema={schema} defaultValue={{}} onTouch={spy}>
+        <Form.Field name="name" type={TestInput} />
+      </Form>
+    )
+      .assertSingle('input')
+      .simulate('change', 'foo')
+      .simulate('change', 'bar')
+
+    spy.callCount.should.equal(1)
+  })
+
   it('ensures values are never undefined', () => {
     let wrapper = mount(
       <Form schema={schema} defaultValue={{}}>
@@ -250,11 +279,14 @@ describe('Field', () => {
   describe('meta', () => {
     it('should pass meta to field', done => {
       let Input = ({ meta }) => {
-        //first pass isn't correct since form hasn't propagated it's state yet.
-        if (!meta.invalid) return null
+        // //first pass isn't correct since form hasn't propagated it's state yet.
+        // if (!meta.invalid) return null
 
         meta.invalid.should.equals(true)
         meta.valid.should.equals(false)
+
+        meta.touched.should.equals(true)
+
         meta.errors.should.eqls({
           name: 'foo',
         })
@@ -263,7 +295,12 @@ describe('Field', () => {
       }
 
       mount(
-        <Form schema={schema} defaultValue={{}} defaultErrors={{ name: 'foo' }}>
+        <Form
+          schema={schema}
+          defaultValue={{}}
+          defaultErrors={{ name: 'foo' }}
+          defaultTouched={{ name: true }}
+        >
           <Form.Field name="name" type={Input} />
         </Form>
       )

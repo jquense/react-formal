@@ -46,7 +46,7 @@ const setter = BindingContext.defaultProps.setter
  * a bunch of smaller inputs, each in charge of updating a small part of the overall model.
  * The Form will integrate and validate each change and fire a single unified `onChange` with the new `value`.
  *
- * Validation messages can be displayed anywhere inside a Form with Message Components.
+ * Validation errors can be displayed anywhere inside a Form with Message Components.
  *
  * ```editable
  * var defaultStr = yup.string().default('')
@@ -133,10 +133,10 @@ class Form extends React.PureComponent {
 
     /**
      * An object hash of field errors for the form. The object should be keyed with paths
-     * with the values being an array of messages or message objects. Errors can be
+     * with the values being an array of errors or message objects. Errors can be
      * left [uncontrolled](/controllables) (use `defaultErrors` to set an initial value)
      * or managed along with the `onError` callback. You can use any object shape you'd like for
-     * messages, as long as you provide the Form.Message component an `extract` prop that
+     * errors, as long as you provide the Form.Message component an `extract` prop that
      * understands how to pull out the strings message. By default it understands strings and objects
      * with a `'message'` property.
      *
@@ -317,6 +317,7 @@ class Form extends React.PureComponent {
     strict: false,
     delay: 300,
     errors: ErrorUtils.EMPTY_ERRORS,
+    touched: {},
     getter,
     setter,
   }
@@ -342,14 +343,19 @@ class Form extends React.PureComponent {
           submitting: false,
         },
         value: this.props.value,
-        messages: this.props.errors,
+        errors: this.props.errors,
+        touched: this.props.touched,
       },
     }
   }
 
-  static getDerivedStateFromProps({ value, errors }, { formState }) {
-    if (value !== formState.value || !shallowequal(formState.messages, errors))
-      return { formState: { ...formState, messages: errors, value } }
+  static getDerivedStateFromProps({ value, touched, errors }, { formState }) {
+    if (
+      value !== formState.value ||
+      touched !== formState.touched ||
+      !shallowequal(formState.errors, errors)
+    )
+      return { formState: { ...formState, errors: errors, touched, value } }
 
     return null
   }
@@ -375,6 +381,21 @@ class Form extends React.PureComponent {
     let { schema, value, context } = props
 
     return schema && path && reach(schema, path, value, context)
+  }
+
+  handleChange = (model, paths) => {
+    let { onChange, onTouch, touched } = this.props
+    let nextTouched = touched
+
+    onChange(model, paths)
+
+    paths.forEach(path => {
+      if (touched && touched[path]) return
+      if (nextTouched === touched) nextTouched = { ...touched, [path]: true }
+      else nextTouched[path] = true
+    })
+
+    if (nextTouched !== touched) onTouch(nextTouched, paths)
   }
 
   handleValidationRequest = (fields, type, args) => {
@@ -562,11 +583,20 @@ class Form extends React.PureComponent {
   }
 
   render() {
-    var { children, onChange, value, as: Element, getter, setter } = this.props
+    var {
+      children,
+      value,
+      getter,
+      setter,
+      as: Element,
+      onChange: _,
+      onTouch: _1,
+    } = this.props
 
     let props = omit(this.props, [
       ...YUP_OPTIONS,
       ...Object.keys(Form.propTypes),
+      'onTouch',
     ])
 
     delete props.__debugName
@@ -584,9 +614,9 @@ class Form extends React.PureComponent {
     return (
       <BindingContext
         value={value}
-        onChange={onChange}
         getter={getter}
         setter={setter}
+        onChange={this.handleChange}
       >
         <FormActionsContext.Provider value={this.formActions}>
           <FormDataContext.Provider value={this.state.formState}>
@@ -613,6 +643,7 @@ function maybeWarn(debug, errors, target) {
 const ControlledForm = uncontrollable(Form, {
   value: 'onChange',
   errors: 'onError',
+  touched: 'onTouch',
 })
 
 ControlledForm.getter = getter

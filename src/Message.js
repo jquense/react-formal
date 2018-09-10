@@ -2,13 +2,13 @@ import React from 'react'
 import PropTypes from 'prop-types'
 
 import uniq from './utils/uniqMessage'
-import { filterAndMapMessages } from './utils/ErrorUtils'
+import { filterAndMapErrors } from './utils/ErrorUtils'
 import { withState, FORM_DATA } from './Contexts'
 
 let flatten = (arr, next) => arr.concat(next)
 
-const renderMessage = (messages, props) => (
-  <span {...props}>{messages.join(', ')}</span>
+const renderMessage = (errors, props) => (
+  <span {...props}>{errors.join(', ')}</span>
 )
 
 /**
@@ -18,7 +18,7 @@ const renderMessage = (messages, props) => (
  * @alias Message
  */
 function FormMessage(
-  { messages },
+  { errors },
   {
     for: names,
     className,
@@ -28,12 +28,12 @@ function FormMessage(
     ...props
   }
 ) {
-  messages = filterAndMapMessages({ messages, names })
+  errors = filterAndMapErrors({ errors, names })
 
-  if (!messages || !Object.keys(messages).length) return null
+  if (!errors || !Object.keys(errors).length) return null
 
   return children(
-    Object.values(messages)
+    Object.values(errors)
       .reduce(flatten, [])
       .filter((...args) => filter(...args, extract))
       .map(extract),
@@ -58,7 +58,7 @@ const propTypes = {
    *
    * ```js
    * <Message>
-   *  {messages => messages.join(', ')}
+   *  {errors => errors.join(', ')}
    * </Message>
    * ```
    */
@@ -77,6 +77,6 @@ const propTypes = {
   filter: PropTypes.func,
 }
 
-export default withState(FormMessage, FORM_DATA.MESSAGES, {
+export default withState(FormMessage, FORM_DATA.errors, {
   propTypes,
 })

@@ -43,7 +43,7 @@ describe('Form', () => {
     Form.getter('foo', { foo: 5 }).should.equal(5)
   })
 
-  it('should pass messages', () => {
+  it('should pass errors', () => {
     let wrapper = mount(
       <Form schema={schema} defaultErrors={{ fieldA: ['hi', 'good day'] }}>
         <div>

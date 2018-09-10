@@ -5,7 +5,7 @@ import memoize from 'memoize-one'
 import elementType from 'prop-types-extra/lib/elementType'
 
 import createEventHandler from './utils/createEventHandler'
-import { filterAndMapMessages } from './utils/ErrorUtils'
+import { filterAndMapErrors } from './utils/ErrorUtils'
 import { withState, FORM_DATA, FormActionsContext } from './Contexts'
 
 /**
@@ -48,11 +48,11 @@ class FormSubmit extends React.Component {
     ]),
 
     /** @private */
-    messages: PropTypes.object,
+    errors: PropTypes.object,
     /** @private */
     actions: PropTypes.object,
     /** @private */
-    submitting: PropTypes.bool,
+    submits: PropTypes.object,
   }
 
   static defaultProps = {
@@ -69,12 +69,12 @@ class FormSubmit extends React.Component {
       this.handleSubmit()
     })
 
-    this.memoFilterAndMapMessages = memoize(
-      filterAndMapMessages,
+    this.memoFilterAndMapErrors = memoize(
+      filterAndMapErrors,
       (a, b) =>
-        a.messages === b.messages &&
+        a.errors === b.errors &&
         a.names === b.names &&
-        a.mapMessages === b.mapMessages
+        a.maperrors === b.maperrors
     )
   }
 
@@ -98,7 +98,7 @@ class FormSubmit extends React.Component {
       events,
       triggers,
       children,
-      messages,
+      errors,
       submits,
       as: Component,
       actions: _1,
@@ -107,13 +107,13 @@ class FormSubmit extends React.Component {
 
     const partial = triggers && triggers.length
     if (partial) {
-      messages = this.memoFilterAndMapMessages({ messages, names: triggers })
+      errors = this.memoFilterAndMapErrors({ errors, names: triggers })
     }
 
     props = Object.assign(props, this.getEventHandlers(events))
 
     return typeof children === 'function' ? (
-      children({ messages, props, ...submits })
+      children({ errors, props, ...submits })
     ) : (
       <Component type={partial ? 'button' : 'submit'} {...props}>
         {children}
@@ -131,10 +131,10 @@ export default withState(
           ref={ref}
           actions={actions}
           submits={ctx.submits}
-          messages={ctx.messages}
+          errors={ctx.errors}
         />
       )}
     </FormActionsContext.Consumer>
   ),
-  FORM_DATA.MESSAGES | FORM_DATA.SUBMITS
+  FORM_DATA.errors | FORM_DATA.SUBMITS
 )

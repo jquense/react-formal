@@ -8,7 +8,8 @@ export const DEFAULT_CHANNEL = '@@parent'
 const isEqualOrNullish = (a, b) => a === b || (a == null && b == null)
 
 export const initial = {
-  messages: EMPTY_ERRORS,
+  errors: EMPTY_ERRORS,
+  touched: {},
   submits: {
     submitCount: 0,
     submitAttempts: 0,
@@ -18,7 +19,7 @@ export const initial = {
 
 export const FORM_DATA = {
   VALUE: 1,
-  MESSAGES: 2,
+  ERRORS: 2,
   TOUCHED: 4,
   SUBMITS: 8,
   YUP_CONTEXT: 16,
@@ -29,7 +30,7 @@ export const FormActionsContext = React.createContext(null)
 
 export const FormDataContext = React.createContext(initial, (prev, next) => {
   let changed = 0
-  if (!shallowequal(prev.messages, next.messages)) changed |= FORM_DATA.MESSAGES
+  if (!shallowequal(prev.errors, next.errors)) changed |= FORM_DATA.ERRORS
   if (!shallowequal(prev.submitsm, next.submits)) changed |= FORM_DATA.SUBMITS
   if (!isEqualOrNullish(prev.value, next.value)) changed |= FORM_DATA.VALUE
 

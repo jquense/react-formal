@@ -30,7 +30,7 @@ class Summary extends React.PureComponent {
      * function(
      *   message: string,
      *   idx: number,
-     *   messages: array
+     *   errors: array
      * ) -> ReactElement
      * ```
      */
@@ -61,7 +61,7 @@ class Summary extends React.PureComponent {
     let { formatMessage, ...props } = this.props
 
     return (
-      <Message {...props}>{messages => messages.map(formatMessage)}</Message>
+      <Message {...props}>{errors => errors.map(formatMessage)}</Message>
     )
   }
 }

@@ -10,7 +10,7 @@ import shallowequal from 'shallowequal'
 import config from './config'
 import isNativeType from './utils/isNativeType'
 import resolveFieldComponent from './utils/resolveFieldComponent'
-import { inclusiveMapMessages, filterAndMapMessages } from './utils/ErrorUtils'
+import { inclusiveMapErrors, filterAndMapErrors } from './utils/ErrorUtils'
 import { withState, FORM_DATA, FormActionsContext } from './Contexts'
 import createEventHandler from './utils/createEventHandler'
 
@@ -18,13 +18,13 @@ function notify(handler, args) {
   handler && handler(...args)
 }
 
-function isFilterMessagesEqual(a, b) {
+function isFilterErrorsEqual(a, b) {
   let isEqual =
-    (a.messages === b.messages || shallowequal(a.messages, b.messages)) &&
+    (a.errors === b.errors || shallowequal(a.errors, b.errors)) &&
     a.names === b.names &&
-    a.mapMessages === b.mapMessages
+    a.maperrors === b.maperrors
 
-  // !isEqual && console.log('filter equalg cm ""', a.messages, b.messages)
+  // !isEqual && console.log('filter equalg cm ""', a.errors, b.errors)
   return isEqual
 }
 
@@ -80,17 +80,18 @@ class Field extends React.PureComponent {
       this.handleValidateField(event, args)
     })
 
-    this.memoFilterAndMapMessages = memoize(
-      filterAndMapMessages,
-      isFilterMessagesEqual
+    this.memoFilterAndMapErrors = memoize(
+      filterAndMapErrors,
+      isFilterErrorsEqual
     )
   }
 
   buildMeta() {
     let {
       name,
+      touched,
       exclusive,
-      messages,
+      errors,
       actions,
       yupContext,
       submits,
@@ -105,20 +106,21 @@ class Field extends React.PureComponent {
 
     let meta = {
       schema,
+      touched,
       errorClass,
       context: yupContext,
       onError: this.handleFieldError,
       ...submits,
     }
 
-    const errors = this.memoFilterAndMapMessages({
-      messages,
+    const filteredErrors = this.memoFilterAndMapErrors({
+      errors,
       names: name,
-      mapMessages: !exclusive ? inclusiveMapMessages : undefined,
+      maperrors: !exclusive ? inclusiveMapErrors : undefined,
     })
 
-    meta.errors = errors
-    meta.invalid = !!Object.keys(errors).length
+    meta.errors = filteredErrors
+    meta.invalid = !!Object.keys(filteredErrors).length
     meta.valid = !meta.invalid
 
     return meta
@@ -417,7 +419,9 @@ Field.propTypes = {
   /** @private */
   yupContext: PropTypes.any,
   /** @private */
-  messages: PropTypes.object,
+  errors: PropTypes.object,
+  /** @private */
+  touched: PropTypes.bool,
   /** @private */
   actions: PropTypes.object,
   /** @private */
@@ -442,10 +446,12 @@ export default withState((ctx, props, ref) => {
               actions={actions}
               fieldRef={fieldRef || ref}
               bindingProps={bindingProps}
-              messages={ctx.messages}
+              errors={ctx.errors}
+              touched={ctx.touched}
               yupContext={ctx.yupContext}
               noValidate={ctx.noValidate}
               submits={ctx.submits}
+              touched={ctx.touched[name]}
               noValidate={
                 props.noValidate == null ? ctx.noValidate : props.noValidate
               }
@@ -455,4 +461,4 @@ export default withState((ctx, props, ref) => {
       )}
     </Binding>
   )
-}, FORM_DATA.MESSAGES | FORM_DATA.SUBMITS | FORM_DATA.YUP_CONTEXT | FORM_DATA.NO_VALIDATE)
+}, FORM_DATA.ERRORS | FORM_DATA.TOUCHED | FORM_DATA.SUBMITS | FORM_DATA.YUP_CONTEXT | FORM_DATA.NO_VALIDATE)
