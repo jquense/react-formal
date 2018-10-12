@@ -5067,7 +5067,7 @@ to-regex@^3.0.1, to-regex@^3.0.2:
     regex-not "^1.0.2"
     safe-regex "^1.1.0"
 
-topeka@^3.0.2, topeka@^3.1.0:
+topeka@^3.0.2:
   version "3.1.0"
   resolved "https://registry.yarnpkg.com/topeka/-/topeka-3.1.0.tgz#b2184e586c45019f13f7cffae508b04981a39ed3"
   dependencies:
@@ -5076,6 +5076,16 @@ topeka@^3.0.2, topeka@^3.1.0:
     invariant "^2.2.4"
     property-expr "^1.5.1"
     react-lifecycles-compat "^3.0.2"
+    uncontrollable "^6.0.0"
+
+topeka@^3.2.1:
+  version "3.2.1"
+  resolved "https://registry.yarnpkg.com/topeka/-/topeka-3.2.1.tgz#fde0ff53c20cc33a213a02fcb5775c821128f17e"
+  dependencies:
+    "@babel/runtime" "^7.0.0"
+    classnames "^2.2.6"
+    invariant "^2.2.4"
+    property-expr "^1.5.1"
     uncontrollable "^6.0.0"
 
 toposort@^2.0.2:

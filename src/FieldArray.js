@@ -126,7 +126,7 @@ class FieldArray extends React.Component {
   render() {
     const { children, ...fieldProps } = this.props
     return (
-      <Field {...fieldProps} noResolveType>
+      <Field {...fieldProps}>
         {({ meta, ...props }) => {
           this.fieldProps = props
           this.meta = meta

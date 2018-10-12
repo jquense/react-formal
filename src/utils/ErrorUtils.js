@@ -80,6 +80,7 @@ export function filterAndMapErrors({
   if (!errors || errors === EMPTY_ERRORS) return errors
 
   names = resolveNames ? resolveNames() : names
+
   return mapErrors(errors, names ? [].concat(names) : [])
 }
 
@@ -137,7 +138,6 @@ export function swap(errors, baseName, indexA, indexB) {
 
 export function inclusiveMapErrors(errors, names) {
   if (!names.length || errors === EMPTY_ERRORS) return EMPTY_ERRORS
-
   let activeErrors = {}
   let paths = Object.keys(errors)
 

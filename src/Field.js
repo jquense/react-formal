@@ -10,7 +10,6 @@ import shallowequal from 'shallowequal'
 
 import config from './config'
 import isNativeType from './utils/isNativeType'
-import resolveFieldComponent from './utils/resolveFieldComponent'
 import { inclusiveMapErrors, filterAndMapErrors } from './utils/ErrorUtils'
 import { withState, FORM_DATA, FormActionsContext } from './Contexts'
 import createEventHandler from './utils/createEventHandler'
@@ -19,11 +18,16 @@ function notify(handler, args) {
   handler && handler(...args)
 }
 
+function schemaToNativeType({ _type }) {
+  if (_type === 'boolean') return 'checkbox'
+  if (_type === 'date') return 'datetime-local'
+}
+
 function isFilterErrorsEqual(a, b) {
   let isEqual =
     (a.errors === b.errors || shallowequal(a.errors, b.errors)) &&
     a.names === b.names &&
-    a.maperrors === b.maperrors
+    a.mapErrors === b.mapErrors
 
   // !isEqual && console.log('filter equalg cm ""', a.errors, b.errors)
   return isEqual
@@ -66,7 +70,7 @@ function isFilterErrorsEqual(a, b) {
  */
 class Field extends React.PureComponent {
   static defaultProps = {
-    type: '',
+    as: 'input',
     exclusive: false,
     fieldRef: null,
   }
@@ -117,7 +121,7 @@ class Field extends React.PureComponent {
     const filteredErrors = this.memoFilterAndMapErrors({
       errors,
       names: name,
-      maperrors: !exclusive ? inclusiveMapErrors : undefined,
+      mapErrors: !exclusive ? inclusiveMapErrors : undefined,
     })
 
     meta.errors = filteredErrors
@@ -155,6 +159,8 @@ class Field extends React.PureComponent {
       noResolveType,
       bindingProps,
       actions,
+      as: Input,
+      asProps,
       events = config.events,
     } = this.props
 
@@ -168,9 +174,7 @@ class Field extends React.PureComponent {
       )
     }
 
-    let [Component, resolvedType] = !noResolveType
-      ? resolveFieldComponent(type, meta.schema)
-      : [null, type]
+    let resolvedType = type || (meta.schema && meta.schema._type)
 
     meta.resolvedType = resolvedType
 
@@ -179,17 +183,16 @@ class Field extends React.PureComponent {
     )
 
     let fieldProps = Object.assign(
-      { name },
+      { name, type },
       omit(this.props, Object.keys(Field.propTypes)),
       bindingProps,
       eventHandlers
     )
 
-    fieldProps.type = isNativeType(resolvedType) ? resolvedType : undefined
-
     // ensure that no inputs are left uncontrolled
-    fieldProps.value =
-      bindingProps.value === undefined ? null : bindingProps.value
+    let value = bindingProps.value === undefined ? null : bindingProps.value
+
+    fieldProps.value = value
 
     if (!noValidate) {
       fieldProps.className = cn(className, meta.invalid && meta.errorClass)
@@ -200,10 +203,31 @@ class Field extends React.PureComponent {
 
     // Escape hatch for more complex Field types.
     if (typeof children === 'function') {
-      return children(fieldProps, Component)
+      return children(fieldProps)
     }
 
-    return <Component {...fieldProps}>{children}</Component>
+    // in the case of a plain input do some schema -> native type mapping
+    if (Input === 'input' && !type) {
+      if (resolvedType === 'boolean') fieldProps.type = 'checkbox'
+      else if (isNativeType(resolvedType)) fieldProps.type = resolvedType
+      else fieldProps.type = 'text'
+    }
+
+    if (typeof Input === 'string') {
+      if (value == null) value = ''
+      if (/radio|checkbox/.test(fieldProps.type)) {
+        fieldProps.value = this.props.value
+        fieldProps.checked = value
+      } else {
+        fieldProps.value = value
+      }
+    }
+
+    return (
+      <Input {...asProps} {...fieldProps}>
+        {children}
+      </Input>
+    )
   }
 }
 
@@ -229,9 +253,8 @@ Field.propTypes = {
   name: PropTypes.string.isRequired,
 
   /**
-   * The Component Input the form should render. You can sepcify a builtin type
-   * with a string name e.g `'text'`, `'datetime-local'`, etc. or provide a Component
-   * type class directly. When no type is provided the Field will attempt determine
+   * The Component Input the form should render. You can sepcify a native element such as 'textbox' or 'select'
+   * or provide a Component type class directly. When no type is provided the Field will attempt determine
    * the correct input from the Field's schema. A Field corresponding to a `yup.number()`
    * will render a `type='number'` input by default.
    *
@@ -254,7 +277,7 @@ Field.propTypes = {
    *   (need native 'datetime' support to see it)
    *   <Form.Field
    *     name='dateOfBirth'
-   *     type={MyDateInput}/>
+   *     as={MyDateInput}/>
    *
    * </Form>
    * ```
@@ -262,7 +285,7 @@ Field.propTypes = {
    * Custom Inputs should comply with the basic input api contract: set a value via a `value` prop and
    * broadcast changes to that value via an `onChange` handler.
    */
-  type: PropTypes.oneOfType([elementType, PropTypes.string]),
+  as: PropTypes.oneOfType([elementType, PropTypes.string]),
 
   /**
    * Event name or array of event names that the Field should trigger a validation.

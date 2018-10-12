@@ -3,7 +3,6 @@ import React from 'react'
 import ReactDOMServer from 'react-dom/server'
 import * as yup from 'yup'
 import Form from '../src'
-import Input from '../src/Input'
 
 describe('Field', () => {
   let schema = yup.object({
@@ -31,7 +30,7 @@ describe('Field', () => {
   it('should pass props to inner type', () => {
     mount(
       <Form schema={schema} defaultValue={{}}>
-        <Form.Field name="name" type={TestInput} className="test" />
+        <Form.Field name="name" as={TestInput} className="test" />
       </Form>
     )
       .find(TestInput)
@@ -53,12 +52,13 @@ describe('Field', () => {
         <Form.Field name="number" />
         <Form.Field name="date" />
         <Form.Field name="bool" />
-        <Form.Field type="select" name="string" />
-        <Form.Field type="textarea" name="string" />
+        <Form.Field as="select" name="string" />
+        <Form.Field as="textarea" name="string" />
       </Form>
     )
 
     wrapper.assertSingle(`input[name='string']`)
+    //console.log(wrapper.debug())
     wrapper.assertSingle('input[type="number"]')
     wrapper.assertSingle('input[type="date"]')
 
@@ -67,22 +67,23 @@ describe('Field', () => {
     wrapper.assertSingle('textarea')
   })
 
-  it('should use type override', () => {
+  it('should use as override', () => {
     let wrapper = mount(
       <Form schema={schema} defaultValue={{}}>
-        <Form.Field name="name" />
-        <Form.Field name="name" type="textarea" />
-        <Form.Field name="name" type={TestInput} />
+        <Form.Field name="name" as="select" />
+        <Form.Field name="name" as="textarea" />
+        <Form.Field name="name" as={TestInput} />
       </Form>
     )
     wrapper.assertSingle(TestInput)
-    wrapper.find('Input').length.should.equal(2)
+    wrapper.assertSingle('textarea')
+    wrapper.assertSingle('select')
   })
 
   it('should fire onChange', done => {
     mount(
       <Form schema={schema} defaultValue={{}}>
-        <Form.Field name="name" type={TestInput} onChange={() => done()} />
+        <Form.Field name="name" as={TestInput} onChange={() => done()} />
       </Form>
     )
       .assertSingle('input')
@@ -94,11 +95,12 @@ describe('Field', () => {
 
     mount(
       <Form schema={schema} defaultValue={{}} onChange={spy}>
-        <Form.Field name="name" type={TestInput} />
+        <Form.Field name="name" as={TestInput} />
       </Form>
     )
+      //.tap(_ => console.log(_.debug()))
       .assertSingle('input')
-      .simulate('change', { target: { value: 'foo', tagName: 'input' } })
+      .simulate('change', { target: { value: 'foo' } })
 
     spy.should.have.been.calledWith({ name: 'foo' })
   })
@@ -115,13 +117,13 @@ describe('Field', () => {
 
     form
       .find('input[type="number"]')
-      .simulate('change', { target: { value: '3.56' } })
+      .simulate('change', { target: { value: '3.56', type: 'number' } })
 
     spy.should.have.been.calledWith({ age: 3.56 })
 
     form
       .find('input[type="range"]')
-      .simulate('change', { target: { value: '42' } })
+      .simulate('change', { target: { value: '42', type: 'range' } })
 
     spy.should.have.been.calledWith({ age: 42 })
   })
@@ -131,7 +133,7 @@ describe('Field', () => {
 
     mount(
       <Form schema={schema} defaultValue={{}} onTouch={spy}>
-        <Form.Field name="name" type={TestInput} />
+        <Form.Field name="name" as={TestInput} />
       </Form>
     )
       .assertSingle('input')
@@ -140,12 +142,12 @@ describe('Field', () => {
     spy.should.have.been.calledWith({ name: true }, ['name'])
   })
 
-  it.only('should update touched once per field', () => {
+  it('should update touched once per field', () => {
     let spy = sinon.spy()
 
     mount(
       <Form schema={schema} defaultValue={{}} onTouch={spy}>
-        <Form.Field name="name" type={TestInput} />
+        <Form.Field name="name" as={TestInput} />
       </Form>
     )
       .assertSingle('input')
@@ -162,14 +164,14 @@ describe('Field', () => {
       </Form>
     )
 
-    expect(wrapper.assertSingle('Input').prop('value')).to.equal(null)
+    expect(wrapper.assertSingle('input').prop('value')).to.equal('')
   })
 
   it('maps value from string', () => {
     let spy = sinon.spy()
     mount(
       <Form schema={schema} defaultValue={{}} onChange={spy}>
-        <Form.Field name="name" type={TestInput} mapFromValue="value" />
+        <Form.Field name="name" as={TestInput} mapFromValue="value" />
       </Form>
     )
       .assertSingle('input')
@@ -182,7 +184,7 @@ describe('Field', () => {
     let spy = sinon.spy()
     mount(
       <Form schema={schema} defaultValue={{}} onChange={spy}>
-        <Form.Field name="name" type={TestInput} mapFromValue={e => e.value} />
+        <Form.Field name="name" as={TestInput} mapFromValue={e => e.value} />
       </Form>
     )
       .assertSingle('input')
@@ -197,7 +199,7 @@ describe('Field', () => {
       <Form schema={schema} defaultValue={{}} onChange={spy}>
         <Form.Field
           name="name"
-          type={TestInput}
+          as={TestInput}
           mapToValue={spy}
           mapFromValue={{
             other: e => e.value,
@@ -219,7 +221,7 @@ describe('Field', () => {
       <Form schema={schema} defaultValue={{}} onChange={spy}>
         <Form.Field
           name="name"
-          type={TestInput}
+          as={TestInput}
           mapFromValue={{
             name: e => e.value,
             text: 'text',
@@ -239,7 +241,7 @@ describe('Field', () => {
       <Form schema={schema} defaultValue={{}} onChange={spy}>
         <Form.Field
           name="name"
-          type={TestInput}
+          as={TestInput}
           mapFromValue={(...args) => {
             args.length.should.equal(2)
             args[1].should.equal('hi')
@@ -258,7 +260,7 @@ describe('Field', () => {
       <Form schema={schema} defaultValue={{}}>
         <Form.Field
           name="name"
-          type={TestInput}
+          as={TestInput}
           fieldRef={r => {
             inst = r
           }}
@@ -274,7 +276,7 @@ describe('Field', () => {
       <Form schema={schema} defaultValue={{}}>
         <Form.Field
           name="name"
-          type={TestInput}
+          as={TestInput}
           ref={r => {
             inst = r
           }}
@@ -325,7 +327,7 @@ describe('Field', () => {
           defaultErrors={{ name: 'foo' }}
           defaultTouched={{ name: true }}
         >
-          <Form.Field name="name" type={Input} />
+          <Form.Field name="name" as={Input} />
         </Form>
       )
     })
@@ -343,7 +345,7 @@ describe('Field', () => {
 
       mount(
         <Form schema={schema} defaultValue={{}} defaultErrors={{ name: 'foo' }}>
-          <Form.Field noValidate name="name" type={Input} />
+          <Form.Field noValidate name="name" as={Input} />
         </Form>
       )
     })
@@ -357,7 +359,7 @@ describe('Field', () => {
           defaultErrors={{ name: 'foo', bar: 'baz' }}
           onError={errorSpy}
         >
-          <Form.Field name="name" type={TestInput} />
+          <Form.Field name="name" as={TestInput} />
         </Form>
       )
         .find(TestInput)
@@ -376,7 +378,7 @@ describe('Field', () => {
           defaultErrors={{ name: 'foo', bar: 'baz' }}
           onError={errorSpy}
         >
-          <Form.Field name="name" type={TestInput} />
+          <Form.Field name="name" as={TestInput} />
         </Form>
       )
         .find(TestInput)
@@ -390,7 +392,7 @@ describe('Field', () => {
       })
     })
 
-    it.only('should set events via a function', done => {
+    it('should set events via a function', done => {
       let schema = yup.object({
         number: yup.number().min(5),
       })
@@ -409,16 +411,16 @@ describe('Field', () => {
         </Form>
       )
 
-      wrapper.find('input').simulate('change', { target: { value: 4 } })
-      wrapper.find('input').simulate('blur', { target: { value: 4 } })
+      wrapper.find('input').simulate('change', { target: { value: '4' } })
+      wrapper.find('input').simulate('blur', { target: { value: '4' } })
 
       setTimeout(() => {
         spy.callCount.should.equal(1)
-        wrapper.find('input').simulate('blur', { target: { value: 4 } })
+        wrapper.find('input').simulate('blur', { target: { value: '4' } })
 
         spy.callCount.should.equal(1)
 
-        wrapper.find('input').simulate('change', { target: { value: 6 } })
+        wrapper.find('input').simulate('change', { target: { value: '6' } })
 
         spy.callCount.should.equal(2)
         done()
@@ -434,7 +436,7 @@ describe('Field', () => {
           defaultErrors={{ name: 'foo', bar: 'baz' }}
           onError={errorSpy}
         >
-          <Form.Field name="name" type={TestInput} />
+          <Form.Field name="name" as={TestInput} />
         </Form>
       )
         .find(TestInput)

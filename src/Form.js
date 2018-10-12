@@ -95,7 +95,7 @@ const setter = BindingContext.defaultProps.setter
  *     <Form.Message for='dateOfBirth'/>
  *
  *     <label>Favorite Color</label>
- *     <Form.Field name='colorId' type='select'>
+ *     <Form.Field name='colorId' as='select'>
  *       <option value={null}>Select a color...</option>
  *       <option value={0}>Red</option>
  *       <option value={1}>Yellow</option>
