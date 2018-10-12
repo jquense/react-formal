@@ -61,7 +61,7 @@
     "property-expr": "^1.4.0",
     "react-context-toolbox": "^1.2.2",
     "shallowequal": "^1.1.0",
-    "topeka": "^3.2.1",
+    "topeka": "^3.3.0",
     "uncontrollable": "^6.0.0",
     "warning": "^4.0.1",
     "yup": "^0.26.3"

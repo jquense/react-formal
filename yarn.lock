@@ -5078,9 +5078,9 @@ topeka@^3.0.2:
     react-lifecycles-compat "^3.0.2"
     uncontrollable "^6.0.0"
 
-topeka@^3.2.1:
-  version "3.2.1"
-  resolved "https://registry.yarnpkg.com/topeka/-/topeka-3.2.1.tgz#fde0ff53c20cc33a213a02fcb5775c821128f17e"
+topeka@^3.3.0:
+  version "3.3.0"
+  resolved "https://registry.yarnpkg.com/topeka/-/topeka-3.3.0.tgz#f9528ed91e140aad78f485ca1cfe3494ae1708ae"
   dependencies:
     "@babel/runtime" "^7.0.0"
     classnames "^2.2.6"

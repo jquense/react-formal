@@ -18,11 +18,23 @@ function notify(handler, args) {
   handler && handler(...args)
 }
 
-function schemaToNativeType({ _type }) {
-  if (_type === 'boolean') return 'checkbox'
-  if (_type === 'date') return 'datetime-local'
+function resolveToNativeType(type) {
+  if (type === 'boolean') return 'checkbox'
+  return isNativeType(type) ? type : 'text'
 }
 
+function getValueProps(type, value, props) {
+  if (value == null) value = ''
+  switch (type) {
+    case 'radio':
+    case 'checkbox':
+      return { value: props.value, checked: value }
+    case 'file':
+      return { value: '' }
+    default:
+      return { value }
+  }
+}
 function isFilterErrorsEqual(a, b) {
   let isEqual =
     (a.errors === b.errors || shallowequal(a.errors, b.errors)) &&
@@ -100,6 +112,7 @@ class Field extends React.PureComponent {
       actions,
       yupContext,
       submits,
+      bindingProps,
       errorClass = config.errorClass,
     } = this.props
 
@@ -128,6 +141,8 @@ class Field extends React.PureComponent {
     meta.invalid = !!Object.keys(filteredErrors).length
     meta.valid = !meta.invalid
 
+    // put the original value on meta incase the coerced one differs
+    meta.value = bindingProps.value
     return meta
   }
 
@@ -203,28 +218,26 @@ class Field extends React.PureComponent {
 
     // Escape hatch for more complex Field types.
     if (typeof children === 'function') {
-      return children(fieldProps)
+      fieldProps.type = resolveToNativeType(resolvedType)
+      return children(
+        Object.assign(
+          fieldProps,
+          getValueProps(fieldProps.type, value, this.props)
+        )
+      )
     }
 
     // in the case of a plain input do some schema -> native type mapping
     if (Input === 'input' && !type) {
-      if (resolvedType === 'boolean') fieldProps.type = 'checkbox'
-      else if (isNativeType(resolvedType)) fieldProps.type = resolvedType
-      else fieldProps.type = 'text'
-    }
-
-    if (typeof Input === 'string') {
-      if (value == null) value = ''
-      if (/radio|checkbox/.test(fieldProps.type)) {
-        fieldProps.value = this.props.value
-        fieldProps.checked = value
-      } else {
-        fieldProps.value = value
-      }
+      fieldProps.type = resolveToNativeType(resolvedType)
     }
 
     return (
-      <Input {...asProps} {...fieldProps}>
+      <Input
+        {...asProps}
+        {...fieldProps}
+        {...getValueProps(fieldProps.type, value, this.props)}
+      >
         {children}
       </Input>
     )
