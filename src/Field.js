@@ -219,12 +219,7 @@ class Field extends React.PureComponent {
     // Escape hatch for more complex Field types.
     if (typeof children === 'function') {
       fieldProps.type = resolveToNativeType(resolvedType)
-      return children(
-        Object.assign(
-          fieldProps,
-          getValueProps(fieldProps.type, value, this.props)
-        )
-      )
+      return children(fieldProps)
     }
 
     // in the case of a plain input do some schema -> native type mapping
@@ -485,7 +480,6 @@ export default withState((ctx, props, ref) => {
               fieldRef={fieldRef || ref}
               bindingProps={bindingProps}
               errors={ctx.errors}
-              touched={ctx.touched}
               yupContext={ctx.yupContext}
               noValidate={ctx.noValidate}
               submits={ctx.submits}
