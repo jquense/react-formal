@@ -32,9 +32,13 @@ let toDateString = (date, part) => {
   return date
 }
 
+let isNumberType = type => type === 'number' || type === 'range'
+
 let isDateType = type =>
-  type === 'date' ||
+  type === 'week' ||
+  type === 'month' ||
   type === 'time' ||
+  type === 'date' ||
   type === 'datetime' ||
   type === 'datetime-local'
 
@@ -46,13 +50,12 @@ class Input extends React.Component {
     inputRef: PropTypes.func,
     meta: PropTypes.object,
     multiple: PropTypes.bool,
-    noCast: PropTypes.bool,
     type: PropTypes.string,
   }
 
   handleChange = e => {
-    const { meta, onChange, multiple, value: lastValue, noCast } = this.props
-    const { resolvedType, schema, context } = meta
+    const { meta, onChange, multiple, value: lastValue } = this.props
+    const { resolvedType } = meta
 
     if (resolvedType === 'file') {
       return onChange(multiple ? e.target.files : e.target.files[0])
@@ -65,23 +68,20 @@ class Input extends React.Component {
         ? e.target.checked
         : e.target.value
 
-    // coearce empty inputs to null
+    // coerce empty inputs to null
     if (value === '') value = null
-    if (isDateType(resolvedType)) value = parse(value, lastValue, resolvedType)
 
-    if (schema && schema.isType(value) && !noCast) {
-      try {
-        value = schema.cast(value, { context })
-      } catch (err) {
-        /* ignore */
-      }
+    if (isNumberType(resolvedType)) {
+      value = value == null ? value : parseFloat(value)
+    } else if (isDateType(resolvedType)) {
+      value = parse(value, lastValue, resolvedType)
     }
 
     onChange(value)
   }
 
   render() {
-    let { meta, value, inputRef: ref, noCast: _, ...props } = this.props
+    let { meta, value, inputRef: ref, ...props } = this.props
     const { resolvedType } = meta
 
     // not really supported...
@@ -96,6 +96,7 @@ class Input extends React.Component {
     if (resolvedType === 'textarea') Component = 'textarea'
     if (resolvedType === 'select') Component = 'select'
 
+    if (isNumberType(resolvedType)) value = value == null ? '' : '' + value
     if (isDateType(resolvedType)) value = toDateString(value, resolvedType)
     if (value == null || resolvedType === 'file') value = ''
 

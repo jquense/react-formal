@@ -8,6 +8,7 @@ import Input from '../src/Input'
 describe('Field', () => {
   let schema = yup.object({
     name: yup.string().default(''),
+    age: yup.number(),
     more: yup.object().when('name', {
       is: 'jason',
       then: yup.object({
@@ -100,6 +101,29 @@ describe('Field', () => {
       .simulate('change', { target: { value: 'foo', tagName: 'input' } })
 
     spy.should.have.been.calledWith({ name: 'foo' })
+  })
+
+  it('should coerce value to number', () => {
+    let spy = sinon.spy()
+
+    let form = mount(
+      <Form schema={schema} defaultValue={{}} onChange={spy}>
+        <Form.Field name="age" id="first" />
+        <Form.Field type="range" name="age" id="second" />
+      </Form>
+    )
+
+    form
+      .find('input[type="number"]')
+      .simulate('change', { target: { value: '3.56' } })
+
+    spy.should.have.been.calledWith({ age: 3.56 })
+
+    form
+      .find('input[type="range"]')
+      .simulate('change', { target: { value: '42' } })
+
+    spy.should.have.been.calledWith({ age: 42 })
   })
 
   it('should update touched value', () => {
