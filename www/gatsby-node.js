@@ -1,23 +1,33 @@
 const path = require('path')
 
-exports.onCreateWebpackConfig = ({ plugins, loaders, actions }) => {
+const { root } = require('./constants')
+
+let pkg = {}
+try {
+  pkg = require(`${root}/package.json`)
+} catch (err) {
+  console.error(err)
+}
+
+exports.onCreateWebpackConfig = function onCreateWebpackConfig({
+  actions,
+  plugins,
+  loaders,
+}) {
   actions.setWebpackConfig({
+    devtool: 'cheap-inline-module-source-map',
     module: {
       rules: [
         {
-          test: /src\/examples\//,
-          use: [loaders.raw()],
+          include: path.resolve(__dirname, 'src/examples'),
+          use: loaders.raw(),
         },
       ],
     },
     resolve: {
-      symlinks: false,
       alias: {
-        // react$: require.resolve('react'),
-        // 'react-dom$': require.resolve('react-dom'),
-        // 'react-dom/server$': require.resolve('react-dom/server'),
-        'react-formal$': path.resolve(__dirname, '../src/index.js'),
-        'react-formal/lib': path.resolve(__dirname, '../src'),
+        [`${pkg.name}$`]: path.resolve(root, 'src/index.js'),
+        [`${pkg.name}/lib`]: path.resolve(root, 'src'),
       },
     },
     plugins: [
@@ -30,7 +40,7 @@ exports.onCreateWebpackConfig = ({ plugins, loaders, actions }) => {
 exports.onCreateBabelConfig = ({ actions }) => {
   actions.setBabelOptions({
     options: {
-      root: path.resolve(__dirname, '../'),
+      root,
     },
   })
 }

@@ -1,0 +1,12 @@
+@import './theme.scss';
+@import '~bootstrap/scss/bootstrap.scss';
+
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  background-color: $body-bg;
+  color: $text;
+}

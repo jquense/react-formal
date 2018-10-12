@@ -2,6 +2,7 @@ import cn from 'classnames'
 import omit from 'lodash/omit'
 import React from 'react'
 import PropTypes from 'prop-types'
+import elementType from 'prop-types-extra/lib/elementType'
 import { Binding } from 'topeka'
 import warning from 'warning'
 import memoize from 'memoize-one'
@@ -231,7 +232,7 @@ Field.propTypes = {
    * The Component Input the form should render. You can sepcify a builtin type
    * with a string name e.g `'text'`, `'datetime-local'`, etc. or provide a Component
    * type class directly. When no type is provided the Field will attempt determine
-   * the correct input from the corresponding scheme. A Field corresponding to a `yup.number()`
+   * the correct input from the Field's schema. A Field corresponding to a `yup.number()`
    * will render a `type='number'` input by default.
    *
    * ```editable
@@ -257,10 +258,11 @@ Field.propTypes = {
    *
    * </Form>
    * ```
+   *
    * Custom Inputs should comply with the basic input api contract: set a value via a `value` prop and
    * broadcast changes to that value via an `onChange` handler.
    */
-  type: PropTypes.oneOfType([PropTypes.func, PropTypes.string]),
+  type: PropTypes.oneOfType([elementType, PropTypes.string]),
 
   /**
    * Event name or array of event names that the Field should trigger a validation.
