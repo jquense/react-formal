@@ -1,7 +1,6 @@
 import invariant from 'invariant'
 import PropTypes from 'prop-types'
 import React from 'react'
-import elementType from 'prop-types-extra/lib/elementType'
 import { move, remove, shift, unshift } from './utils/ErrorUtils'
 
 import Field from './Field'
@@ -69,8 +68,10 @@ class FieldArray extends React.Component {
     /**
      * The same signature as providing a function to `<Field>` but with an
      * additional `arrayHelpers` object passed to the render function
+     *
+     * @type {Function}
      */
-    children: PropTypes.func.isRequired,
+    children: PropTypes.oneOfType([PropTypes.func, PropTypes.element]),
   }
 
   onAdd = item => {

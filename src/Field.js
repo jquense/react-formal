@@ -35,7 +35,7 @@ function getValueProps(type, value, props) {
       return { value }
   }
 }
-function isFilterErrorsEqual(a, b) {
+function isFilterErrorsEqual([a], [b]) {
   let isEqual =
     (a.errors === b.errors || shallowequal(a.errors, b.errors)) &&
     a.names === b.names &&
@@ -216,7 +216,7 @@ class Field extends React.PureComponent {
     let resolvedType = type || (meta.schema && meta.schema._type)
 
     meta.resolvedType = resolvedType
-
+    // console.log(meta, events(meta))
     let eventHandlers = this.getEventHandlers(
       typeof events === 'function' ? events(meta) : events
     )

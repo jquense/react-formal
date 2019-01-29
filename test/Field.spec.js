@@ -1,6 +1,5 @@
 import { mount } from 'enzyme'
 import React from 'react'
-import ReactDOMServer from 'react-dom/server'
 import * as yup from 'yup'
 import Form from '../src'
 
@@ -392,7 +391,7 @@ describe('Field', () => {
       })
     })
 
-    it('should set events via a function', done => {
+    it.only('should set events via a function', done => {
       let schema = yup.object({
         number: yup.number().min(5),
       })
@@ -410,12 +409,13 @@ describe('Field', () => {
           />
         </Form>
       )
-
+      // Field is valid only; `onBlur`
       wrapper.find('input').simulate('change', { target: { value: '4' } })
       wrapper.find('input').simulate('blur', { target: { value: '4' } })
 
       setTimeout(() => {
         spy.callCount.should.equal(1)
+        // field is invalid now: `onChange`
         wrapper.find('input').simulate('blur', { target: { value: '4' } })
 
         spy.callCount.should.equal(1)
@@ -424,7 +424,7 @@ describe('Field', () => {
 
         spy.callCount.should.equal(2)
         done()
-      }, 10)
+      }, 100)
     })
 
     it('should field onError should replace field errors', () => {

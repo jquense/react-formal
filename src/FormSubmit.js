@@ -79,7 +79,7 @@ class FormSubmit extends React.Component {
 
     this.memoFilterAndMapErrors = memoize(
       filterAndMapErrors,
-      (a, b) =>
+      ([a], [b]) =>
         a.errors === b.errors &&
         a.names === b.names &&
         a.maperrors === b.maperrors
