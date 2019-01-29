@@ -54,7 +54,7 @@ function isFilterErrorsEqual(a, b) {
  * are take care of for you. Beyond that they just render the input for their type, Fields whille pass along
  * any props and children to the input so you can easily configure new input types.
  *
- * ```editable
+ * ```jsx { "editable": true }
  * <Form
  *   noValidate
  *   schema={modelSchema}
@@ -63,22 +63,46 @@ function isFilterErrorsEqual(a, b) {
  *     colorID: 0
  *   }}
  * >
- *   <label>Name</label>
- *   <Form.Field
- *     name='name.first'
- *     placeholder='First name'
- *   />
- *
- *   <label>Favorite Color</label>
- *   <Form.Field name='colorId' type='select'>
- *     <option value={0}>Red</option>
- *     <option value={1}>Yellow</option>
- *     <option value={2}>Blue</option>
- *     <option value={3}>other</option>
- *   </Form.Field>
+ *     <label htmlFor="example-firstName">Name</label>
+ *     <Form.Field
+ *       name='name.first'
+ *       placeholder='First name'
+ *       id="example-firstName"
+ *     />
+ *     <label htmlFor="example-color">Favorite Color</label>
+ *     <Form.Field
+ *       as='select'
+ *       name='colorId'
+ *       id="example-color"
+ *     >
+ *       <option value={0}>Red</option>
+ *       <option value={1}>Yellow</option>
+ *       <option value={2}>Blue</option>
+ *       <option value={3}>other</option>
+ *     </Form.Field>
  *   <Form.Submit type='submit'>Submit</Form.Submit>
  * </Form>
  * ```
+ *
+ * In addition to injecting Field components with events and the field `value`, a
+ * special prop called `meta` is also provided to all Field renderer components. `meta`
+ * contains a bunch of helpful context as well some methods for doing advanced field operations.
+ *
+ * ```ts
+ * interface Meta {
+ *   value: any;                // the Field Value
+ *   valid: boolean;            // Whether the field is currently valid
+ *   invalid: boolean;          // inverse of valid
+ *   touched: boolean:          // whether the field has been touched yet
+ *   errors: ErrorObjectMap;    // the errors for this field and any neted fields
+ *   schema?: YupSchema;        // The schema for this field
+ *   context: YupSchemaContext; // the yup context object
+ *   // onError allows manually _replacing_ errors for the Field `name`
+ *   // any existing errors for this path will be removed first
+ *   onError(errors: ErrorObjectMap): void
+ * }
+ * ```
+ *
  */
 class Field extends React.PureComponent {
   static defaultProps = {
@@ -266,7 +290,7 @@ Field.propTypes = {
    * the correct input from the Field's schema. A Field corresponding to a `yup.number()`
    * will render a `type='number'` input by default.
    *
-   * ```editable
+   * ```jsx { "editable": true }
    * <Form noValidate schema={modelSchema}>
    *   Use the schema to determine type
    *   <Form.Field
@@ -312,7 +336,8 @@ Field.propTypes = {
    * value for `name`'d path, allowing you to set commuted values from the Field.
    *
    * ```js
-   * <Form.Field name='name'
+   * <Form.Field
+   *   name='name'
    *   mapFromValue={fieldValue => fieldValue.first + ' ' + fieldValue.last}
    * />
    * ```
@@ -320,27 +345,30 @@ Field.propTypes = {
    * You can also provide an object hash, mapping paths of the Form `value`
    * to fields in the field value using a string field name, or a function accessor.
    *
-   * ```editable
+   * ```js { "editable": true }
    * <Form
    *   schema={modelSchema}
    *   defaultValue={modelSchema.default()}
    * >
-   *   <label>Name</label>
+   *   <label htmlFor="ex-mapToValue-firstName">Name</label>
    *   <Form.Field
    *     name='name.first'
    *     placeholder='First name'
+   *     id="ex-mapToValue-firstName"
    *   />
    *
-   *   <label>Date of Birth</label>
-   *   <Form.Field name='dateOfBirth'
+   *   <label htmlFor="ex-mapToValue-dob">Date of Birth</label>
+   *   <Form.Field
+   *     name='dateOfBirth'
+   *     id="ex-mapToValue-dob"
    *     mapFromValue={{
    *       'dateOfBirth': date => date,
    *       'age': date =>
    *         (new Date()).getFullYear() - date.getFullYear()
    *   }}/>
-
-   *   <label>Age</label>
-   *   <Form.Field name='age'/>
+   *
+   *   <label htmlFor="ex-mapToValue-age">Age</label>
+   *   <Form.Field name='age' id="ex-mapToValue-age"/>
    *
    *   <Form.Submit type='submit'>Submit</Form.Submit>
    * </Form>
@@ -380,7 +408,7 @@ Field.propTypes = {
    * > NOTE! This overrides the default behavior of validating the field itself by `name`,
    * include the `name` if you want the field to validate itself.
    *
-   * ```js
+   * ```jsx
    * <Form.Field name='name.first' validates="name.last" />
    * <Form.Field name='name' validates={['name', 'surname']} />
    * ```

@@ -48,7 +48,7 @@ const setter = BindingContext.defaultProps.setter
  *
  * Validation errors can be displayed anywhere inside a Form with Message Components.
  *
- * ```editable
+ * ```jsx { "editable": true }
  * var defaultStr = yup.string().default('')
  *
  * var customerSchema = yup
@@ -69,7 +69,7 @@ const setter = BindingContext.defaultProps.setter
  *       .required('Please select a dank color')
  *   });
  *
- * var form = (
+ * render(
  *   <Form
  *     schema={customerSchema}
  *     defaultValue={customerSchema.default()}
@@ -87,12 +87,12 @@ const setter = BindingContext.defaultProps.setter
  *         placeholder='Surname'
  *       />
  *
- *       <Form.Message for={['name.first', 'name.last']}/>
+ *       <Form.Message for={['name.first', 'name.last']} className="validation-error"/>
  *     </div>
  *
  *     <label>Date of Birth</label>
  *     <Form.Field name='dateOfBirth'/>
- *     <Form.Message for='dateOfBirth'/>
+ *     <Form.Message for='dateOfBirth' className="validation-error"/>
  *
  *     <label>Favorite Color</label>
  *     <Form.Field name='colorId' as='select'>
@@ -102,13 +102,12 @@ const setter = BindingContext.defaultProps.setter
  *       <option value={2}>Blue</option>
  *       <option value={3}>other</option>
  *     </Form.Field>
- *     <Form.Message for='colorId'/>
+ *     <Form.Message for='colorId' className="validation-error"/>
  *
  *   <Form.Submit type='submit'>
  *     Submit
  *   </Form.Submit>
  * </Form>)
- * ReactDOM.render(form, mountNode);
  * ```
  */
 class Form extends React.PureComponent {
@@ -157,21 +156,33 @@ class Form extends React.PureComponent {
     /**
      * Callback that is called when a validation error occurs. It is called with an `errors` object
      *
-     * ```editable
-     * <Form schema={modelSchema}
-     *   defaultValue={modelSchema.default()}
-     *   errors={this.state ? this.state.errors : {}}
-     *   onError={errors => {
-     *     if( errors.dateOfBirth )
-     *       errors.dateOfBirth = 'hijacked!'
-     *     this.setState({ errors })
-     *   }}>
+     * ```jsx { "editable": true }
+     * class Example extends React.Component {
+     *   constructor(props) {
+     *     this.state = { errors: {} }
+     *   }
+     *   render() {
+     *     return (
+     *       <Form
+     *         schema={modelSchema}
+     *         defaultValue={modelSchema.default()}
+     *         errors={this.state.errors}
+     *         onError={errors => {
+     *           if( errors.dateOfBirth )
+     *             errors.dateOfBirth = 'hijacked!'
+     *           this.setState({ errors })
+     *       }}>
      *
-     *   <Form.Field name='dateOfBirth'/>
-     *   <Form.Message for='dateOfBirth'/>
+     *         <Form.Field name='dateOfBirth'/>
+     *         <Form.Message for='dateOfBirth'/>
      *
-     *   <Form.Submit type='submit'>Submit</Form.Submit>
-     * </Form>
+     *         <Form.Submit type='submit'>Submit</Form.Submit>
+     *       </Form>
+     *     )
+     *   }
+     * }
+     *
+     * render(<Example />)
      * ```
      */
     onError: PropTypes.func,
@@ -230,11 +241,11 @@ class Form extends React.PureComponent {
      * A value getter function. `getter` is called with `path` and `value` and
      * should return the plain **javascript** value at the path.
      *
-     * ```js
+     * ```ts
      * function(
      *  path: string,
      *  value: any,
-     * ) -> object
+     * ): Object
      * ```
      */
     getter: PropTypes.func,
@@ -549,11 +560,10 @@ class Form extends React.PureComponent {
     // this state is duplicated locally because it can take longer for the
     // submit state to flush than a user can re-submit which we don't want
     this._submitting = submitting
-    this.updateFormState(
-      s =>
-        s.submits.submitting !== submitting
-          ? { submits: { ...s.submits, submitting } }
-          : null
+    this.updateFormState(s =>
+      s.submits.submitting !== submitting
+        ? { submits: { ...s.submits, submitting } }
+        : null
     )
   }
 
@@ -591,6 +601,7 @@ class Form extends React.PureComponent {
       as: Element,
       onChange: _,
       onTouch: _1,
+      touched: _2,
     } = this.props
 
     let props = omit(this.props, [

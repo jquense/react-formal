@@ -2,7 +2,7 @@ const React = require('react')
 
 exports.wrapPageElement = require(`./src/wrap-page`)
 
-exports.onRenderBody = ({ setHeadComponents, setPostBodyComponents }) => {
+exports.onRenderBody = ({ setHeadComponents }) => {
   setHeadComponents([
     <link
       key="solid"
@@ -24,19 +24,6 @@ exports.onRenderBody = ({ setHeadComponents, setPostBodyComponents }) => {
       href="https://use.fontawesome.com/releases/v5.2.0/css/fontawesome.css"
       integrity="sha384-HbmWTHay9psM8qyzEKPc8odH4DsOuzdejtnr+OFtDmOcIVnhgReQ4GZBH7uwcjf6"
       crossOrigin="anonymous"
-    />,
-    <link
-      key="eeee"
-      rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/docsearch.js@2/dist/cdn/docsearch.min.css"
-    />,
-  ])
-
-  setPostBodyComponents([
-    <script
-      key="asfasfasfas"
-      type="text/javascript"
-      src="https://cdn.jsdelivr.net/npm/docsearch.js@2/dist/cdn/docsearch.min.js"
     />,
   ])
 }

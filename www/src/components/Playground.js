@@ -1,38 +1,69 @@
 import classNames from 'classnames'
-import { css, styled } from 'css-literal-loader/styled'
+import styled, { css } from 'astroturf'
 import React from 'react'
 import PropTypes from 'prop-types'
-import ReactDOM from 'react-dom'
-
-import * as Topeka from 'topeka'
-
+import withProps from 'recompose/withProps'
+import scope from '../scope'
 import {
-  LiveProvider,
   LiveEditor,
   LiveError,
   LivePreview,
+  LiveProvider,
   withLive,
-} from 'react-live'
+} from '@monastic.panic/react-live'
 
-const scope = {
-  ReactDOM,
-  classNames,
-  PropTypes,
-  ...Topeka,
-}
+const EditorInfoMessage = styled('div')`
+  composes: p-2 alert alert-info from global;
+  position: absolute;
+  top: 0;
+  right: 0;
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+  pointer-events: none;
+  font-size: 70%;
+
+  *:not(:focus) + & {
+    opacity: 0;
+  }
+`
 
 const StyledProvider = styled(LiveProvider)`
   @import '../styles/theme';
 
   background-color: $body-bg;
   margin-bottom: 3rem;
-  display: flex;
 `
 
-const StyledEditor = styled(LiveEditor)`
-  composes: prism from '../styles/prism.module.scss';
-  border-radius: 0 0 8px 8px;
-`
+const StyledEditor = withProps(props => ({
+  children: (
+    <LiveEditor
+      {...props}
+      renderTabMessage={(ignoreTab, msgProps) => (
+        <EditorInfoMessage {...msgProps}>
+          {ignoreTab ? (
+            <>
+              Press <kbd>enter</kbd> or type a key to enable tab-to-indent
+            </>
+          ) : (
+            <>
+              Press <kbd>esc</kbd> to disable tab trapping
+            </>
+          )}
+        </EditorInfoMessage>
+      )}
+    />
+  ),
+}))(
+  styled('div')`
+    composes: prism from '../styles/prism.module.scss';
+    border-radius: 0 0 8px 8px;
+
+    & textarea {
+      outline: none;
+    }
+  `
+)
 
 const StyledPreview = styled('div')`
   @import '../styles/theme';
@@ -61,93 +92,12 @@ const StyledPreview = styled('div')`
   }
 `
 
-const EditorInfoMessage = styled('div')`
-  composes: p-2 alert alert-info from global;
-  position: absolute;
-  top: 0;
-  right: 0;
-  border-top-left-radius: 0;
-  border-top-right-radius: 0;
-  border-bottom-right-radius: 0;
-  pointer-events: none;
-  font-size: 70%;
-
-  *:not(:focus) + & {
-    opacity: 0;
-  }
-`
-
 const StyledError = styled(LiveError)`
   composes: rounded-0 alert alert-danger from global;
 `
 
 // -----------
 // ----- Here be Dragons
-
-let uid = 0
-
-class CodeEditor extends React.Component {
-  state = { ignoreTab: false }
-
-  id = `described-by-${++uid}`
-
-  handleKeyDown = event => {
-    const { key } = event
-
-    if (this.state.ignoreTab && key !== 'Tab' && key !== 'Shift') {
-      if (key === 'Enter') event.preventDefault()
-      this.setState({ ignoreTab: false })
-    }
-    if (!this.state.ignoreTab && key === 'Escape') {
-      this.setState({ ignoreTab: true })
-    }
-  }
-
-  handleFocus = e => {
-    if (e.target !== e.currentTarget) return
-    this.setState({
-      ignoreTab: !this.mouseDown,
-      keyboardFocused: !this.mouseDown,
-    })
-  }
-
-  handleMouseDown = () => {
-    this.mouseDown = true
-    window.setTimeout(() => {
-      this.mouseDown = false
-    }, 0)
-  }
-
-  render() {
-    const { keyboardFocused, ignoreTab } = this.state
-    return (
-      <div className="position-relative">
-        <StyledEditor
-          onBlur={this.handleBlur}
-          onFocus={this.handleFocus}
-          onKeyDown={this.handleKeyDown}
-          onMouseDown={this.handleMouseDown}
-          ignoreTabKey={ignoreTab}
-          aria-describedby={this.id}
-          aria-label="Example code editor"
-        />
-        {(keyboardFocused || !ignoreTab) && (
-          <EditorInfoMessage id={this.id} aria-live="polite">
-            {ignoreTab ? (
-              <>
-                Press <kbd>enter</kbd> or type a key to enable tab-to-indent
-              </>
-            ) : (
-              <>
-                Press <kbd>esc</kbd> to disable tab trapping
-              </>
-            )}
-          </EditorInfoMessage>
-        )}
-      </div>
-    )
-  }
-}
 
 const { background, foreground } = css`
   @import '../styles/theme';
@@ -230,7 +180,7 @@ export default class Playground extends React.Component {
         noInline={code.includes('render(')}
       >
         <Preview showCode={showCode} className={exampleClassName} />
-        {showCode && <CodeEditor onChange={this.handleChange} />}
+        {showCode && <StyledEditor />}
       </StyledProvider>
     )
   }

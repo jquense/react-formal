@@ -7,7 +7,7 @@ import Message from './Message'
 /**
  * Display all Form validation `errors` in a single summary list.
  *
- * ```editable
+ * ```jsx { "editable": true }
  * <Form
  *   schema={modelSchema}
  *   defaultValue={modelSchema.default()}
@@ -60,9 +60,7 @@ class Summary extends React.PureComponent {
   render() {
     let { formatMessage, ...props } = this.props
 
-    return (
-      <Message {...props}>{errors => errors.map(formatMessage)}</Message>
-    )
+    return <Message {...props}>{errors => errors.map(formatMessage)}</Message>
   }
 }
 

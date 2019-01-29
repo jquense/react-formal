@@ -7,11 +7,11 @@ import { filter, prefix } from './utils/ErrorUtils'
 
 /**
  * A `Form` component that takes a `name` prop. Functions exactly like a normal
- * Form, except that when a `name` is present it will defer errors up to the parent Form,
- * functioning like a Form.Field.
+ * Form, except that when a `name` is present it will defer errors up to the parent `<Form>`,
+ * functioning like a `<Form.Field>`.
  *
  * This is useful for encapsulating complex input groups into self-contained
- * forms without having to worry about "very.long[1].paths[4].to.fields" for names.
+ * forms without having to worry about `"very.long[1].paths[4].to.fields"` for names.
  */
 class NestedForm extends React.Component {
   static propTypes = {

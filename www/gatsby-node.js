@@ -37,6 +37,15 @@ exports.onCreateWebpackConfig = function onCreateWebpackConfig({
   })
 }
 
+exports.createPages = ({ actions }) => {
+  const { createRedirect } = actions
+  createRedirect({
+    fromPath: `/api`,
+    toPath: `/api/Form`,
+    isPermanent: true,
+  })
+}
+
 exports.onCreateBabelConfig = ({ actions }) => {
   actions.setBabelOptions({
     options: {

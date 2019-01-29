@@ -7,44 +7,42 @@ import { withState, FORM_DATA } from './Contexts'
 
 let flatten = (arr, next) => arr.concat(next)
 
-const renderMessage = (errors, props) => (
-  <span {...props}>{errors.join(', ')}</span>
-)
-
 /**
  * Represents a Form validation error message. Only renders when the
  * value that it is `for` is invalid.
  *
- * @alias Message
+ * @alias FormMessage
  */
-function FormMessage(
-  { errors },
-  {
-    for: names,
-    className,
-    extract = error => error.message || error,
-    filter = uniq,
-    children = renderMessage,
-    ...props
-  }
-) {
-  errors = filterAndMapErrors({ errors, names })
-
-  if (!errors || !Object.keys(errors).length) return null
-
-  return children(
-    Object.values(errors)
-      .reduce(flatten, [])
-      .filter((...args) => filter(...args, extract))
-      .map(extract),
-    {
-      ...props,
+class Message extends React.Component {
+  render() {
+    let {
+      errors,
+      for: names,
       className,
-    }
-  )
+      extract = error => error.message || error,
+      filter = uniq,
+      children = (errors, props) => <span {...props}>{errors.join(', ')}</span>,
+      ...props
+    } = this.props
+
+    errors = filterAndMapErrors({ errors, names })
+
+    if (!errors || !Object.keys(errors).length) return null
+
+    return children(
+      Object.values(errors)
+        .reduce(flatten, [])
+        .filter((...args) => filter(...args, extract))
+        .map(extract),
+      {
+        ...props,
+        className,
+      }
+    )
+  }
 }
 
-const propTypes = {
+Message.propTypes = {
   for: PropTypes.oneOfType([
     PropTypes.string,
     PropTypes.arrayOf(PropTypes.string),
@@ -65,11 +63,6 @@ const propTypes = {
   children: PropTypes.func,
 
   /**
-   * A css class that should be always be applied to the Message container.
-   */
-  errorClass: PropTypes.string,
-
-  /**
    * Map the passed in message object for the field to a string to display
    */
   extract: PropTypes.func,
@@ -77,6 +70,7 @@ const propTypes = {
   filter: PropTypes.func,
 }
 
-export default withState(FormMessage, FORM_DATA.errors, {
-  propTypes,
-})
+export default withState(
+  ({ errors }, props) => <Message errors={errors} {...props} />,
+  FORM_DATA.errors
+)

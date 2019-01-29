@@ -31,7 +31,7 @@ export const FormActionsContext = React.createContext(null)
 export const FormDataContext = React.createContext(initial, (prev, next) => {
   let changed = 0
   if (!shallowequal(prev.errors, next.errors)) changed |= FORM_DATA.ERRORS
-  if (!shallowequal(prev.submitsm, next.submits)) changed |= FORM_DATA.SUBMITS
+  if (!shallowequal(prev.submits, next.submits)) changed |= FORM_DATA.SUBMITS
   if (!isEqualOrNullish(prev.value, next.value)) changed |= FORM_DATA.VALUE
 
   return changed

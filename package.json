@@ -64,7 +64,7 @@
     "topeka": "^3.3.0",
     "uncontrollable": "^6.0.0",
     "warning": "^4.0.1",
-    "yup": "^0.26.3"
+    "yup": "^0.26.10"
   },
   "devDependencies": {
     "@4c/rollout": "^1.1.0",

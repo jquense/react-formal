@@ -21,9 +21,13 @@ $operator: #fc929e;
   line-height: 20px;
   white-space: pre-wrap;
   word-break: break-word;
-  padding: 20px;
+  padding: 10px;
   color: $white;
   background-color: $dark;
+
+  & pre {
+    color: inherit;
+  }
 
   & :global .token {
     &.attr-name {

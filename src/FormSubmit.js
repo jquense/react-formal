@@ -24,17 +24,25 @@ class FormSubmit extends React.Component {
     triggers: PropTypes.arrayOf(PropTypes.string.isRequired),
 
     /**
-     * When a function, `children` is called with the Form submitting state
+     * Provide a render function to completely override the rendering behavior
+     * of FormSubmit (`as` will be ignored). In addition to passing through props some
+     * additional form submission metadata is injected to handle loading and disabled behaviors.
      *
      * ```js
      * <Form.Submit>
-     *   {submitting => submitting ? 'Saving…' : 'Submit'}
+     *   {({ errors, props, submitting, submitCount, submitAttempts }) =>
+     *     <button {...props} disabled={submitCount > 1}>
+     *       submitting ? 'Saving…' : 'Submit'}
+     *     </button>
      * </Form.Submit>
      * ```
      */
     children: PropTypes.oneOfType([PropTypes.node, PropTypes.func]),
 
-    /** Control the rendering of the Form Submit component. */
+    /**
+     * Control the rendering of the Form Submit component when not using
+     * the render prop form of `children`.
+     */
     as: elementType,
 
     /**

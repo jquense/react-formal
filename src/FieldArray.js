@@ -1,6 +1,7 @@
 import invariant from 'invariant'
 import PropTypes from 'prop-types'
 import React from 'react'
+import elementType from 'prop-types-extra/lib/elementType'
 import { move, remove, shift, unshift } from './utils/ErrorUtils'
 
 import Field from './Field'
@@ -18,13 +19,58 @@ function filter(errors, baseName) {
 }
 
 /**
- * A specialized `Form.Field` component that handles array fields.
- * Specifically it handles errors correctly when items are added, removed, or
- * reordered.
+ * A specialized `Form.Field` component that helps with common list manipulations.
+ * Provide a `name`, like normal, to the field with the array and `<FieldArray>` will
+ * inject a set of special `arrayHelpers` for handling removing, reordering,
+ * editing and adding new items, as well as any error handling quirks that come with those
+ * operations.
+ *
+ * ```js { "editable": true }
+ * const schema = yup.object({
+ *   friends: yup.array().of(
+ *     yup.object({
+ *       name: yup.string().required()
+ *     })
+ *   )
+ * });
+ *
+ * render(
+ *  <Form
+ *   debug
+ *   schema={schema}
+ *   defaultValue={{
+ *     friends: [{ name: 'Sally'}]
+ *   }}
+ * >
+ *   <Form.FieldArray name="friends" events="blur">
+ *    {({ value, arrayHelpers }) => (
+ *       <ul>
+ *        {value.map((value, idx) => (
+ *          <li key={idx} >
+ *            <div style={{ display: 'flex', alignItems: 'flex-start' }}>
+ *              <Form.Field name={`friends[${idx}].name`} />
+ *              <button type="button" onClick={() => arrayHelpers.remove(value)}>-</button>
+ *              <button type="button" onClick={() => arrayHelpers.insert({ name: undefined }, idx)}>+</button>
+ *            </div>
+ *            <Form.Message for={`friends[${idx}].name`} />
+ *          </li>
+ *        ))}
+ *       </ul>
+ *     )}
+ *   </Form.FieldArray>
+ * </Form>
+ * )
+ * ```
+ *
  */
 class FieldArray extends React.Component {
   static propTypes = {
     name: PropTypes.string.isRequired,
+    /**
+     * The same signature as providing a function to `<Field>` but with an
+     * additional `arrayHelpers` object passed to the render function
+     */
+    children: PropTypes.func.isRequired,
   }
 
   onAdd = item => {
