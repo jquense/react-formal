@@ -26,7 +26,7 @@ var yup = require('yup')
 var modelSchema = yup.object({
         name: yup.object({
             first: yup.string().required('Name is required'),
-            last: yup.string().required('Name is required')    
+            last: yup.string().required('Name is required')
         }),
         dateOfBirth: yup.date()
             .max(new Date(), 'You can be born in the future!')
@@ -52,7 +52,7 @@ render() {
                 <Form.Field name='dateOfBirth'/>
                 <Form.Message for='dateOfBirth'/>
             </fieldset>
-            <Form.Button type='submit'>Submit</Form.Button>
+            <Form.Submit type='submit'>Submit</Form.Submit>
         </Form>
     )
 }

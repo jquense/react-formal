@@ -1,12 +1,13 @@
 import React from 'react'
 import PropTypes from 'prop-types'
+import elementType from 'prop-types-extra/lib/elementType'
 
 import Message from './Message'
 
 /**
  * Display all Form validation `errors` in a single summary list.
  *
- * ```editable
+ * ```jsx { "editable": true }
  * <Form
  *   schema={modelSchema}
  *   defaultValue={modelSchema.default()}
@@ -17,7 +18,7 @@ import Message from './Message'
  *   <Form.Field name='name.last' placeholder='surname'/>
  *   <Form.Field name='dateOfBirth' placeholder='dob'/>
  *
- *   <Form.Button>Validate</Form.Button>
+ *   <Form.Submit>Validate</Form.Submit>
  * </Form>
  * ```
  */
@@ -29,7 +30,7 @@ class Summary extends React.PureComponent {
      * function(
      *   message: string,
      *   idx: number,
-     *   messages: array
+     *   errors: array
      * ) -> ReactElement
      * ```
      */
@@ -38,8 +39,7 @@ class Summary extends React.PureComponent {
     /**
      * A DOM node tag name or Component class the Message should render as.
      */
-    component: PropTypes.oneOfType([PropTypes.func, PropTypes.string])
-      .isRequired,
+    as: elementType.isRequired,
 
     /**
      * A css class that should be always be applied to the Summary container.
@@ -53,18 +53,14 @@ class Summary extends React.PureComponent {
   }
 
   static defaultProps = {
-    component: 'ul',
+    as: 'ul',
     formatMessage: (message, idx) => <li key={idx}>{message}</li>,
   }
 
   render() {
     let { formatMessage, ...props } = this.props
 
-    return (
-      <Message {...props}>
-        {messages => messages.map(formatMessage)}
-      </Message>
-    )
+    return <Message {...props}>{errors => errors.map(formatMessage)}</Message>
   }
 }
 

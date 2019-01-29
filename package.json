@@ -1,6 +1,6 @@
 {
   "name": "react-formal",
-  "version": "0.28.5",
+  "version": "0.29.0-17",
   "description": "Classy HTML form management for React",
   "main": "lib/index.cjs.js",
   "modules": "es/index.js",
@@ -34,74 +34,64 @@
     "roots": [
       "<rootDir>/test"
     ],
-    "setupTestFrameworkScriptFile": "./test/index.js"
+    "setupFilesAfterEnv": [
+      "./test/index.js"
+    ]
   },
   "scripts": {
     "test": "jest",
     "tdd": "jest --watch",
     "lint": "eslint src",
-    "docs": "webpack --config docs/webpack.config.js --progress",
-    "docs:watch": "webpack-dev-server --config docs/webpack.config.js",
+    "docs": "yarn --cwd www start",
+    "docs:deploy": "yarn --cwd www deploy",
     "build:esm": " babel src --out-dir es --delete-dir-on-start --env-name esm",
     "build": "babel src --out-dir lib --delete-dir-on-start --copy-files && npm run build:esm",
     "prepublishOnly": "npm run build",
-    "release": "release"
+    "release": "rollout"
   },
   "peerDependencies": {
-    "react": ">=16.3.0"
+    "react": ">=16.4.0"
   },
   "dependencies": {
     "chain-function": "^1.0.0",
     "classnames": "^2.2.5",
     "invariant": "^2.2.4",
-    "lodash": "^4.17.10",
+    "lodash": "^4.17.11",
+    "memoize-one": "^5.0.0",
     "prop-types": "^15.6.1",
+    "prop-types-extra": "^1.1.0",
     "property-expr": "^1.4.0",
-    "react-lifecycles-compat": "^3.0.4",
-    "topeka": "^3.0.2",
+    "react-context-toolbox": "^2.0.2",
+    "shallowequal": "^1.1.0",
+    "topeka": "^3.3.0",
     "uncontrollable": "^6.0.0",
     "warning": "^4.0.1",
-    "yup": "^0.25.1"
+    "yup": "^0.26.10"
   },
   "devDependencies": {
-    "@babel/cli": "^7.0.0-beta.49",
-    "@babel/core": "^7.0.0-beta.49",
-    "@monastic.panic/component-playground": "*",
-    "@monastic.panic/enzyme-adapter-react-16": "^1.2.1",
-    "babel-core": "^7.0.0-0",
-    "babel-eslint": "^8.2.3",
-    "babel-jest": "^23.0.1",
-    "babel-preset-jason": "^4.1.1",
-    "chai": "^4.1.2",
+    "@4c/rollout": "^1.2.0",
+    "@babel/cli": "7.2.3",
+    "@babel/core": "7.2.2",
+    "babel-eslint": "^10.0.1",
+    "babel-jest": "^24.0.0",
+    "babel-preset-jason": "^6.0.1",
+    "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
-    "component-metadata-loader": "^4.0.0",
     "dirty-chai": "^2.0.1",
-    "enzyme": "^3.3.0",
-    "eslint": "^4.19.1",
+    "enzyme": "^3.8.0",
+    "enzyme-adapter-react-16": "^1.8.0",
+    "eslint": "^5.12.1",
     "eslint-config-jason": "^4.0.1",
-    "eslint-import-resolver-webpack": "^0.10.0",
-    "eslint-plugin-import": "^2.12.0",
-    "eslint-plugin-react": "^7.9.1",
-    "globalize": "^0.1.1",
-    "handlebars": "^4.0.5",
-    "history": "^3.0.0",
-    "jest": "^23.1.0",
-    "markdown-jsx-loader": "^3.0.2",
-    "marked": "^0.4.0",
-    "prismjs": "^1.14.0",
-    "react": "^16.4.0",
+    "eslint-plugin-import": "^2.16.0",
+    "eslint-plugin-react": "^7.12.4",
+    "jest": "^24.0.0",
+    "react": "^16.7.0",
     "react-bootstrap": "^0.32.1",
-    "react-component-metadata": "^3.0.0",
-    "react-dom": "^16.4.0",
+    "react-dom": "^16.7.0",
     "react-formal": "^0.28.2",
-    "react-router": "^4.2.0",
-    "react-router-dom": "^4.2.2",
-    "release-script": "^1.0.2",
-    "rimraf": "^2.5.2",
-    "sinon": "^5.0.10",
-    "sinon-chai": "^3.1.0",
-    "webpack": "^3.11.0",
-    "webpack-atoms": "^5.1.0",
-    "webpack-dev-server": "^2.11.1"
+    "react-tackle-box": "^2.1.0",
+    "rimraf": "^2.6.3",
+    "sinon": "^7.2.3",
+    "sinon-chai": "^3.3.0"
   }
 }

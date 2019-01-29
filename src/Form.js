@@ -4,16 +4,19 @@ import pick from 'lodash/pick'
 import expr from 'property-expr'
 import PropTypes from 'prop-types'
 import uncontrollable from 'uncontrollable'
-import { polyfill } from 'react-lifecycles-compat'
 import React from 'react'
+import ReactDOM from 'react-dom'
 import warning from 'warning'
+import elementType from 'prop-types-extra/lib/elementType'
 import reach from 'yup/lib/util/reach'
+import shallowequal from 'shallowequal'
 
 import errorManager from './errorManager'
 import errToJSON from './utils/errToJSON'
 import * as ErrorUtils from './utils/ErrorUtils'
+import { FormActionsContext, FormDataContext } from './Contexts'
 
-import FormContext from './FormContext'
+const batchedUpdates = ReactDOM.unstable_batchedUpdates || (fn => fn())
 
 let BindingContext = BC.ControlledComponent
 
@@ -22,20 +25,7 @@ let done = e =>
     throw e
   })
 
-let splitPath = path => {
-  let parts = expr.split(path)
-  let tail = parts.pop()
-  return [expr.join(parts), tail]
-}
-
 let isValidationError = err => err && err.name === 'ValidationError'
-
-export const { Provider, Consumer } = React.createContext({
-  context: null,
-  noValidate: false,
-  onFieldError() {},
-  getSchemaForPath() {},
-})
 
 const YUP_OPTIONS = [
   'context',
@@ -56,9 +46,9 @@ const setter = BindingContext.defaultProps.setter
  * a bunch of smaller inputs, each in charge of updating a small part of the overall model.
  * The Form will integrate and validate each change and fire a single unified `onChange` with the new `value`.
  *
- * Validation messages can be displayed anywhere inside a Form with Message Components.
+ * Validation errors can be displayed anywhere inside a Form with Message Components.
  *
- * ```editable
+ * ```jsx { "editable": true }
  * var defaultStr = yup.string().default('')
  *
  * var customerSchema = yup
@@ -79,7 +69,7 @@ const setter = BindingContext.defaultProps.setter
  *       .required('Please select a dank color')
  *   });
  *
- * var form = (
+ * render(
  *   <Form
  *     schema={customerSchema}
  *     defaultValue={customerSchema.default()}
@@ -97,28 +87,27 @@ const setter = BindingContext.defaultProps.setter
  *         placeholder='Surname'
  *       />
  *
- *       <Form.Message for={['name.first', 'name.last']}/>
+ *       <Form.Message for={['name.first', 'name.last']} className="validation-error"/>
  *     </div>
  *
  *     <label>Date of Birth</label>
  *     <Form.Field name='dateOfBirth'/>
- *     <Form.Message for='dateOfBirth'/>
+ *     <Form.Message for='dateOfBirth' className="validation-error"/>
  *
  *     <label>Favorite Color</label>
- *     <Form.Field name='colorId' type='select'>
+ *     <Form.Field name='colorId' as='select'>
  *       <option value={null}>Select a color...</option>
  *       <option value={0}>Red</option>
  *       <option value={1}>Yellow</option>
  *       <option value={2}>Blue</option>
  *       <option value={3}>other</option>
  *     </Form.Field>
- *     <Form.Message for='colorId'/>
+ *     <Form.Message for='colorId' className="validation-error"/>
  *
- *   <Form.Button type='submit'>
+ *   <Form.Submit type='submit'>
  *     Submit
- *   </Form.Button>
+ *   </Form.Submit>
  * </Form>)
- * ReactDOM.render(form, mountNode);
  * ```
  */
 class Form extends React.PureComponent {
@@ -142,17 +131,11 @@ class Form extends React.PureComponent {
     onChange: PropTypes.func,
 
     /**
-     * A unique key that names a `Form` within a surrounding `Form.Context`.
-     * Corresponding `Form.Button`s with the same `formKey` will trigger validation.
-     */
-    formKey: PropTypes.string,
-
-    /**
      * An object hash of field errors for the form. The object should be keyed with paths
-     * with the values being an array of messages or message objects. Errors can be
+     * with the values being an array of errors or message objects. Errors can be
      * left [uncontrolled](/controllables) (use `defaultErrors` to set an initial value)
      * or managed along with the `onError` callback. You can use any object shape you'd like for
-     * messages, as long as you provide the Form.Message component an `extract` prop that
+     * errors, as long as you provide the Form.Message component an `extract` prop that
      * understands how to pull out the strings message. By default it understands strings and objects
      * with a `'message'` property.
      *
@@ -173,21 +156,33 @@ class Form extends React.PureComponent {
     /**
      * Callback that is called when a validation error occurs. It is called with an `errors` object
      *
-     * ```editable
-     * <Form schema={modelSchema}
-     *   defaultValue={modelSchema.default()}
-     *   errors={this.state ? this.state.errors : {}}
-     *   onError={errors => {
-     *     if( errors.dateOfBirth )
-     *       errors.dateOfBirth = 'hijacked!'
-     *     this.setState({ errors })
-     *   }}>
+     * ```jsx { "editable": true }
+     * class Example extends React.Component {
+     *   constructor(props) {
+     *     this.state = { errors: {} }
+     *   }
+     *   render() {
+     *     return (
+     *       <Form
+     *         schema={modelSchema}
+     *         defaultValue={modelSchema.default()}
+     *         errors={this.state.errors}
+     *         onError={errors => {
+     *           if( errors.dateOfBirth )
+     *             errors.dateOfBirth = 'hijacked!'
+     *           this.setState({ errors })
+     *       }}>
      *
-     *   <Form.Field name='dateOfBirth'/>
-     *   <Form.Message for='dateOfBirth'/>
+     *         <Form.Field name='dateOfBirth'/>
+     *         <Form.Message for='dateOfBirth'/>
      *
-     *   <Form.Button type='submit'>Submit</Form.Button>
-     * </Form>
+     *         <Form.Submit type='submit'>Submit</Form.Submit>
+     *       </Form>
+     *     )
+     *   }
+     * }
+     *
+     * render(<Example />)
      * ```
      */
     onError: PropTypes.func,
@@ -204,8 +199,18 @@ class Form extends React.PureComponent {
     onValidate: PropTypes.func,
 
     /**
-     * Callback that is fired when the native onSubmit event is triggered. Only relevant when
-     * the `component` prop renders a `<form/>` tag. onSubmit will trigger only if the form is valid.
+     * Callback that is fired in response to a submit, _before validation runs.
+     *
+     * ```js
+     * function onSubmit(formValue){
+     *   // do something with valid value
+     * }
+     * ```
+     */
+    onBeforeSubmit: PropTypes.func,
+
+    /**
+     * Callback that is fired in response to a submit, after validation runs for the entire form.
      *
      * ```js
      * function onSubmit(formValue){
@@ -236,11 +241,11 @@ class Form extends React.PureComponent {
      * A value getter function. `getter` is called with `path` and `value` and
      * should return the plain **javascript** value at the path.
      *
-     * ```js
+     * ```ts
      * function(
      *  path: string,
      *  value: any,
-     * ) -> object
+     * ): Object
      * ```
      */
     getter: PropTypes.func,
@@ -283,11 +288,7 @@ class Form extends React.PureComponent {
      * If `null` are `false` the form will simply render it's child. In
      * this instance there must only be one child.
      */
-    component: PropTypes.oneOfType([
-      PropTypes.func,
-      PropTypes.string,
-      PropTypes.oneOf([null, false]),
-    ]),
+    as: PropTypes.oneOfType([elementType, PropTypes.oneOf([null, false])]),
 
     /**
      * A Yup schema  that validates the Form `value` prop. Used to validate the form input values
@@ -319,83 +320,63 @@ class Form extends React.PureComponent {
      * toggle debug mode, which `console.warn`s validation errors
      */
     debug: PropTypes.bool,
-
-    /** @private */
-    publish: PropTypes.func.isRequired,
   }
 
   static defaultProps = {
     ...BindingContext.defaultProps,
-    component: 'form',
+    as: 'form',
     strict: false,
     delay: 300,
-    errors: Object.create(null),
+    errors: ErrorUtils.EMPTY_ERRORS,
+    touched: {},
     getter,
     setter,
-  }
-
-  static getDerivedStateFromProps(
-    { formKey, schema, context, noValidate },
-    prevState
-  ) {
-    if (schema === prevState.schema && prevState.noValidate === noValidate)
-      return null
-
-    const { getSchemaForPath, onFieldError } = prevState.formContext
-    return {
-      schema,
-      noValidate,
-      formContext: {
-        getSchemaForPath,
-        onFieldError,
-        formKey,
-        context,
-        noValidate,
-      },
-    }
   }
 
   constructor(props, context) {
     super(props, context)
 
     this.queue = []
-    this.groups = Object.create(null)
     this.errors = errorManager(this.validatePath)
 
-    this.state = {
-      formContext: {
-        formKey: props.formKey,
-        getSchemaForPath: this.getSchemaForPath,
-        onFieldError: this.handleFieldError,
-        noValidate: props.noValidate,
-        context: props.context,
-      },
-    }
-
-    props.publish('messages', props.errors)
-    props.publish('groups', this.groups)
-    props.publish('form', {
+    this.formActions = {
       onSubmit: this.handleSubmit,
       onValidate: this.handleValidationRequest,
-      addToGroup: (name, grpName) => {
-        let group = this.groups[grpName] || (this.groups[grpName] = [])
-        if (group.indexOf(name) !== -1) return
+      onFieldError: this.handleFieldError,
+      getSchemaForPath: this.getSchemaForPath,
+    }
 
-        group.push(name)
-        setTimeout(() => props.publish('groups', this.groups))
-        return () => name => group.filter(i => i !== name)
+    this.state = {
+      formState: {
+        submits: {
+          submitCount: 0,
+          submitAttempts: 0,
+          submitting: false,
+        },
+        value: this.props.value,
+        errors: this.props.errors,
+        touched: this.props.touched,
       },
-    })
+    }
+  }
+
+  static getDerivedStateFromProps({ value, touched, errors }, { formState }) {
+    if (
+      value !== formState.value ||
+      touched !== formState.touched ||
+      !shallowequal(formState.errors, errors)
+    )
+      return { formState: { ...formState, errors: errors, touched, value } }
+
+    return null
   }
 
   componentDidUpdate(prevProps) {
-    const { errors, publish, delay, schema } = this.props
+    const { errors, delay, schema } = this.props
     const schemaChanged = schema !== prevProps.schema
 
-    if (errors !== prevProps.errors) publish('messages', errors)
-
-    if (schemaChanged) {
-      this.enqueue(Object.keys(errors || {}))
+    if (schemaChanged && errors) {
+      this.enqueue(Object.keys(errors))
     }
 
     this.flush(delay)
@@ -411,6 +392,21 @@ class Form extends React.PureComponent {
     let { schema, value, context } = props
 
     return schema && path && reach(schema, path, value, context)
+  }
+
+  handleChange = (model, paths) => {
+    let { onChange, onTouch, touched } = this.props
+    let nextTouched = touched
+
+    onChange(model, paths)
+
+    paths.forEach(path => {
+      if (touched && touched[path]) return
+      if (nextTouched === touched) nextTouched = { ...touched, [path]: true }
+      else nextTouched[path] = true
+    })
+
+    if (nextTouched !== touched) onTouch(nextTouched, paths)
   }
 
   handleValidationRequest = (fields, type, args) => {
@@ -442,6 +438,14 @@ class Form extends React.PureComponent {
     return Promise.resolve(submitForm && submitForm(validatedValue)).then(
       () => {
         this.setSubmitting(false)
+
+        this.updateFormState(s => ({
+          submits: {
+            ...s.submits,
+            submitCount: s.submits.submitCount + 1,
+            submitAttempts: s.submits.submitAttempts + 1,
+          },
+        }))
         this.notify('onSubmitFinished')
       },
       err => {
@@ -459,6 +463,13 @@ class Form extends React.PureComponent {
 
     maybeWarn(this.props.debug, errors, 'onSubmit')
 
+    this.updateFormState(s => ({
+      submits: {
+        ...s.submits,
+        submitAttempts: s.submits.submitAttempts + 1,
+      },
+    }))
+
     this.notify('onError', errors)
     this.notify('onInvalidSubmit', errors)
     this.setSubmitting(false)
@@ -469,6 +480,21 @@ class Form extends React.PureComponent {
 
     clearTimeout(this.submitTimer)
     this.submitTimer = setTimeout(() => this.submit().catch(done), 0)
+  }
+
+  updateFormState = fn => {
+    batchedUpdates(() => {
+      if (this.unmounted) return
+
+      this.setState(({ formState }) => {
+        const nextFormState = fn(formState)
+
+        // TODO: optimize the nullish case
+        return nextFormState !== formState && nextFormState !== null
+          ? { formState: { ...formState, ...nextFormState } }
+          : null
+      })
+    })
   }
 
   collectErrors(fields, props = this.props) {
@@ -492,6 +518,7 @@ class Form extends React.PureComponent {
         .then(errors => {
           if (errors !== this.props.errors) {
             maybeWarn(props.debug, errors, 'field validation')
+
             this.notify('onError', errors)
           }
         })
@@ -500,18 +527,28 @@ class Form extends React.PureComponent {
   }
 
   submit = () => {
-    var { schema, noValidate, value, onSubmitFinished, ...options } = this.props
+    let {
+      schema,
+      noValidate,
+      value,
+      onSubmitFinished,
+      errors,
+      ...options
+    } = this.props
+
+    if (this._submitting) {
+      return Promise.resolve(false)
+    }
 
     options.abortEarly = false
     options.strict = false
 
-    if (noValidate)
-      return Promise.resolve(true).then(() => this.notify('onSubmit', value))
+    this.notify('onBeforeSubmit', { value, errors })
 
     this.setSubmitting(true)
+
     return (
-      schema
-        .validate(value, options)
+      (noValidate ? Promise.resolve(true) : schema.validate(value, options))
         // no catch, we aren't interested in errors from onSubmit handlers
         .then(this.handleSubmitSuccess, this.handleSubmitError)
         .then(onSubmitFinished)
@@ -520,11 +557,23 @@ class Form extends React.PureComponent {
 
   setSubmitting(submitting) {
     if (this.unmounted) return
-    this.props.publish('submitting', submitting)
+    // this state is duplicated locally because it can take longer for the
+    // submit state to flush than a user can re-submit which we don't want
+    this._submitting = submitting
+    this.updateFormState(s =>
+      s.submits.submitting !== submitting
+        ? { submits: { ...s.submits, submitting } }
+        : null
+    )
   }
 
   notify(event, ...args) {
     if (this.props[event]) this.props[event](...args)
+  }
+
+  debug = (...args) => {
+    if (!this.props.__debugName) return
+    console.log('Form:', this.props.__debugName, ...args) // eslint-disable-line
   }
 
   validate(fields) {
@@ -535,15 +584,10 @@ class Form extends React.PureComponent {
     let options = pick(props, YUP_OPTIONS)
     let abortEarly = options.abortEarly == null ? false : options.abortEarly
 
-    let { value, getter } = props
-    let schema = this.getSchemaForPath(path, props)
-
-    let [parentPath, currentPath] = splitPath(path)
-    let parent = getter(parentPath, value) || {}
-    let pathValue = parent != null ? parent[currentPath] : value
+    let { value, schema } = props
 
     return schema
-      .validate(pathValue, { ...options, abortEarly, parent, path })
+      .validateAt(path, value, { ...options, abortEarly })
       .then(() => null)
       .catch(err => err)
   }
@@ -551,19 +595,22 @@ class Form extends React.PureComponent {
   render() {
     var {
       children,
-      onChange,
       value,
-      component: Element,
       getter,
       setter,
+      as: Element,
+      onChange: _,
+      onTouch: _1,
+      touched: _2,
     } = this.props
 
     let props = omit(this.props, [
       ...YUP_OPTIONS,
       ...Object.keys(Form.propTypes),
+      'onTouch',
     ])
 
-    delete props.publish
+    delete props.__debugName
 
     if (Element === 'form') props.noValidate = true // disable html5 validation
 
@@ -574,22 +621,23 @@ class Form extends React.PureComponent {
     } else {
       children = <Element {...props}>{children}</Element>
     }
+
     return (
-      <Provider value={this.state.formContext}>
-        <BindingContext
-          value={value}
-          onChange={onChange}
-          getter={getter}
-          setter={setter}
-        >
-          {children}
-        </BindingContext>
-      </Provider>
+      <BindingContext
+        value={value}
+        getter={getter}
+        setter={setter}
+        onChange={this.handleChange}
+      >
+        <FormActionsContext.Provider value={this.formActions}>
+          <FormDataContext.Provider value={this.state.formState}>
+            {children}
+          </FormDataContext.Provider>
+        </FormActionsContext.Provider>
+      </BindingContext>
     )
   }
 }
-
-const PolyFilledForm = polyfill(Form)
 
 function maybeWarn(debug, errors, target) {
   if (!debug) return
@@ -603,24 +651,11 @@ function maybeWarn(debug, errors, target) {
   }
 }
 
-const ControlledForm = uncontrollable(
-  /**
-   * Wraps each Form in it's own Context, so it can pass context state to
-   * it's own children.
-   */
-  React.forwardRef((props, ref) => (
-    <FormContext>
-      <FormContext.Publisher bubbles group={props.formKey}>
-        {publish => <PolyFilledForm {...props} publish={publish} ref={ref} />}
-      </FormContext.Publisher>
-    </FormContext>
-  )),
-  {
-    value: 'onChange',
-    errors: 'onError',
-  },
-  ['submit', 'validate']
-)
+const ControlledForm = uncontrollable(Form, {
+  value: 'onChange',
+  errors: 'onError',
+  touched: 'onTouch',
+})
 
 ControlledForm.getter = getter
 ControlledForm.setter = setter

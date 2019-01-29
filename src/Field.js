@@ -2,32 +2,47 @@ import cn from 'classnames'
 import omit from 'lodash/omit'
 import React from 'react'
 import PropTypes from 'prop-types'
+import elementType from 'prop-types-extra/lib/elementType'
 import { Binding } from 'topeka'
-import invariant from 'invariant'
+import warning from 'warning'
+import memoize from 'memoize-one'
+import shallowequal from 'shallowequal'
 
 import config from './config'
-import { Consumer } from './Form'
 import isNativeType from './utils/isNativeType'
-import resolveFieldComponent from './utils/resolveFieldComponent'
-import FormTrigger from './FormTrigger'
-import { inclusiveMapMessages } from './utils/ErrorUtils'
+import { inclusiveMapErrors, filterAndMapErrors } from './utils/ErrorUtils'
+import { withState, FORM_DATA, FormActionsContext } from './Contexts'
+import createEventHandler from './utils/createEventHandler'
 
 function notify(handler, args) {
   handler && handler(...args)
 }
 
-function getValue(value, bindTo, getter) {
-  if (typeof bindTo === 'function') {
-    return bindTo(value, getter)
-  }
-  if (typeof bindTo === 'string') {
-    return getter(bindTo, value)
-  }
+function resolveToNativeType(type) {
+  if (type === 'boolean') return 'checkbox'
+  return isNativeType(type) ? type : 'text'
+}
 
-  return Object.keys(bindTo).reduce((obj, key) => {
-    obj[key] = getValue(value, bindTo[key], getter)
-    return obj
-  }, {})
+function getValueProps(type, value, props) {
+  if (value == null) value = ''
+  switch (type) {
+    case 'radio':
+    case 'checkbox':
+      return { value: props.value, checked: value }
+    case 'file':
+      return { value: '' }
+    default:
+      return { value }
+  }
+}
+function isFilterErrorsEqual([a], [b]) {
+  let isEqual =
+    (a.errors === b.errors || shallowequal(a.errors, b.errors)) &&
+    a.names === b.names &&
+    a.mapErrors === b.mapErrors
+
+  // !isEqual && console.log('filter equalg cm ""', a.errors, b.errors)
+  return isEqual
 }
 
 /**
@@ -39,7 +54,7 @@ function getValue(value, bindTo, getter) {
  * are take care of for you. Beyond that they just render the input for their type, Fields whille pass along
  * any props and children to the input so you can easily configure new input types.
  *
- * ```editable
+ * ```jsx { "editable": true }
  * <Form
  *   noValidate
  *   schema={modelSchema}
@@ -48,26 +63,50 @@ function getValue(value, bindTo, getter) {
  *     colorID: 0
  *   }}
  * >
- *   <label>Name</label>
- *   <Form.Field
- *     name='name.first'
- *     placeholder='First name'
- *   />
- *
- *   <label>Favorite Color</label>
- *   <Form.Field name='colorId' type='select'>
- *     <option value={0}>Red</option>
- *     <option value={1}>Yellow</option>
- *     <option value={2}>Blue</option>
- *     <option value={3}>other</option>
- *   </Form.Field>
- *   <Form.Button type='submit'>Submit</Form.Button>
+ *     <label htmlFor="example-firstName">Name</label>
+ *     <Form.Field
+ *       name='name.first'
+ *       placeholder='First name'
+ *       id="example-firstName"
+ *     />
+ *     <label htmlFor="example-color">Favorite Color</label>
+ *     <Form.Field
+ *       as='select'
+ *       name='colorId'
+ *       id="example-color"
+ *     >
+ *       <option value={0}>Red</option>
+ *       <option value={1}>Yellow</option>
+ *       <option value={2}>Blue</option>
+ *       <option value={3}>other</option>
+ *     </Form.Field>
+ *   <Form.Submit type='submit'>Submit</Form.Submit>
  * </Form>
  * ```
+ *
+ * In addition to injecting Field components with events and the field `value`, a
+ * special prop called `meta` is also provided to all Field renderer components. `meta`
+ * contains a bunch of helpful context as well some methods for doing advanced field operations.
+ *
+ * ```ts
+ * interface Meta {
+ *   value: any;                // the Field Value
+ *   valid: boolean;            // Whether the field is currently valid
+ *   invalid: boolean;          // inverse of valid
+ *   touched: boolean:          // whether the field has been touched yet
+ *   errors: ErrorObjectMap;    // the errors for this field and any neted fields
+ *   schema?: YupSchema;        // The schema for this field
+ *   context: YupSchemaContext; // the yup context object
+ *   // onError allows manually _replacing_ errors for the Field `name`
+ *   // any existing errors for this path will be removed first
+ *   onError(errors: ErrorObjectMap): void
+ * }
+ * ```
+ *
  */
 class Field extends React.PureComponent {
   static defaultProps = {
-    type: '',
+    as: 'input',
     exclusive: false,
     fieldRef: null,
   }
@@ -75,166 +114,152 @@ class Field extends React.PureComponent {
   constructor(...args) {
     super(...args)
     this.eventHandlers = {}
-    this.createEventHandlers(this.props)
-  }
 
-  bindTo = (_value, getter) => {
-    let { mapToValue, name } = this.props
-    let value = getValue(_value, mapToValue || name, getter)
-
-    // ensure that no inputs are left uncontrolled
-    if (value === undefined) value = null
-
-    return value
-  }
-
-  // create a set of handlers with a stable identity so as not to
-  // thwart SCU checks
-  createEventHandlers({ events = config.events }) {
-    if (events == null) return
-    ;[].concat(events).forEach(event => {
-      let handler = (...args) => {
-        notify(this._fieldProps[event], args)
-        notify(this._bindingProps[event], args)
-        notify(this._triggerProps[event], args)
-      }
-      this.eventHandlers[event] = this.eventHandlers[event] || handler
+    this.getEventHandlers = createEventHandler(event => (...args) => {
+      notify(this.props[event], args)
+      notify(this.props.bindingProps[event], args)
+      this.handleValidateField(event, args)
     })
+
+    this.memoFilterAndMapErrors = memoize(
+      filterAndMapErrors,
+      isFilterErrorsEqual
+    )
   }
 
-  constructComponent = (bindingProps, triggerMeta = {}) => {
-    let { formContext } = this
+  buildMeta() {
+    let {
+      name,
+      touched,
+      exclusive,
+      errors,
+      actions,
+      yupContext,
+      submits,
+      bindingProps,
+      errorClass = config.errorClass,
+    } = this.props
+
+    let schema
+    try {
+
+      schema = actions.getSchemaForPath && name && actions.getSchemaForPath(name)
+    } catch (err) { /* ignore */ } // prettier-ignore
+
+    let meta = {
+      schema,
+      touched,
+      errorClass,
+      context: yupContext,
+      onError: this.handleFieldError,
+      ...submits,
+    }
+
+    const filteredErrors = this.memoFilterAndMapErrors({
+      errors,
+      names: name,
+      mapErrors: !exclusive ? inclusiveMapErrors : undefined,
+    })
+
+    meta.errors = filteredErrors
+    meta.invalid = !!Object.keys(filteredErrors).length
+    meta.valid = !meta.invalid
+
+    // put the original value on meta incase the coerced one differs
+    meta.value = bindingProps.value
+    return meta
+  }
+
+  handleValidateField(event, args) {
+    const { name, validates, actions, noValidate } = this.props
+
+    if (noValidate || !actions) return
+
+    let fieldsToValidate = validates != null ? [].concat(validates) : [name]
+
+    actions.onValidate(fieldsToValidate, event, args)
+  }
+
+  handleFieldError = errors => {
+    let { name, actions } = this.props
+
+    return actions.onFieldError(name, errors)
+  }
+
+  render() {
     let {
       name,
       type,
       children,
       className,
       fieldRef,
+      noMeta,
+      noValidate,
       noResolveType,
-      errorClass = config.errorClass,
+      bindingProps,
+      actions,
+      as: Input,
+      asProps,
+      events = config.events,
     } = this.props
 
-    let fieldProps = omit(this.props, Object.keys(Field.propTypes))
+    const meta = this.buildMeta()
 
-    fieldProps = Object.assign(
-      { name },
-      (this._fieldProps = fieldProps),
-      (this._bindingProps = bindingProps),
-      (this._triggerProps = triggerMeta.props || {}),
-      this.eventHandlers
-    )
-
-    let schema
-    try {
-      schema = name && formContext.getSchemaForPath(name)
-    } catch (err) {
-      /* ignore */
-    }
-
-    if (process.env.NODE_ENV !== 'production')
-      invariant(
-        formContext.noValidate || !name || schema,
+    if (process.env.NODE_ENV !== 'production') {
+      warning(
+        !actions || noValidate || !name || meta.schema,
         `There is no corresponding schema defined for this field: "${name}" ` +
           "Each Field's `name` prop must be a valid path defined by the parent Form schema"
       )
-
-    let [Component, resolvedType] = !noResolveType
-      ? resolveFieldComponent(type, schema)
-      : [null, type]
-
-    fieldProps.type = isNativeType(resolvedType) ? resolvedType : undefined
-
-    let meta = {
-      resolvedType,
-      errorClass,
-      schema,
-      onError: errors => formContext.onFieldError(name, errors),
     }
 
-    if (formContext.context) {
-      meta.context = formContext.context // lol
+    let resolvedType = type || (meta.schema && meta.schema._type)
+
+    meta.resolvedType = resolvedType
+    // console.log(meta, events(meta))
+    let eventHandlers = this.getEventHandlers(
+      typeof events === 'function' ? events(meta) : events
+    )
+
+    let fieldProps = Object.assign(
+      { name, type },
+      omit(this.props, Object.keys(Field.propTypes)),
+      bindingProps,
+      eventHandlers
+    )
+
+    // ensure that no inputs are left uncontrolled
+    let value = bindingProps.value === undefined ? null : bindingProps.value
+
+    fieldProps.value = value
+
+    if (!noValidate) {
+      fieldProps.className = cn(className, meta.invalid && meta.errorClass)
     }
 
-    if (this.shouldValidate()) {
-      let messages = triggerMeta.messages
-      let invalid = messages && !!Object.keys(messages).length
-
-      meta.errors = messages
-      meta.invalid = invalid
-      meta.valid = !meta.invalid
-      meta.submitting = triggerMeta.submitting
-
-      fieldProps.className = cn(className, invalid && errorClass)
-    }
-
-    if (!this.props.noMeta) fieldProps.meta = meta
+    if (!noMeta) fieldProps.meta = meta
     if (fieldRef) fieldProps.ref = fieldRef
 
     // Escape hatch for more complex Field types.
     if (typeof children === 'function') {
-      return children(fieldProps, Component)
+      fieldProps.type = resolveToNativeType(resolvedType)
+      return children(fieldProps)
     }
 
-    return <Component {...fieldProps}>{children}</Component>
-  }
+    // in the case of a plain input do some schema -> native type mapping
+    if (Input === 'input' && !type) {
+      fieldProps.type = resolveToNativeType(resolvedType)
+    }
 
-  render() {
     return (
-      <Consumer>
-        {formContext => {
-          let {
-            name,
-            group,
-            exclusive,
-            mapFromValue,
-            alsoValidates,
-            events = config.events,
-          } = this.props
-
-          this.formContext = formContext
-
-          let mapMessages = !exclusive ? inclusiveMapMessages : undefined
-
-          if (typeof mapFromValue !== 'object')
-            mapFromValue = { [name]: mapFromValue }
-
-          if (!this.shouldValidate()) {
-            return (
-              <Binding bindTo={this.bindTo} mapValue={mapFromValue}>
-                {this.constructComponent}
-              </Binding>
-            )
-          }
-
-          let triggers
-          if (alsoValidates != null) {
-            triggers = [name].concat(alsoValidates)
-          }
-
-          return (
-            <Binding bindTo={this.bindTo} mapValue={mapFromValue}>
-              {bindingProps => (
-                <FormTrigger
-                  for={name}
-                  group={group}
-                  events={events}
-                  triggers={triggers}
-                  mapMessages={mapMessages}
-                >
-                  {triggerMeta =>
-                    this.constructComponent(bindingProps, triggerMeta)
-                  }
-                </FormTrigger>
-              )}
-            </Binding>
-          )
-        }}
-      </Consumer>
+      <Input
+        {...asProps}
+        {...fieldProps}
+        {...getValueProps(fieldProps.type, value, this.props)}
+      >
+        {children}
+      </Input>
     )
-  }
-
-  shouldValidate() {
-    return !(this.props.noValidate || this.formContext.noValidate)
   }
 }
 
@@ -260,48 +285,12 @@ Field.propTypes = {
   name: PropTypes.string.isRequired,
 
   /**
-   * Group Fields together with a common `group` name. Groups can be
-   * validated together, helpful for multi-part forms.
-   *
-   * ```editable
-   * <Form
-   *   schema={modelSchema}
-   *   defaultValue={modelSchema.default()}
-   * >
-   *
-   *   <Form.Field
-   *     name='name.first'
-   *     group='name'
-   *     placeholder='first'
-   *   />
-   *   <Form.Field
-   *     name='name.last'
-   *     group='name'
-   *     placeholder='surname'
-   *   />
-   *   <Form.Message for={['name.first', 'name.last']}/>
-   *
-   *   <Form.Field
-   *     name='dateOfBirth'
-   *     placeholder='dob'
-   *   />
-   *
-   *   <Form.Button group='name'>
-   *     Validate Name
-   *   </Form.Button>
-   * </Form>
-   * ```
-   */
-  group: PropTypes.string,
-
-  /**
-   * The Component Input the form should render. You can sepcify a builtin type
-   * with a string name e.g `'text'`, `'datetime-local'`, etc. or provide a Component
-   * type class directly. When no type is provided the Field will attempt determine
-   * the correct input from the corresponding scheme. A Field corresponding to a `yup.number()`
+   * The Component Input the form should render. You can sepcify a native element such as 'textbox' or 'select'
+   * or provide a Component type class directly. When no type is provided the Field will attempt determine
+   * the correct input from the Field's schema. A Field corresponding to a `yup.number()`
    * will render a `type='number'` input by default.
    *
-   * ```editable
+   * ```jsx { "editable": true }
    * <Form noValidate schema={modelSchema}>
    *   Use the schema to determine type
    *   <Form.Field
@@ -320,24 +309,25 @@ Field.propTypes = {
    *   (need native 'datetime' support to see it)
    *   <Form.Field
    *     name='dateOfBirth'
-   *     type={MyDateInput}/>
+   *     as={MyDateInput}/>
    *
    * </Form>
    * ```
+   *
    * Custom Inputs should comply with the basic input api contract: set a value via a `value` prop and
    * broadcast changes to that value via an `onChange` handler.
-   *
-   * You can also permenantly map Components to a string `type` name via the top-level
-   * `addInputType()` api.
    */
-  type: PropTypes.oneOfType([PropTypes.func, PropTypes.string]),
+  as: PropTypes.oneOfType([elementType, PropTypes.string]),
 
   /**
    * Event name or array of event names that the Field should trigger a validation.
+   * You can also specify a function that receives the Field `meta` object and returns an array of events
+   * in order to change validation strategies based on validity.
    */
   events: PropTypes.oneOfType([
     PropTypes.string,
     PropTypes.arrayOf(PropTypes.string),
+    PropTypes.func,
   ]),
 
   /**
@@ -346,7 +336,8 @@ Field.propTypes = {
    * value for `name`'d path, allowing you to set commuted values from the Field.
    *
    * ```js
-   * <Form.Field name='name'
+   * <Form.Field
+   *   name='name'
    *   mapFromValue={fieldValue => fieldValue.first + ' ' + fieldValue.last}
    * />
    * ```
@@ -354,29 +345,32 @@ Field.propTypes = {
    * You can also provide an object hash, mapping paths of the Form `value`
    * to fields in the field value using a string field name, or a function accessor.
    *
-   * ```editable
+   * ```js { "editable": true }
    * <Form
    *   schema={modelSchema}
    *   defaultValue={modelSchema.default()}
    * >
-   *   <label>Name</label>
+   *   <label htmlFor="ex-mapToValue-firstName">Name</label>
    *   <Form.Field
    *     name='name.first'
    *     placeholder='First name'
+   *     id="ex-mapToValue-firstName"
    *   />
    *
-   *   <label>Date of Birth</label>
-   *   <Form.Field name='dateOfBirth'
+   *   <label htmlFor="ex-mapToValue-dob">Date of Birth</label>
+   *   <Form.Field
+   *     name='dateOfBirth'
+   *     id="ex-mapToValue-dob"
    *     mapFromValue={{
    *       'dateOfBirth': date => date,
    *       'age': date =>
    *         (new Date()).getFullYear() - date.getFullYear()
    *   }}/>
-
-   *   <label>Age</label>
-   *   <Form.Field name='age'/>
    *
-   *   <Form.Button type='submit'>Submit</Form.Button>
+   *   <label htmlFor="ex-mapToValue-age">Age</label>
+   *   <Form.Field name='age' id="ex-mapToValue-age"/>
+   *
+   *   <Form.Submit type='submit'>Submit</Form.Submit>
    * </Form>
    * ```
    */
@@ -399,7 +393,7 @@ Field.propTypes = {
    * />
    * ```
    */
-  mapToValue: PropTypes.oneOfType([PropTypes.func, PropTypes.object]),
+  mapToValue: PropTypes.func,
 
   /**
    * The css class added to the Field Input when it fails validation
@@ -407,16 +401,19 @@ Field.propTypes = {
   errorClass: PropTypes.string,
 
   /**
-   * Tells the Field to trigger validation for addition paths as well as its own (`name`).
+   * Tells the Field to trigger validation for specific paths.
    * Useful when used in conjuction with a `mapFromValue` hash that updates more than one value, or
    * if you want to trigger validation for the parent path as well.
    *
-   * ```js
-   * <Form.Field name='name.first' alsoValidates="name" />
-   * <Form.Field name='name.last' alsoValidates={['name', 'surname']} />
+   * > NOTE! This overrides the default behavior of validating the field itself by `name`,
+   * include the `name` if you want the field to validate itself.
+   *
+   * ```jsx
+   * <Form.Field name='name.first' validates="name.last" />
+   * <Form.Field name='name' validates={['name', 'surname']} />
    * ```
    */
-  alsoValidates: PropTypes.oneOfType([
+  validates: PropTypes.oneOfType([
     PropTypes.string,
     PropTypes.arrayOf(PropTypes.string),
   ]),
@@ -478,8 +475,50 @@ Field.propTypes = {
 
   /** @private */
   noResolveType: PropTypes.bool,
+  /** @private */
+  bindingProps: PropTypes.object,
+  /** @private */
+  yupContext: PropTypes.any,
+  /** @private */
+  errors: PropTypes.object,
+  /** @private */
+  touched: PropTypes.bool,
+  /** @private */
+  actions: PropTypes.object,
+  /** @private */
+  submits: PropTypes.shape({
+    submitAttempts: PropTypes.number,
+    submitCount: PropTypes.number,
+    submitting: PropTypes.bool,
+  }),
 }
 
-export default React.forwardRef((props, ref) => (
-  <Field fieldRef={ref} {...props} />
-))
+export default withState((ctx, props, ref) => {
+  let { mapToValue, mapFromValue, name, fieldRef, ...rest } = props
+
+  return (
+    <Binding bindTo={mapToValue || name} mapValue={mapFromValue}>
+      {bindingProps => (
+        <FormActionsContext.Consumer>
+          {actions => (
+            <Field
+              {...rest}
+              name={name}
+              actions={actions}
+              fieldRef={fieldRef || ref}
+              bindingProps={bindingProps}
+              errors={ctx.errors}
+              yupContext={ctx.yupContext}
+              noValidate={ctx.noValidate}
+              submits={ctx.submits}
+              touched={ctx.touched[name]}
+              noValidate={
+                props.noValidate == null ? ctx.noValidate : props.noValidate
+              }
+            />
+          )}
+        </FormActionsContext.Consumer>
+      )}
+    </Binding>
+  )
+}, FORM_DATA.ERRORS | FORM_DATA.TOUCHED | FORM_DATA.SUBMITS | FORM_DATA.YUP_CONTEXT | FORM_DATA.NO_VALIDATE)

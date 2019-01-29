@@ -1,55 +1,51 @@
 {
-  "description": "React-Bootstrap Documentation",
+  "name": "www",
   "version": "1.0.0",
-  "author": "Jason Quense",
-  "bugs": {
-    "url": "https://github.com/gatsbyjs/gatsby-starter-blog/issues"
-  },
-  "dependencies": {
-    "bootstrap": "^3.3.6",
-    "classnames": "^2.2.5",
-    "gatsby": "2.0.0-alpha.12",
-    "gatsby-link": "1.7.0-alpha.b68b7f5c",
-    "gatsby-plugin-catch-links": "^1.0.19",
-    "gatsby-plugin-less": "2.0.0-alpha.5",
-    "gatsby-remark-prismjs": "^1.2.21",
-    "gatsby-source-filesystem": "2.0.0-alpha.4",
-    "gatsby-transformer-react-docgen": "2.0.1-2",
-    "gatsby-transformer-remark": "^1.7.37",
-    "graphql": "^0.11.7",
-    "graphql-type-json": "^0.1.4",
-    "lodash": "^4.15.0",
-    "prop-types": "^15.6.0",
-    "react": "^16.2.0",
-    "react-dom": "^16.2.0",
-    "react-formal": "*",
-    "react-formal-inputs": "^2.0.0",
-    "react-helmet": "^5.2.0",
-    "react-live": "^1.7.1",
-    "react-widgets": "^4.2.0",
-    "react-widgets-globalize": "^5.0.0"
-  },
-  "devDependencies": {
-    "@babel/core": "^7.0.0-beta.40",
-    "babel-preset-jason": "^4.0.0",
-    "slug": "^0.9.1"
-  },
-  "homepage": "https://react-bootstrap.github.io/",
-  "keywords": [
-    "gatsby"
-  ],
-  "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/react-bootstrap/react-bootstrap.git"
-  },
+  "description": "docs",
+  "main": "index.js",
+  "private": true,
   "scripts": {
-    "develop": "gatsby develop",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "serve": "gatsby serve",
     "build": "gatsby build",
-    "deploy": "gatsby build --prefix-links && gh-pages -d public"
+    "develop": "gatsby develop",
+    "start": "yarn develop",
+    "deploy": "npm run build -- --prefix-paths && gh-pages -d public"
+  },
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@mdx-js/mdx": "^0.15.0",
+    "@mdx-js/tag": "^0.15.0",
+    "@monastic.panic/react-live": "^2.0.0",
+    "astroturf": "^0.8.4",
+    "bootstrap": "^4.2.1",
+    "classnames": "^2.2.5",
+    "css-literal-loader": "^0.6.0",
+    "gatsby": "^2.0.104",
+    "gatsby-link": "^2.0.9",
+    "gatsby-mdx": "^0.2.0",
+    "gatsby-plugin-astroturf": "^0.2.0",
+    "gatsby-plugin-catch-links": "^2.0.9",
+    "gatsby-plugin-sass": "^2.0.8",
+    "gatsby-remark-autolink-headers": "^2.0.12",
+    "gatsby-remark-prismjs": "^3.2.3",
+    "gatsby-source-filesystem": "2.0.18",
+    "gatsby-transformer-react-docgen": "^2.1.3",
+    "gatsby-transformer-remark": "^2.2.2",
+    "holderjs": "^2.9.6",
+    "lodash": "^4.17.11",
+    "node-sass": "^4.11.0",
+    "prismjs": "^1.15.0",
+    "prop-types": "^15.6.0",
+    "react": "^16.7.0",
+    "react-docgen": "3.0.0",
+    "react-dom": "^16.7.0",
+    "react-helmet": "^5.2.0",
+    "recompose": "^0.30.0",
+    "remark-slug": "^5.1.1"
   },
   "resolutions": {
-    "graphql": "0.11.7",
-    "graphql-type-json": "0.1.4"
+    "react-docgen": "3.0.0-rc.1"
   }
 }

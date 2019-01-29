@@ -5,7 +5,7 @@ import { mount } from 'enzyme'
 
 describe('Form Button', () => {
   it('should passthrough props', () => {
-    mount(<Form.Button className="foo" />)
+    mount(<Form.Submit className="foo" />)
       .find('button.foo')
       .should.have.length(1)
   })
@@ -14,7 +14,7 @@ describe('Form Button', () => {
     let stub = sinon.stub(console, 'error')
     let spy = sinon.spy()
 
-    mount(<Form.Button onClick={spy} />).simulate('click')
+    mount(<Form.Submit onClick={spy} />).simulate('click')
 
     spy.should.have.been.calledOnce()
 
@@ -24,9 +24,9 @@ describe('Form Button', () => {
 
   it('should render with child function', () => {
     mount(
-      <Form.Button>
+      <Form.Submit>
         {({ submitting }) => <button>{`busy: ${submitting}`}</button>}
-      </Form.Button>
+      </Form.Submit>
     )
       .find('button')
       .text()

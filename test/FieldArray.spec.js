@@ -23,7 +23,7 @@ describe('FieldArray', () => {
 
     render() {
       const { value, name } = this.props
-
+      // console.log('color list', value)
       return (
         <ul>
           {value.map((value, idx) => (
@@ -175,23 +175,26 @@ describe('FieldArray', () => {
         { name: 'other red', hexCode: '#ff0000' },
       ],
     }
-
+    const ref = React.createRef()
     let wrapper = mount(
-      <Form
-        schema={schema}
-        onChange={changeSpy}
-        onError={errorSpy}
-        defaultValue={defaultValue}
-      >
-        <Form.FieldArray name="colors">
-          <ColorList />
-        </Form.FieldArray>
-      </Form>
+      <div>
+        <Form
+          ref={ref}
+          schema={schema}
+          onChange={changeSpy}
+          onError={errorSpy}
+          defaultValue={defaultValue}
+        >
+          <Form.FieldArray name="colors">
+            <ColorList />
+          </Form.FieldArray>
+        </Form>
+      </div>
     )
     let list = wrapper.find(ColorList)
     list.prop('value').should.have.length(2)
 
-    await wrapper.instance().submit()
+    await ref.current.submit()
 
     // First color has an error
     errors.should.have.property('colors[0].name')

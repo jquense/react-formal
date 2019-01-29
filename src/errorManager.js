@@ -1,11 +1,12 @@
 import errToJSON from './utils/errToJSON'
 import { reduce, trim } from './utils/paths'
+import { EMPTY_ERRORS } from './utils/ErrorUtils'
 
 let isValidationError = err => err && err.name === 'ValidationError'
 
 export default function errorManager(handleValidation) {
   return {
-    collect(paths, pristineErrors = {}, options) {
+    collect(paths, pristineErrors = EMPTY_ERRORS, options) {
       paths = reduce([].concat(paths))
 
       let errors = { ...pristineErrors }

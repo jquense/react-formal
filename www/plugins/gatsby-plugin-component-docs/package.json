@@ -1,0 +1,12 @@
+{
+  "name": "gatsby-plugin-component-docs",
+  "peerDependencies": {
+    "gatsby": "^2.0.0"
+  },
+  "dependencies": {
+    "@mdx-js/mdx": "^0.16.0",
+    "@mdx-js/tag": "^0.16.0",
+    "lodash": "^4.15.0",
+    "gatsby-mdx": "^0.2.0"
+  }
+}

@@ -5,26 +5,73 @@ import { move, remove, shift, unshift } from './utils/ErrorUtils'
 
 import Field from './Field'
 
-function filter(messages, baseName) {
-  const paths = Object.keys(messages || {})
+function filter(errors, baseName) {
+  const paths = Object.keys(errors || {})
   const result = {}
 
   paths.forEach(path => {
     if (path.indexOf(baseName) !== 0) return
-    result[path] = messages[path]
+    result[path] = errors[path]
   })
 
   return result
 }
 
 /**
- * A specialized `Form.Field` component that handles array fields.
- * Specifically it handles errors correctly when items are added, removed, or
- * reordered.
+ * A specialized `Form.Field` component that helps with common list manipulations.
+ * Provide a `name`, like normal, to the field with the array and `<FieldArray>` will
+ * inject a set of special `arrayHelpers` for handling removing, reordering,
+ * editing and adding new items, as well as any error handling quirks that come with those
+ * operations.
+ *
+ * ```js { "editable": true }
+ * const schema = yup.object({
+ *   friends: yup.array().of(
+ *     yup.object({
+ *       name: yup.string().required()
+ *     })
+ *   )
+ * });
+ *
+ * render(
+ *  <Form
+ *   debug
+ *   schema={schema}
+ *   defaultValue={{
+ *     friends: [{ name: 'Sally'}]
+ *   }}
+ * >
+ *   <Form.FieldArray name="friends" events="blur">
+ *    {({ value, arrayHelpers }) => (
+ *       <ul>
+ *        {value.map((value, idx) => (
+ *          <li key={idx} >
+ *            <div style={{ display: 'flex', alignItems: 'flex-start' }}>
+ *              <Form.Field name={`friends[${idx}].name`} />
+ *              <button type="button" onClick={() => arrayHelpers.remove(value)}>-</button>
+ *              <button type="button" onClick={() => arrayHelpers.insert({ name: undefined }, idx)}>+</button>
+ *            </div>
+ *            <Form.Message for={`friends[${idx}].name`} />
+ *          </li>
+ *        ))}
+ *       </ul>
+ *     )}
+ *   </Form.FieldArray>
+ * </Form>
+ * )
+ * ```
+ *
  */
 class FieldArray extends React.Component {
   static propTypes = {
     name: PropTypes.string.isRequired,
+    /**
+     * The same signature as providing a function to `<Field>` but with an
+     * additional `arrayHelpers` object passed to the render function
+     *
+     * @type {Function}
+     */
+    children: PropTypes.oneOfType([PropTypes.func, PropTypes.element]),
   }
 
   onAdd = item => {
@@ -126,10 +173,11 @@ class FieldArray extends React.Component {
   render() {
     const { children, ...fieldProps } = this.props
     return (
-      <Field {...fieldProps} noResolveType>
+      <Field {...fieldProps}>
         {({ meta, ...props }) => {
           this.fieldProps = props
           this.meta = meta
+
           const nextProps = {
             ...props,
             meta,

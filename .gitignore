@@ -1,5 +1,7 @@
 /lib
 /es
+/www/cache
+/www/public
 
 # Logs
 logs

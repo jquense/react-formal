@@ -22,22 +22,23 @@ describe('Message', () => {
 
   it('should allow group summaries', done => {
     let renderSpy = sinon.spy(msgs => {
-      msgs.should.eql(['foo', 'hi'])
+      msgs.should.eql(['foo', 'hi', 'good day'])
       return null
     })
 
     mount(
       <Form
         noValidate
-        defaultErrors={{ fieldA: ['foo', 'hi'], fieldB: 'good day' }}
+        defaultErrors={{
+          fieldA: ['foo', 'hi'],
+          fieldB: 'good day',
+          fieldC: 'fooo',
+        }}
       >
         <div>
-          <Form.Message group="test" className="msg">
+          <Form.Message for={['fieldA', 'fieldB']} className="msg">
             {renderSpy}
           </Form.Message>
-          <Form.Trigger for="fieldA" group="test">
-            {() => <input />}
-          </Form.Trigger>
         </div>
       </Form>
     )

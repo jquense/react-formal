@@ -1,0 +1,6 @@
+{
+  "extends": "../eslintrc.yaml",
+  "rules": {
+    "react/prop-types": "off"
+  }
+}

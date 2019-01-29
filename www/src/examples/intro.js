@@ -1,10 +1,6 @@
 const Form = require('react-formal')
 const { object, string, number, date } = require('yup')
 
-// if we are using a different set of inputs
-// we can set some defaults once at the beginning
-Form.addInputTypes(require('react-formal-inputs'))
-
 const modelSchema = object({
   name: object({
     first: string().required('please enter a first name'),
@@ -26,23 +22,26 @@ render(
       <Form.Field name="name.first" placeholder="First name" />
       <Form.Field name="name.last" placeholder="Surname" />
 
-      <Form.Message for={['name.first', 'name.last']} />
+      <Form.Message
+        for={['name.first', 'name.last']}
+        className="validation-error"
+      />
     </div>
 
     <label>Date of Birth</label>
     <Form.Field name="dateOfBirth" />
-    <Form.Message for="dateOfBirth" />
+    <Form.Message for="dateOfBirth" className="validation-error" />
 
     <label>Favorite Color</label>
-    <Form.Field name="colorId" type="select">
+    <Form.Field name="colorId" as="select">
       <option value={null}>Select a color...</option>
       <option value={0}>Red</option>
       <option value={1}>Yellow</option>
       <option value={2}>Blue</option>
       <option value={3}>other</option>
     </Form.Field>
-    <Form.Message for="colorId" />
+    <Form.Message for="colorId" className="validation-error" />
 
-    <Form.Button type="submit">Submit</Form.Button>
+    <Form.Submit type="submit">Submit</Form.Submit>
   </Form>
 )
