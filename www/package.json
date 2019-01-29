@@ -47,5 +47,8 @@
   },
   "resolutions": {
     "react-docgen": "3.0.0-rc.1"
+  },
+  "devDependencies": {
+    "gh-pages": "^2.0.1"
   }
 }
