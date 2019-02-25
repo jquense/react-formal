@@ -1,0 +1,10 @@
+{
+  "extends": "@4c/tsconfig/web",
+  "compilerOptions": {
+    "rootDir": "../",
+    "baseUrl": "../",
+    "paths": {
+      "react-formal": ["types/index.d.ts"]
+    }
+  }
+}

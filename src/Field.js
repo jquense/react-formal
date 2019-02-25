@@ -189,6 +189,7 @@ class Field extends React.PureComponent {
   render() {
     let {
       name,
+      // eslint-disable-next-line react/prop-types
       type,
       children,
       className,
@@ -199,6 +200,7 @@ class Field extends React.PureComponent {
       bindingProps,
       actions,
       as: Input,
+      // eslint-disable-next-line react/prop-types
       asProps,
       events = config.events,
     } = this.props
@@ -333,7 +335,7 @@ Field.propTypes = {
   /**
    * Customize how the Field value maps to the overall Form `value`.
    * `mapFromValue` can be a a string property name or a function that returns a
-   * value for `name`'d path, allowing you to set commuted values from the Field.
+   * value for `name`ed path, allowing you to set commuted values from the Field.
    *
    * ```js
    * <Form.Field

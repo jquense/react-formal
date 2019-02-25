@@ -86,7 +86,7 @@ class FormSubmit extends React.Component {
     )
   }
 
-  handleSubmit(event, args) {
+  handleSubmit(event) {
     const { actions, triggers } = this.props
     if (!actions) {
       return warning(
@@ -97,7 +97,7 @@ class FormSubmit extends React.Component {
       )
     }
 
-    if (triggers && triggers.length) actions.onValidate(triggers, event, args)
+    if (triggers && triggers.length) actions.onValidate(triggers, event)
     else actions.onSubmit()
   }
 

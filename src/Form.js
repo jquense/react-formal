@@ -187,6 +187,15 @@ class Form extends React.PureComponent {
      */
     onError: PropTypes.func,
 
+    /** An object hash of field paths and whether they have been "touched" yet */
+    touched: PropTypes.object,
+
+    /**
+     * Callback that is called when a field is touched. It is called with an `touched` object
+     *
+     */
+    onTouch: PropTypes.func,
+
     /**
      * Callback that is called whenever a validation is triggered.
      * It is called _before_ the validation is actually run.
@@ -572,6 +581,7 @@ class Form extends React.PureComponent {
   }
 
   debug = (...args) => {
+    // eslint-disable-next-line react/prop-types
     if (!this.props.__debugName) return
     console.log('Form:', this.props.__debugName, ...args) // eslint-disable-line
   }
