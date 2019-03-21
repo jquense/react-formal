@@ -56,8 +56,8 @@ describe('Field', () => {
       </Form>
     )
 
+    // console.log(wrapper.debug())
     wrapper.assertSingle(`input[name='string']`)
-    //console.log(wrapper.debug())
     wrapper.assertSingle('input[type="number"]')
     wrapper.assertSingle('input[type="date"]')
 
@@ -82,7 +82,13 @@ describe('Field', () => {
   it('should fire onChange', done => {
     mount(
       <Form schema={schema} defaultValue={{}}>
-        <Form.Field name="name" as={TestInput} onChange={() => done()} />
+        <Form.Field
+          name="name"
+          as={TestInput}
+          onChange={() => {
+            done()
+          }}
+        />
       </Form>
     )
       .assertSingle('input')
@@ -253,22 +259,6 @@ describe('Field', () => {
       .simulate('change')
   })
 
-  it('should add inner ref', () => {
-    let inst
-    mount(
-      <Form schema={schema} defaultValue={{}}>
-        <Form.Field
-          name="name"
-          as={TestInput}
-          fieldRef={r => {
-            inst = r
-          }}
-        />
-      </Form>
-    )
-    ;(inst instanceof TestInput).should.be.true()
-  })
-
   it('should forward inner ref', () => {
     let inst
     mount(
@@ -391,7 +381,7 @@ describe('Field', () => {
       })
     })
 
-    it.only('should set events via a function', done => {
+    it('should set events via a function', done => {
       let schema = yup.object({
         number: yup.number().min(5),
       })

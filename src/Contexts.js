@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useContext } from 'react'
 import forwardRef from 'react-context-toolbox/forwardRef'
 import shallowequal from 'shallowequal'
 import { EMPTY_ERRORS } from './utils/ErrorUtils'
@@ -27,6 +27,12 @@ export const FORM_DATA = {
 }
 
 export const FormActionsContext = React.createContext(null)
+
+// export const FormErrorsContext = React.createContext(null)
+// export const FormSubmitMetaContext = React.createContext(null)
+// export const FormValueContext = React.createContext(null)
+
+// export const useErrors () => useContext()
 
 export const FormDataContext = React.createContext(initial, (prev, next) => {
   let changed = 0

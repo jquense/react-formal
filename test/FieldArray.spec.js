@@ -1,5 +1,6 @@
 import { mount } from 'enzyme'
 import React from 'react'
+import { act } from 'react-dom/test-utils'
 import { object, array, string } from 'yup'
 
 import Form from '../src'
@@ -91,12 +92,12 @@ describe('FieldArray', () => {
         </Form.FieldArray>
       </Form>
     )
-
-    wrapper
-      .find('.field')
-      .first()
-      .simulate('change', { target: { value: 'beige' } })
-
+    act(() => {
+      wrapper
+        .find('.field')
+        .first()
+        .simulate('change', { target: { value: 'beige' } })
+    })
     changeSpy.should.have.been.calledOnce()
 
     value.should.eql({
@@ -109,11 +110,12 @@ describe('FieldArray', () => {
     })
 
     last = value
-    wrapper
-      .find('.field2')
-      .last()
-      .simulate('change', { target: { value: 'LULZ' } })
-
+    act(() => {
+      wrapper
+        .find('.field2')
+        .last()
+        .simulate('change', { target: { value: 'LULZ' } })
+    })
     value.should.eql({
       colors: [
         {
@@ -153,7 +155,9 @@ describe('FieldArray', () => {
 
     list.prop('value').should.have.length(2)
 
-    list.instance().remove(1)
+    act(() => {
+      list.instance().remove(1)
+    })
 
     value.should.eql({
       colors: [
@@ -199,9 +203,10 @@ describe('FieldArray', () => {
     // First color has an error
     errors.should.have.property('colors[0].name')
 
-    // remove the first color
-    list.instance().remove(0)
-
+    act(() => {
+      // remove the first color
+      list.instance().remove(0)
+    })
     // The error for the first color should be gone
     errorSpy.should.have.been.calledTwice()
     errors.should.not.have.property('colors[0].name')

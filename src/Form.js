@@ -1,4 +1,4 @@
-import { BindingContext as BC } from 'topeka'
+import { BindingContext } from 'topeka'
 import omit from 'lodash/omit'
 import pick from 'lodash/pick'
 import expr from 'property-expr'
@@ -17,8 +17,6 @@ import * as ErrorUtils from './utils/ErrorUtils'
 import { FormActionsContext, FormDataContext } from './Contexts'
 
 const batchedUpdates = ReactDOM.unstable_batchedUpdates || (fn => fn())
-
-let BindingContext = BC.ControlledComponent
 
 let done = e =>
   setTimeout(() => {

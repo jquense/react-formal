@@ -1,21 +1,22 @@
 import cn from 'classnames'
 import omit from 'lodash/omit'
-import React from 'react'
+import React, { useCallback, useContext, useMemo, useRef } from 'react'
 import PropTypes from 'prop-types'
 import elementType from 'prop-types-extra/lib/elementType'
-import { Binding } from 'topeka'
+import { useBinding } from 'topeka'
 import warning from 'warning'
 import memoize from 'memoize-one'
 import shallowequal from 'shallowequal'
+import useCommittedRef from '@restart/hooks/useCommittedRef'
 
 import config from './config'
 import isNativeType from './utils/isNativeType'
 import { inclusiveMapErrors, filterAndMapErrors } from './utils/ErrorUtils'
-import { withState, FORM_DATA, FormActionsContext } from './Contexts'
-import createEventHandler from './utils/createEventHandler'
+import { withState, FormDataContext, FormActionsContext } from './Contexts'
 
 function notify(handler, args) {
-  handler && handler(...args)
+  // FIXME: seems to be a babel bug here...
+  if (handler) handler.apply(null, args)
 }
 
 function resolveToNativeType(type) {
@@ -45,224 +46,196 @@ function isFilterErrorsEqual([a], [b]) {
   return isEqual
 }
 
-/**
- * The Field Component renders a form control and handles input value updates and validations.
- * Changes to the Field value are automatically propagated back up to the containing Form
- * Component.
- *
- * Fields provide a light abstraction over normal input components where values and onChange handlers
- * are take care of for you. Beyond that they just render the input for their type, Fields whille pass along
- * any props and children to the input so you can easily configure new input types.
- *
- * ```jsx { "editable": true }
- * <Form
- *   noValidate
- *   schema={modelSchema}
- *   defaultValue={{
- *     name: { first: 'Sally'},
- *     colorID: 0
- *   }}
- * >
- *     <label htmlFor="example-firstName">Name</label>
- *     <Form.Field
- *       name='name.first'
- *       placeholder='First name'
- *       id="example-firstName"
- *     />
- *     <label htmlFor="example-color">Favorite Color</label>
- *     <Form.Field
- *       as='select'
- *       name='colorId'
- *       id="example-color"
- *     >
- *       <option value={0}>Red</option>
- *       <option value={1}>Yellow</option>
- *       <option value={2}>Blue</option>
- *       <option value={3}>other</option>
- *     </Form.Field>
- *   <Form.Submit type='submit'>Submit</Form.Submit>
- * </Form>
- * ```
- *
- * In addition to injecting Field components with events and the field `value`, a
- * special prop called `meta` is also provided to all Field renderer components. `meta`
- * contains a bunch of helpful context as well some methods for doing advanced field operations.
- *
- * ```ts
- * interface Meta {
- *   value: any;                // the Field Value
- *   valid: boolean;            // Whether the field is currently valid
- *   invalid: boolean;          // inverse of valid
- *   touched: boolean:          // whether the field has been touched yet
- *   errors: ErrorObjectMap;    // the errors for this field and any neted fields
- *   schema?: YupSchema;        // The schema for this field
- *   context: YupSchemaContext; // the yup context object
- *   // onError allows manually _replacing_ errors for the Field `name`
- *   // any existing errors for this path will be removed first
- *   onError(errors: ErrorObjectMap): void
- * }
- * ```
- *
- */
-class Field extends React.PureComponent {
-  static defaultProps = {
-    as: 'input',
-    exclusive: false,
-    fieldRef: null,
-  }
+function useFieldMeta(props, data, actions) {
+  let {
+    name,
+    exclusive,
+    yupContext,
+    type,
+    noValidate,
+    errorClass = config.errorClass,
+  } = props
+  let { submits, errors, touched } = data
 
-  constructor(...args) {
-    super(...args)
-    this.eventHandlers = {}
+  // this is so we get a memoized function that is instance specific
+  const memoizedFilter = useMemo(
+    () => memoize(filterAndMapErrors, isFilterErrorsEqual),
+    []
+  )
 
-    this.getEventHandlers = createEventHandler(event => (...args) => {
-      notify(this.props[event], args)
-      notify(this.props.bindingProps[event], args)
-      this.handleValidateField(event, args)
-    })
+  let handleFieldError = errors => actions.onFieldError(name, errors)
 
-    this.memoFilterAndMapErrors = memoize(
-      filterAndMapErrors,
-      isFilterErrorsEqual
+  let schema
+  try {
+    schema = actions.getSchemaForPath && name && actions.getSchemaForPath(name)
+  } catch (err) { /* ignore */ } // prettier-ignore
+
+  if (process.env.NODE_ENV !== 'production') {
+    warning(
+      !actions || noValidate || !name || schema,
+      `There is no corresponding schema defined for this field: "${name}" ` +
+        "Each Field's `name` prop must be a valid path defined by the parent Form schema"
     )
   }
 
-  buildMeta() {
-    let {
-      name,
-      touched,
-      exclusive,
-      errors,
-      actions,
-      yupContext,
-      submits,
-      bindingProps,
-      errorClass = config.errorClass,
-    } = this.props
-
-    let schema
-    try {
-
-      schema = actions.getSchemaForPath && name && actions.getSchemaForPath(name)
-    } catch (err) { /* ignore */ } // prettier-ignore
-
-    let meta = {
-      schema,
-      touched,
-      errorClass,
-      context: yupContext,
-      onError: this.handleFieldError,
-      ...submits,
-    }
-
-    const filteredErrors = this.memoFilterAndMapErrors({
-      errors,
-      names: name,
-      mapErrors: !exclusive ? inclusiveMapErrors : undefined,
-    })
-
-    meta.errors = filteredErrors
-    meta.invalid = !!Object.keys(filteredErrors).length
-    meta.valid = !meta.invalid
-
-    // put the original value on meta incase the coerced one differs
-    meta.value = bindingProps.value
-    return meta
+  let meta = {
+    schema,
+    errorClass,
+    context: yupContext,
+    touched: touched[name],
+    onError: handleFieldError,
+    ...submits,
   }
 
-  handleValidateField(event, args) {
-    const { name, validates, actions, noValidate } = this.props
+  const filteredErrors = memoizedFilter({
+    errors,
+    names: name,
+    mapErrors: !exclusive ? inclusiveMapErrors : undefined,
+  })
 
-    if (noValidate || !actions) return
+  meta.errors = filteredErrors
+  meta.invalid = !!Object.keys(filteredErrors).length
+  meta.valid = !meta.invalid
 
-    let fieldsToValidate = validates != null ? [].concat(validates) : [name]
+  let resolvedType = type || (meta.schema && meta.schema._type)
+  meta.resolvedType = resolvedType
+  meta.nativeType = resolveToNativeType(resolvedType)
 
-    actions.onValidate(fieldsToValidate, event, args)
-  }
-
-  handleFieldError = errors => {
-    let { name, actions } = this.props
-
-    return actions.onFieldError(name, errors)
-  }
-
-  render() {
-    let {
-      name,
-      type,
-      children,
-      className,
-      fieldRef,
-      noMeta,
-      noValidate,
-      noResolveType,
-      bindingProps,
-      actions,
-      as: Input,
-      asProps,
-      events = config.events,
-    } = this.props
-
-    const meta = this.buildMeta()
-
-    if (process.env.NODE_ENV !== 'production') {
-      warning(
-        !actions || noValidate || !name || meta.schema,
-        `There is no corresponding schema defined for this field: "${name}" ` +
-          "Each Field's `name` prop must be a valid path defined by the parent Form schema"
-      )
-    }
-
-    let resolvedType = type || (meta.schema && meta.schema._type)
-
-    meta.resolvedType = resolvedType
-    // console.log(meta, events(meta))
-    let eventHandlers = this.getEventHandlers(
-      typeof events === 'function' ? events(meta) : events
-    )
-
-    let fieldProps = Object.assign(
-      { name, type },
-      omit(this.props, Object.keys(Field.propTypes)),
-      bindingProps,
-      eventHandlers
-    )
-
-    // ensure that no inputs are left uncontrolled
-    let value = bindingProps.value === undefined ? null : bindingProps.value
-
-    fieldProps.value = value
-
-    if (!noValidate) {
-      fieldProps.className = cn(className, meta.invalid && meta.errorClass)
-    }
-
-    if (!noMeta) fieldProps.meta = meta
-    if (fieldRef) fieldProps.ref = fieldRef
-
-    // Escape hatch for more complex Field types.
-    if (typeof children === 'function') {
-      fieldProps.type = resolveToNativeType(resolvedType)
-      return children(fieldProps)
-    }
-
-    // in the case of a plain input do some schema -> native type mapping
-    if (Input === 'input' && !type) {
-      fieldProps.type = resolveToNativeType(resolvedType)
-    }
-
-    return (
-      <Input
-        {...asProps}
-        {...fieldProps}
-        {...getValueProps(fieldProps.type, value, this.props)}
-      >
-        {children}
-      </Input>
-    )
-  }
+  return meta
 }
 
+function useEventHandlers(events, handleEvent) {
+  const eventMap = useMemo(() => ({}), handleEvent)
+  events = events && [].concat(events)
+
+  return useMemo(() => {
+    const result = {}
+    if (events) {
+      // eslint-disable-next-line no-extra-semi
+      events.forEach(event => {
+        eventMap[event] = result[event] =
+          eventMap[event] ||
+          ((...args) => {
+            // console.log(event, args)
+            handleEvent(event, args)
+          })
+      })
+    }
+    return result
+  }, [events && events.join(','), eventMap])
+}
+
+export function useMergedHandlers(events, props, fieldProps) {
+  const propsRef = useCommittedRef(props)
+  const fieldRef = useCommittedRef(fieldProps)
+
+  return useEventHandlers(
+    events,
+    useCallback(
+      (event, args) => {
+        notify(propsRef.current[event], args)
+        notify(fieldRef.current[event], args)
+      },
+      [propsRef, fieldRef]
+    )
+  )
+}
+
+export function useField(props) {
+  let { mapToValue, mapFromValue, name, validates, type } = props
+
+  const formActions = useContext(FormActionsContext)
+  const formData = useContext(FormDataContext)
+
+  const [value, onChange] = useBinding(mapToValue || name, mapFromValue)
+
+  const fieldsToValidate = useMemo(
+    () => (validates != null ? [].concat(validates) : [name]),
+    [name, validates]
+  )
+
+  const noValidate =
+    props.noValidate == null ? formData.noValidate : props.noValidate
+
+  const meta = useFieldMeta(props, formData, formActions)
+  // put the original value on meta in case the coerced one differs
+  meta.value = value
+
+  let events = props.events || config.events
+  events = typeof events === 'function' ? events(meta) : events
+
+  meta.events = events
+
+  const fieldProps = useEventHandlers(
+    events,
+    useCallback(
+      (event, args) => {
+        // console.log(onChange.toString())
+        notify(onChange, args)
+
+        if (noValidate || !formActions) return
+        formActions.onValidate(fieldsToValidate, event, args)
+      },
+      [
+        onChange,
+        noValidate,
+        fieldsToValidate,
+        formActions && formActions.onValidate,
+      ]
+    )
+  )
+  fieldProps.name = name
+  fieldProps.value = value === undefined ? null : value
+
+  if (/checkbox|radio/.test(meta.nativeType)) {
+    fieldProps.checked = fieldProps.value
+    fieldProps.value = props.value
+  } else if (meta.nativeType === 'file') {
+    fieldProps.value = null
+  }
+
+  if (!noValidate) {
+    fieldProps.className = cn(props.className, meta.invalid && meta.errorClass)
+  }
+
+  return [fieldProps, meta]
+}
+
+const Field = React.forwardRef((props, ref) => {
+  const { children, noMeta, events, type, asProps, as: Input } = props
+  const [field, meta] = useField(props)
+
+  let fieldProps = {
+    type,
+    ...field,
+    ...useMergedHandlers(meta.events, props, field),
+  }
+
+  if (!noMeta) fieldProps.meta = meta
+  if (ref) fieldProps.ref = ref
+
+  // Escape hatch for more complex Field types.
+  if (typeof children === 'function') {
+    return children(fieldProps, meta)
+  }
+
+  return (
+    <Input
+      {...asProps}
+      {...fieldProps}
+      type={meta.nativeType}
+      value={field.value == null ? '' : field.value}
+    >
+      {children}
+    </Input>
+  )
+})
+
+Field.displayName = 'Field'
+Field.defaultProps = {
+  as: 'input',
+  exclusive: false,
+}
 Field.propTypes = {
   /**
    * The Field name, which should be path corresponding to a specific form `value` path.
@@ -493,32 +466,4 @@ Field.propTypes = {
   }),
 }
 
-export default withState((ctx, props, ref) => {
-  let { mapToValue, mapFromValue, name, fieldRef, ...rest } = props
-
-  return (
-    <Binding bindTo={mapToValue || name} mapValue={mapFromValue}>
-      {bindingProps => (
-        <FormActionsContext.Consumer>
-          {actions => (
-            <Field
-              {...rest}
-              name={name}
-              actions={actions}
-              fieldRef={fieldRef || ref}
-              bindingProps={bindingProps}
-              errors={ctx.errors}
-              yupContext={ctx.yupContext}
-              noValidate={ctx.noValidate}
-              submits={ctx.submits}
-              touched={ctx.touched[name]}
-              noValidate={
-                props.noValidate == null ? ctx.noValidate : props.noValidate
-              }
-            />
-          )}
-        </FormActionsContext.Consumer>
-      )}
-    </Binding>
-  )
-}, FORM_DATA.ERRORS | FORM_DATA.TOUCHED | FORM_DATA.SUBMITS | FORM_DATA.YUP_CONTEXT | FORM_DATA.NO_VALIDATE)
+export default Field

@@ -1,9 +1,9 @@
 import invariant from 'invariant'
 import PropTypes from 'prop-types'
-import React from 'react'
+import React, { useRef } from 'react'
 import { move, remove, shift, unshift } from './utils/ErrorUtils'
 
-import Field from './Field'
+import { useField, useMergedHandlers } from './Field'
 
 function filter(errors, baseName) {
   const paths = Object.keys(errors || {})
@@ -15,6 +15,101 @@ function filter(errors, baseName) {
   })
 
   return result
+}
+
+function useFieldArray(props) {
+  const [field, meta] = useField(props)
+  const { value, onChange } = field
+  const { errors, onError } = meta
+
+  const helperRef = useRef({})
+  const helpers = helperRef.current
+
+  const sendErrors = fn => {
+    onError(fn(errors || {}, props.name))
+  }
+
+  helpers.onAdd = item => {
+    const { value } = this.fieldProps
+    helperRef.current.insert(item, value ? value.length : 0)
+  }
+
+  helpers.onItemError = (name, errors) => {
+    sendErrors(fieldErrors => ({
+      ...remove(fieldErrors, name),
+      ...errors,
+    }))
+  }
+
+  helpers.update = (updatedItem, oldItem) => {
+    const index = value.indexOf(oldItem)
+    const newValue = value == null ? [] : [...value]
+
+    newValue.splice(index, 1, updatedItem)
+
+    onChange(newValue)
+  }
+
+  helpers.insert = (item, index) => {
+    const newValue = value == null ? [] : [...value]
+
+    newValue.splice(index, 0, item)
+
+    onChange(newValue)
+    sendErrors((errors, name) => unshift(errors, name, index))
+  }
+
+  helpers.move = (item, toIndex) => {
+    const fromIndex = value.indexOf(item)
+    const newValue = value == null ? [] : [...value]
+
+    invariant(
+      fromIndex !== -1,
+      '`onMove` must be called with an item in the array'
+    )
+
+    newValue.splice(toIndex, 0, ...newValue.splice(fromIndex, 1))
+
+    // FIXME: doesn't handle syncing error state.
+    onChange(newValue, { action: 'move', toIndex, fromIndex })
+
+    sendErrors((errors, name) => move(errors, name, fromIndex, toIndex))
+  }
+
+  helpers.remove = item => {
+    if (value == null) return
+
+    const index = value.indexOf(item)
+    onChange(value.filter(v => v !== item))
+
+    sendErrors((errors, name) => shift(errors, name, index))
+  }
+
+  helpers.items = () => {
+    const values = value
+    return !values
+      ? []
+      : values.map((value, index) => {
+          const itemName = `${props.name}[${index}]`
+          const itemErrors = filter(meta.errors, itemName)
+
+          return {
+            value,
+            name: itemName,
+            onChange: item => helperRef.current.onUpdate(item, values[index]),
+            meta: {
+              ...meta,
+              errors: itemErrors,
+              valid: !Object.keys(itemErrors).length,
+              invalid: !!Object.keys(itemErrors).length,
+              onError: errors =>
+                helperRef.current.onItemError(itemName, errors),
+            },
+          }
+        })
+  }
+
+  return [field, meta, helpers]
 }
 
 /**
@@ -62,142 +157,33 @@ function filter(errors, baseName) {
  * ```
  *
  */
-class FieldArray extends React.Component {
-  static propTypes = {
-    name: PropTypes.string.isRequired,
-    /**
-     * The same signature as providing a function to `<Field>` but with an
-     * additional `arrayHelpers` object passed to the render function
-     *
-     * @type {Function}
-     */
-    children: PropTypes.oneOfType([PropTypes.func, PropTypes.element]),
+const FieldArray = React.forwardRef((props, ref) => {
+  const { children } = props
+  const [field, meta, arrayHelpers] = useFieldArray(props)
+
+  const nextProps = {
+    ...props,
+    ...field,
+    ...useMergedHandlers(meta.events, props, field),
+    meta,
+    arrayHelpers,
   }
 
-  onAdd = item => {
-    const { value } = this.fieldProps
-    this.onInsert(item, value ? value.length : 0)
-  }
+  return typeof children === 'function'
+    ? children(nextProps)
+    : React.cloneElement(children, nextProps)
+})
 
-  onItemError(name, errors) {
-    this.sendErrors(fieldErrors => ({
-      ...remove(fieldErrors, name),
-      ...errors,
-    }))
-  }
-
-  onUpdate = (updatedItem, oldItem) => {
-    const { value, onChange } = this.fieldProps
-    const index = value.indexOf(oldItem)
-    const newValue = value == null ? [] : [...value]
-
-    newValue.splice(index, 1, updatedItem)
-
-    onChange(newValue)
-  }
-
-  onInsert = (item, index) => {
-    const { value, onChange } = this.fieldProps
-    const newValue = value == null ? [] : [...value]
-
-    newValue.splice(index, 0, item)
-
-    onChange(newValue)
-    this.sendErrors((errors, name) => unshift(errors, name, index))
-  }
-
-  onMove = (item, toIndex) => {
-    const { value, onChange } = this.fieldProps
-    const fromIndex = value.indexOf(item)
-    const newValue = value == null ? [] : [...value]
-
-    invariant(
-      fromIndex !== -1,
-      '`onMove` must be called with an item in the array'
-    )
-
-    newValue.splice(toIndex, 0, ...newValue.splice(fromIndex, 1))
-
-    // FIXME: doesn't handle syncing error state.
-    onChange(newValue, { action: 'move', toIndex, fromIndex })
-
-    this.sendErrors((errors, name) => move(errors, name, fromIndex, toIndex))
-  }
-
-  onRemove = item => {
-    const { value, onChange } = this.fieldProps
-    if (value == null) return
-
-    const index = value.indexOf(item)
-    onChange(value.filter(v => v !== item))
-
-    this.sendErrors((errors, name) => shift(errors, name, index))
-  }
-
-  sendErrors(fn) {
-    const { name } = this.fieldProps
-    const { errors, onError } = this.meta
-    onError(fn(errors || {}, name))
-  }
-
-  mapValues = fn => {
-    const { value, name } = this.fieldProps
-
-    return value.map((item, index) => fn(item, `${name}[${index}]`, index))
-  }
-
-  items = () => {
-    const { value: values, name } = this.fieldProps
-
-    return !values
-      ? []
-      : values.map((value, index) => {
-          const itemName = `${name}[${index}]`
-          const itemErrors = filter(this.meta.errors, itemName)
-
-          return {
-            value,
-            name: itemName,
-            onChange: item => this.onUpdate(item, values[index]),
-            meta: {
-              ...this.meta,
-              errors: itemErrors,
-              valid: !Object.keys(itemErrors).length,
-              invalid: !!Object.keys(itemErrors).length,
-              onError: errors => this.onItemError(itemName, errors),
-            },
-          }
-        })
-  }
-
-  render() {
-    const { children, ...fieldProps } = this.props
-    return (
-      <Field {...fieldProps}>
-        {({ meta, ...props }) => {
-          this.fieldProps = props
-          this.meta = meta
-
-          const nextProps = {
-            ...props,
-            meta,
-            arrayHelpers: {
-              items: this.items,
-              add: this.onAdd,
-              move: this.onMove,
-              insert: this.onInsert,
-              remove: this.onRemove,
-              update: this.onUpdate,
-            },
-          }
-
-          return typeof children === 'function'
-            ? children(nextProps)
-            : React.cloneElement(children, nextProps)
-        }}
-      </Field>
-    )
-  }
+FieldArray.displayName = 'FieldArray'
+FieldArray.propTypes = {
+  name: PropTypes.string.isRequired,
+  /**
+   * The same signature as providing a function to `<Field>` but with an
+   * additional `arrayHelpers` object passed to the render function
+   *
+   * @type {Function}
+   */
+  children: PropTypes.oneOfType([PropTypes.func, PropTypes.element]),
 }
 
 export default FieldArray
