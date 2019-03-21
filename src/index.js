@@ -1,6 +1,6 @@
 import Form from './Form'
-import Field from './Field'
-import FieldArray from './FieldArray'
+import Field, { useField, useMergedHandlers } from './Field'
+import FieldArray, { useFieldArray } from './FieldArray'
 import Message from './Message'
 import Summary from './Summary'
 import errToJSON from './utils/errToJSON'
@@ -14,6 +14,9 @@ const statics = {
   Message,
   Summary,
   Submit,
+  useField,
+  useMergedHandlers,
+  useFieldArray,
   setDefaults(defaults = {}) {
     Object.assign(config, defaults)
   },

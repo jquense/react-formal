@@ -17,7 +17,7 @@ function filter(errors, baseName) {
   return result
 }
 
-function useFieldArray(props) {
+export function useFieldArray(props) {
   const [field, meta] = useField(props)
   const { value, onChange } = field
   const { errors, onError } = meta
