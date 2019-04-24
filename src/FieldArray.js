@@ -44,12 +44,12 @@ function filter(errors, baseName) {
  *   <Form.FieldArray name="friends" events="blur">
  *    {({ value, arrayHelpers }) => (
  *       <ul>
- *        {value.map((value, idx) => (
+ *        {value.map((item, idx) => (
  *          <li key={idx} >
  *            <div style={{ display: 'flex', alignItems: 'flex-start' }}>
  *              <Form.Field name={`friends[${idx}].name`} />
- *              <button type="button" onClick={() => arrayHelpers.remove(value)}>-</button>
- *              <button type="button" onClick={() => arrayHelpers.insert({ name: undefined }, idx)}>+</button>
+ *              <button type="button" onClick={() => arrayHelpers.remove(item)}>-</button>
+ *              <button type="button" onClick={() => arrayHelpers.add({ name: undefined }, idx)}>+</button>
  *            </div>
  *            <Form.Message for={`friends[${idx}].name`} />
  *          </li>
