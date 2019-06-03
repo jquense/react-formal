@@ -166,6 +166,7 @@ const FieldArray = React.forwardRef((props, ref) => {
     ...field,
     ...useMergedHandlers(meta.events, props, field),
     meta,
+    ref,
     arrayHelpers,
   }
 

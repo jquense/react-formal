@@ -36,6 +36,7 @@ function getValueProps(type, value, props) {
       return { value }
   }
 }
+
 function isFilterErrorsEqual([a], [b]) {
   let isEqual =
     (a.errors === b.errors || shallowequal(a.errors, b.errors)) &&
@@ -47,15 +48,11 @@ function isFilterErrorsEqual([a], [b]) {
 }
 
 function useFieldMeta(props, data, actions) {
-  let {
-    name,
-    exclusive,
-    yupContext,
-    type,
-    noValidate,
-    errorClass = config.errorClass,
-  } = props
-  let { submits, errors, touched } = data
+  let { name, exclusive, type, errorClass = config.errorClass } = props
+  let { submits, errors, touched, yupContext } = data
+
+  const noValidate =
+    props.noValidate == null ? data.noValidate : props.noValidate
 
   // this is so we get a memoized function that is instance specific
   const memoizedFilter = useMemo(
@@ -142,7 +139,7 @@ export function useMergedHandlers(events, props, fieldProps) {
 }
 
 export function useField(props) {
-  let { mapToValue, mapFromValue, name, validates, type } = props
+  let { mapToValue, mapFromValue, name, validates } = props
 
   const formActions = useContext(FormActionsContext)
   const formData = useContext(FormDataContext)
@@ -202,7 +199,7 @@ export function useField(props) {
 }
 
 const Field = React.forwardRef((props, ref) => {
-  const { children, noMeta, events, type, asProps, as: Input } = props
+  const { children, noMeta, type, asProps, as: Input } = props
   const [field, meta] = useField(props)
 
   let fieldProps = {

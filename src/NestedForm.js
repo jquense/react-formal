@@ -3,7 +3,7 @@ import React from 'react'
 import Form from './Form'
 import Field from './Field'
 
-import { filter, prefix } from './utils/ErrorUtils'
+import { prefix } from './utils/ErrorUtils'
 
 /**
  * A `Form` component that takes a `name` prop. Functions exactly like a normal

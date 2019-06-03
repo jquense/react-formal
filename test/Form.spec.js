@@ -1,5 +1,6 @@
 import { mount } from 'enzyme'
 import React from 'react'
+import { act } from 'react-dom/test-utils'
 import * as yup from 'yup'
 import createSlot from 'react-tackle-box/Slot'
 
@@ -191,13 +192,13 @@ describe('Form', () => {
   })
 
   it("doesn't call submitForm on error", done => {
-    let onSubmit = sinon.spy()
+    let onInvalidSubmit = sinon.spy()
     let submitForm = sinon.spy(() => Promise.resolve())
 
     let wrapper = mount(
       <Form
         submitForm={submitForm}
-        onInvalidSubmit={onSubmit}
+        onInvalidSubmit={onInvalidSubmit}
         schema={schema.shape({
           foo: yup.string().required(),
         })}
@@ -211,7 +212,7 @@ describe('Form', () => {
     wrapper.assertSingle('FormSubmit').simulate('click')
 
     setTimeout(() => {
-      onSubmit.should.have.been.calledOnce()
+      onInvalidSubmit.should.have.been.calledOnce()
       submitForm.should.not.have.been.called()
       done()
     }, 100)
@@ -315,7 +316,7 @@ describe('Form', () => {
     let ref = React.createRef()
 
     let spy = sinon.spy()
-    let wrapper = mount(
+    mount(
       <div>
         <Form
           ref={ref}

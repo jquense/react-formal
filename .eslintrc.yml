@@ -4,7 +4,7 @@ globals:
   Promise: true
 rules:
   no-unused-vars:
-    - off
+    - error
     - vars: all
       args: after-used
       varsIgnorePattern: ^_

@@ -1,4 +1,4 @@
-import React, { useContext } from 'react'
+import React from 'react'
 import forwardRef from 'react-context-toolbox/forwardRef'
 import shallowequal from 'shallowequal'
 import { EMPTY_ERRORS } from './utils/ErrorUtils'
