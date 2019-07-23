@@ -3,7 +3,7 @@ import React from 'react'
 import Form from './Form'
 import Field from './Field'
 
-import { filter, prefix } from './utils/ErrorUtils'
+import { filter, prefix, unprefix } from './utils/ErrorUtils'
 
 /**
  * A `Form` component that takes a `name` prop. Functions exactly like a normal
@@ -32,11 +32,12 @@ class NestedForm extends React.Component {
         {({ meta, value, onChange }) => {
           return (
             <Form
+              as="div"
               {...props}
               value={value}
               onChange={onChange}
               onError={errors => meta.onError(prefix(errors, name))}
-              errors={name ? meta.errors : errors}
+              errors={unprefix(name ? meta.errors : errors, name)}
               schema={schema || meta.schema}
               context={
                 name ? { ...meta.context, ...props.context } : props.context
