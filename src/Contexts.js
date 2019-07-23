@@ -5,7 +5,7 @@ import { EMPTY_ERRORS } from './utils/ErrorUtils'
 
 export const DEFAULT_CHANNEL = '@@parent'
 
-const isEqualOrNullish = (a, b) => a === b || (a == null && b == null)
+// const isEqualOrNullish = (a, b) => a === b || (a == null && b == null)
 
 export const initial = {
   errors: EMPTY_ERRORS,
@@ -28,20 +28,25 @@ export const FORM_DATA = {
 
 export const FormActionsContext = React.createContext(null)
 
-// export const FormErrorsContext = React.createContext(null)
-// export const FormSubmitMetaContext = React.createContext(null)
-// export const FormValueContext = React.createContext(null)
+export const FormErrorContext = React.createContext(EMPTY_ERRORS)
+
+export const FormTouchedContext = React.createContext({})
+
+export const FormSubmitsContext = React.createContext({
+  submitCount: 0,
+  submitAttempts: 0,
+  submitting: false,
+})
 
 // export const useErrors () => useContext()
 
-export const FormDataContext = React.createContext(initial, (prev, next) => {
-  let changed = 0
-  if (!shallowequal(prev.errors, next.errors)) changed |= FORM_DATA.ERRORS
-  if (!shallowequal(prev.submits, next.submits)) changed |= FORM_DATA.SUBMITS
-  if (!isEqualOrNullish(prev.value, next.value)) changed |= FORM_DATA.VALUE
+// export const FormDataContext = React.createContext(initial, (prev, next) => {
+//   let changed = 0
+//   if (!shallowequal(prev.errors, next.errors)) changed |= FORM_DATA.ERRORS
+//   if (!shallowequal(prev.submits, next.submits)) changed |= FORM_DATA.SUBMITS
 
-  return changed
-})
+//   return changed
+// })
 
 export const withState = (render, bits, opts) =>
   forwardRef((props, ref) => {

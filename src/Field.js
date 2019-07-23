@@ -1,40 +1,29 @@
 import cn from 'classnames'
-import omit from 'lodash/omit'
-import React, { useCallback, useContext, useMemo, useRef } from 'react'
+import React, { useCallback, useContext, useMemo } from 'react'
 import PropTypes from 'prop-types'
 import elementType from 'prop-types-extra/lib/elementType'
 import { useBinding } from 'topeka'
 import warning from 'warning'
 import memoize from 'memoize-one'
 import shallowequal from 'shallowequal'
-import useCommittedRef from '@restart/hooks/useCommittedRef'
 
 import config from './config'
 import isNativeType from './utils/isNativeType'
+import useEventHandlers, {
+  useMergedHandlers,
+  notify,
+} from './utils/useEventHandlers'
 import { inclusiveMapErrors, filterAndMapErrors } from './utils/ErrorUtils'
-import { withState, FormDataContext, FormActionsContext } from './Contexts'
-
-function notify(handler, args) {
-  // FIXME: seems to be a babel bug here...
-  if (handler) handler.apply(null, args)
-}
+import {
+  FormActionsContext,
+  FormErrorContext,
+  FormSubmitsContext,
+  FormTouchedContext,
+} from './Contexts'
 
 function resolveToNativeType(type) {
   if (type === 'boolean') return 'checkbox'
   return isNativeType(type) ? type : 'text'
-}
-
-function getValueProps(type, value, props) {
-  if (value == null) value = ''
-  switch (type) {
-    case 'radio':
-    case 'checkbox':
-      return { value: props.value, checked: value }
-    case 'file':
-      return { value: '' }
-    default:
-      return { value }
-  }
 }
 
 function isFilterErrorsEqual([a], [b]) {
@@ -47,12 +36,18 @@ function isFilterErrorsEqual([a], [b]) {
   return isEqual
 }
 
-function useFieldMeta(props, data, actions) {
-  let { name, exclusive, type, errorClass = config.errorClass } = props
-  let { submits, errors, touched, yupContext } = data
+function useFieldMeta(props, actions) {
+  let {
+    name,
+    type,
+    exclusive,
+    noValidate,
+    errorClass = config.errorClass,
+  } = props
 
-  const noValidate =
-    props.noValidate == null ? data.noValidate : props.noValidate
+  const submits = useContext(FormSubmitsContext)
+  const touched = useContext(FormTouchedContext)
+  const errors = useContext(FormErrorContext)
 
   // this is so we get a memoized function that is instance specific
   const memoizedFilter = useMemo(
@@ -78,7 +73,7 @@ function useFieldMeta(props, data, actions) {
   let meta = {
     schema,
     errorClass,
-    context: yupContext,
+    context: actions.yupContext,
     touched: touched[name],
     onError: handleFieldError,
     ...submits,
@@ -101,48 +96,10 @@ function useFieldMeta(props, data, actions) {
   return meta
 }
 
-function useEventHandlers(events, handleEvent) {
-  const eventMap = useMemo(() => ({}), handleEvent)
-  events = events && [].concat(events)
-
-  return useMemo(() => {
-    const result = {}
-    if (events) {
-      // eslint-disable-next-line no-extra-semi
-      events.forEach(event => {
-        eventMap[event] = result[event] =
-          eventMap[event] ||
-          ((...args) => {
-            // console.log(event, args)
-            handleEvent(event, args)
-          })
-      })
-    }
-    return result
-  }, [events && events.join(','), eventMap])
-}
-
-export function useMergedHandlers(events, props, fieldProps) {
-  const propsRef = useCommittedRef(props)
-  const fieldRef = useCommittedRef(fieldProps)
-
-  return useEventHandlers(
-    events,
-    useCallback(
-      (event, args) => {
-        notify(propsRef.current[event], args)
-        notify(fieldRef.current[event], args)
-      },
-      [propsRef, fieldRef]
-    )
-  )
-}
-
 export function useField(props) {
-  let { mapToValue, mapFromValue, name, validates } = props
+  let { mapToValue, mapFromValue, name, validates, noValidate } = props
 
   const formActions = useContext(FormActionsContext)
-  const formData = useContext(FormDataContext)
 
   const [value, onChange] = useBinding(mapToValue || name, mapFromValue)
 
@@ -151,10 +108,7 @@ export function useField(props) {
     [name, validates]
   )
 
-  const noValidate =
-    props.noValidate == null ? formData.noValidate : props.noValidate
-
-  const meta = useFieldMeta(props, formData, formActions)
+  const meta = useFieldMeta(props, formActions)
   // put the original value on meta in case the coerced one differs
   meta.value = value
 
@@ -182,13 +136,13 @@ export function useField(props) {
     )
   )
   fieldProps.name = name
-  fieldProps.value = value === undefined ? null : value
+  fieldProps.value = value == null ? '' : value
 
   if (/checkbox|radio/.test(meta.nativeType)) {
     fieldProps.checked = fieldProps.value
     fieldProps.value = props.value
   } else if (meta.nativeType === 'file') {
-    fieldProps.value = null
+    fieldProps.value = ''
   }
 
   if (!noValidate) {
@@ -217,12 +171,7 @@ const Field = React.forwardRef((props, ref) => {
   }
 
   return (
-    <Input
-      {...asProps}
-      {...fieldProps}
-      type={meta.nativeType}
-      value={field.value == null ? '' : field.value}
-    >
+    <Input {...asProps} {...fieldProps} type={meta.nativeType}>
       {children}
     </Input>
   )

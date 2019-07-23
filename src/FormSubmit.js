@@ -1,133 +1,148 @@
 import PropTypes from 'prop-types'
-import React from 'react'
+import React, { useCallback, useContext, useMemo } from 'react'
 import warning from 'warning'
 import memoize from 'memoize-one'
 import elementType from 'prop-types-extra/lib/elementType'
+import useCommittedRef from '@restart/hooks/useCommittedRef'
 
-import createEventHandler from './utils/createEventHandler'
 import { filterAndMapErrors } from './utils/ErrorUtils'
-import { withState, FORM_DATA, FormActionsContext } from './Contexts'
+import {
+  withState,
+  FORM_DATA,
+  FormActionsContext,
+  FormErrorContext,
+  FormSubmitsContext,
+} from './Contexts'
+import useEventHandlers, { notify } from './utils/useEventHandlers'
 
-/**
- * A Form submit button, for triggering validations for the entire form or specific fields.
- */
-class FormSubmit extends React.Component {
-  static propTypes = {
-    /**
-     * The `<button/>` type
-     */
-    type: PropTypes.oneOf(['button', 'submit']),
+function useFormSubmit(props) {
+  const propsRef = useCommittedRef(props)
 
-    /**
-     * Specify particular fields to validate in the related form. If empty the entire form will be validated.
-     */
-    triggers: PropTypes.arrayOf(PropTypes.string.isRequired),
+  const { triggers, events } = props
 
-    /**
-     * Provide a render function to completely override the rendering behavior
-     * of FormSubmit (`as` will be ignored). In addition to passing through props some
-     * additional form submission metadata is injected to handle loading and disabled behaviors.
-     *
-     * ```js
-     * <Form.Submit>
-     *   {({ errors, props, submitting, submitCount, submitAttempts }) =>
-     *     <button {...props} disabled={submitCount > 1}>
-     *       submitting ? 'Saving…' : 'Submit'}
-     *     </button>
-     * </Form.Submit>
-     * ```
-     */
-    children: PropTypes.oneOfType([PropTypes.node, PropTypes.func]),
+  const actions = useContext(FormActionsContext)
+  const submits = useContext(FormSubmitsContext)
+  let errors = useContext(FormErrorContext)
 
-    /**
-     * Control the rendering of the Form Submit component when not using
-     * the render prop form of `children`.
-     */
-    as: elementType,
+  const handleSubmit = useCallback(
+    (event, args) => {
+      if (!actions) {
+        return warning(
+          false,
+          'A Form submit event ' +
+            'was triggered from a component outside the context of a Form. ' +
+            'The Button should be wrapped in a Form component'
+        )
+      }
 
-    /**
-     * A string or array of event names that trigger validation.
-     *
-     * @default 'onClick'
-     */
-    events: PropTypes.oneOfType([
-      PropTypes.string,
-      PropTypes.arrayOf(PropTypes.string),
-    ]),
+      if (triggers && triggers.length) {
+        actions.onValidate(triggers, event, args)
+      } else actions.onSubmit()
+    },
+    [actions, triggers && triggers.join(',')]
+  )
 
-    /** @private */
-    errors: PropTypes.object,
-    /** @private */
-    actions: PropTypes.object,
-    /** @private */
-    submits: PropTypes.object,
-  }
+  const eventHandlers = useEventHandlers(
+    events,
+    useCallback(
+      (event, args) => {
+        notify(propsRef.current[event], args)
+        handleSubmit(event, args)
+      },
+      [propsRef, handleSubmit]
+    )
+  )
 
-  static defaultProps = {
-    as: 'button',
-    events: ['onClick'],
-  }
-
-  constructor(...args) {
-    super(...args)
-    this.eventHandlers = {}
-
-    this.getEventHandlers = createEventHandler(event => (...args) => {
-      this.props[event] && this.props[event](args)
-      this.handleSubmit()
-    })
-
-    this.memoFilterAndMapErrors = memoize(
+  const memoFilterAndMapErrors = useMemo(() =>
+    memoize(
       filterAndMapErrors,
       ([a], [b]) =>
         a.errors === b.errors &&
         a.names === b.names &&
         a.maperrors === b.maperrors
     )
-  }
+  )
 
-  handleSubmit(event, args) {
-    const { actions, triggers } = this.props
-    if (!actions) {
-      return warning(
-        false,
-        'A Form submit event ' +
-          'was triggered from a component outside the context of a Form. ' +
-          'The Button should be wrapped in a Form component'
-      )
-    }
+  const partial = triggers && triggers.length
+  if (partial) errors = memoFilterAndMapErrors({ errors, names: triggers })
 
-    if (triggers && triggers.length) actions.onValidate(triggers, event, args)
-    else actions.onSubmit()
-  }
+  return [
+    eventHandlers,
+    useMemo(() => ({ errors, ...submits }), [errors, submits]),
+  ]
+}
+/**
+ * A Form submit button, for triggering validations for the entire form or specific fields.
+ */
+function FormSubmit(props) {
+  const { events: _, triggers, children, as: Component, ...rest } = props
+  const [eventHandlers] = useFormSubmit(props)
 
-  render() {
-    let {
-      events,
-      triggers,
-      children,
-      errors,
-      submits,
-      as: Component,
-      actions: _1,
-      ...props
-    } = this.props
+  return (
+    <Component
+      {...rest}
+      {...eventHandlers}
+      type={triggers && triggers.length ? 'button' : 'submit'}
+    >
+      {children}
+    </Component>
+  )
+}
 
-    const partial = triggers && triggers.length
-    if (partial) {
-      errors = this.memoFilterAndMapErrors({ errors, names: triggers })
-    }
+FormSubmit.propTypes = {
+  /**
+   * The `<button/>` type
+   */
+  type: PropTypes.oneOf(['button', 'submit']),
 
-    props = Object.assign(props, this.getEventHandlers(events))
+  /**
+   * Specify particular fields to validate in the related form. If empty the entire form will be validated.
+   */
+  triggers: PropTypes.arrayOf(PropTypes.string.isRequired),
 
-    return typeof children === 'function' ? (
-      children({ errors, props, ...submits })
-    ) : (
-      <Component type={partial ? 'button' : 'submit'} {...props}>
-        {children}
-      </Component>
-    )
-  }
+  /**
+   * Provide a render function to completely override the rendering behavior
+   * of FormSubmit (`as` will be ignored). In addition to passing through props some
+   * additional form submission metadata is injected to handle loading and disabled behaviors.
+   *
+   * ```js
+   * <Form.Submit>
+   *   {({ errors, props, submitting, submitCount, submitAttempts }) =>
+   *     <button {...props} disabled={submitCount > 1}>
+   *       submitting ? 'Saving…' : 'Submit'}
+   *     </button>
+   * </Form.Submit>
+   * ```
+   */
+  children: PropTypes.oneOfType([PropTypes.node, PropTypes.func]),
+
+  /**
+   * Control the rendering of the Form Submit component when not using
+   * the render prop form of `children`.
+   */
+  as: elementType,
+
+  /**
+   * A string or array of event names that trigger validation.
+   *
+   * @default 'onClick'
+   */
+  events: PropTypes.oneOfType([
+    PropTypes.string,
+    PropTypes.arrayOf(PropTypes.string),
+  ]),
+
+  /** @private */
+  errors: PropTypes.object,
+  /** @private */
+  actions: PropTypes.object,
+  /** @private */
+  submits: PropTypes.object,
+}
+
+FormSubmit.defaultProps = {
+  as: 'button',
+  events: ['onClick'],
 }
 
 export default withState(

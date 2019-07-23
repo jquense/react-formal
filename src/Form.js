@@ -12,10 +12,16 @@ import useMounted from '@restart/hooks/useMounted'
 import useEventCallback from '@restart/hooks/useEventCallback'
 import useMergeState from '@restart/hooks/useMergeState'
 
-import createErrorManager from './errorManager'
+import { notify } from './utils/useEventHandlers'
 import errToJSON from './utils/errToJSON'
 import * as ErrorUtils from './utils/ErrorUtils'
-import { FormActionsContext, FormDataContext } from './Contexts'
+import createErrorManager from './errorManager'
+import {
+  FormActionsContext,
+  FormErrorContext,
+  FormSubmitsContext,
+  FormTouchedContext,
+} from './Contexts'
 
 let done = e =>
   setTimeout(() => {
@@ -29,23 +35,13 @@ const getter = (path, model) =>
 
 const setter = BindingContext.defaultProps.setter
 
-function notify(handler, ...args) {
-  if (handler) handler.apply(null, args)
-}
-
-function useFormContext(touched, errors, submits) {
+function useErrorContext(errors) {
   const ref = useRef(null)
-
   if (!ref.current) {
-    return (ref.current = { touched, errors, submits })
+    return (ref.current = errors)
   }
-
-  if (
-    touched !== ref.current.touched ||
-    submits !== ref.current.submits ||
-    !shallowequal(ref.current.errors, errors)
-  ) {
-    ref.current = { touched, errors, submits }
+  if (!shallowequal(ref.current.errors, errors)) {
+    ref.current = errors
   }
 
   return ref.current
@@ -190,7 +186,7 @@ const Form = React.forwardRef((uncontrolledProps, ref) => {
     setSubmitState({ submitting })
   }
 
-  const formContext = useFormContext(touched, errors, submits)
+  const errorContext = useErrorContext(errors)
 
   const isUpdateRef = useRef(false)
   useEffect(() => {
@@ -255,8 +251,9 @@ const Form = React.forwardRef((uncontrolledProps, ref) => {
   })
 
   const handleValidationRequest = (fields, type, args) => {
-    fields = [].concat(fields)
     if (noValidate) return
+
+    fields = [].concat(fields)
 
     notify(onValidate, { type, fields, args })
     enqueue(fields)
@@ -344,6 +341,7 @@ const Form = React.forwardRef((uncontrolledProps, ref) => {
 
   const formActions = Object.assign(useRef({}).current, {
     getSchemaForPath,
+    yupContext: context,
     onSubmit: handleSubmit,
     onValidate: handleValidationRequest,
     onFieldError: handleFieldError,
@@ -361,13 +359,17 @@ const Form = React.forwardRef((uncontrolledProps, ref) => {
       onChange={handleChange}
     >
       <FormActionsContext.Provider value={formActions}>
-        <FormDataContext.Provider value={formContext}>
-          {Element === null || Element === false ? (
-            React.cloneElement(React.Children.only(children), elementProps)
-          ) : (
-            <Element {...elementProps}>{children}</Element>
-          )}
-        </FormDataContext.Provider>
+        <FormTouchedContext.Provider value={touched}>
+          <FormSubmitsContext.Provider value={submits}>
+            <FormErrorContext.Provider value={errorContext}>
+              {Element === null || Element === false ? (
+                React.cloneElement(React.Children.only(children), elementProps)
+              ) : (
+                <Element {...elementProps}>{children}</Element>
+              )}
+            </FormErrorContext.Provider>
+          </FormSubmitsContext.Provider>
+        </FormTouchedContext.Provider>
       </FormActionsContext.Provider>
     </BindingContext>
   )
