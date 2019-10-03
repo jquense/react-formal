@@ -1,10 +1,10 @@
-import React from 'react'
 import { mount } from 'enzyme'
+import React from 'react'
+import { act } from 'react-dom/test-utils'
 import * as yup from 'yup'
+import Form, { useFormSubmit } from '../src'
 
-import Form from '../src'
-
-const sleep = ms => new Promise(y => setTimeout(() => y(), ms))
+const wait = ms => new Promise(resolve => setTimeout(resolve, ms))
 
 describe('Triggers', () => {
   const schema = yup.object({ fieldA: yup.mixed(), fieldB: yup.mixed() })
@@ -32,9 +32,7 @@ describe('Triggers', () => {
       wrapper = mount(
         <Form schema={schema} onValidate={spy}>
           <div>
-            <Form.Submit triggers={['fieldA', 'fieldB']}>
-              {({ props: { onClick } }) => <button onClick={onClick} />}
-            </Form.Submit>
+            <Form.Submit triggers={['fieldA', 'fieldB']} />
           </div>
         </Form>
       )
@@ -45,11 +43,10 @@ describe('Triggers', () => {
     spy.args[0][0].fields.should.eql(['fieldA', 'fieldB'])
   })
 
-  it('should simulate for `triggers`', function(done) {
-    function spy({ fields }) {
+  it('should simulate for `triggers`', async () => {
+    const spy = sinon.spy(({ fields }) => {
       fields.should.eql(['fieldA'])
-      done()
-    }
+    })
 
     let wrapper = mount(
       <Form schema={schema} onValidate={spy}>
@@ -61,19 +58,24 @@ describe('Triggers', () => {
             {props => <input {...props} value={props.value || ''} />}
           </Form.Field>
 
-          <Form.Submit events="onClick" triggers={['fieldA']}>
-            {({ props }) => <button {...props} />}
-          </Form.Submit>
+          <Form.Submit events="onClick" triggers={['fieldA']} />
         </div>
       </Form>
     )
 
-    wrapper.find('button').simulate('click')
+    await act(() => {
+      wrapper.find('button').simulate('click')
+      return wait()
+    })
+
+    expect(spy).to.have.been.calledOnce()
   })
 
-  it('should trigger a submit', done => {
+  it('should trigger a submit', async () => {
+    const spy = sinon.spy()
+
     let wrapper = mount(
-      <Form schema={schema} onSubmit={() => done()}>
+      <Form schema={schema} onSubmit={spy}>
         <div>
           <Form.Field name="fieldA">
             {({ props }) => <input {...props} />}
@@ -83,16 +85,20 @@ describe('Triggers', () => {
             {({ props }) => <input {...props} />}
           </Form.Field>
 
-          <Form.Submit>{({ props }) => <button {...props} />}</Form.Submit>
+          <Form.Submit />
         </div>
       </Form>
     )
 
-    wrapper.find('button').simulate('click')
+    await act(() => {
+      wrapper.find('button').simulate('click')
+      return wait()
+    })
+    expect(spy).to.have.been.calledOnce()
   })
 
   it('Field should handle submitting state', async () => {
-    let spy = sinon.spy(() => sleep(50))
+    let spy = sinon.spy(() => wait(50))
     let ref = React.createRef()
 
     let wrapper = mount(
@@ -111,30 +117,38 @@ describe('Triggers', () => {
 
     trigger.text().should.equal('submitting: false')
 
-    let promise = ref.current.submit()
+    await act(async () => {
+      let promise = ref.current.submit()
 
-    trigger.text().should.equal('submitting: true')
+      await wait()
 
-    await promise
+      trigger.text().should.equal('submitting: true')
+
+      return promise
+    })
 
     trigger.text().should.equal('submitting: false')
   })
 
   it('Submit should handle submitting state', async () => {
     let ref = React.createRef()
-    let spy = sinon.spy(() => sleep(50))
+    let spy = sinon.spy(() => wait(50))
+
+    function Submit(props) {
+      const [, { submitting, submitCount }] = useFormSubmit(props)
+
+      return (
+        <span>
+          {String(submitting)}: {String(submitCount)}
+        </span>
+      )
+    }
 
     let wrapper = mount(
       <div>
         <Form ref={ref} schema={schema} submitForm={spy}>
           <div>
-            <Form.Submit name="fieldA">
-              {({ submitting, submitCount }) => (
-                <span>
-                  {String(submitting)}: {String(submitCount)}
-                </span>
-              )}
-            </Form.Submit>
+            <Submit name="fieldA" />
           </div>
         </Form>
       </div>
@@ -144,11 +158,15 @@ describe('Triggers', () => {
 
     trigger.text().should.equal('false: 0')
 
-    let promise = ref.current.submit()
+    await act(async () => {
+      let promise = ref.current.submit()
 
-    trigger.text().should.equal('true: 0')
+      await wait()
 
-    await promise
+      trigger.text().should.equal('true: 0')
+
+      return promise
+    })
 
     trigger.text().should.equal('false: 1')
   })

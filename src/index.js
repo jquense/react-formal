@@ -1,12 +1,13 @@
-import Form from './Form'
-import Field, { useField, useMergedHandlers } from './Field'
+import invariant from 'invariant'
+import Field, { useField } from './Field'
 import FieldArray, { useFieldArray } from './FieldArray'
+import Form from './Form'
+import Submit, { useFormSubmit } from './FormSubmit'
 import Message from './Message'
 import Summary from './Summary'
-import errToJSON from './utils/errToJSON'
-import Submit from './FormSubmit'
 import config from './config'
-import invariant from 'invariant'
+import errToJSON from './utils/errToJSON'
+import useEventHandlers, { useMergedHandlers } from './utils/useEventHandlers'
 
 const statics = {
   Field,
@@ -14,9 +15,6 @@ const statics = {
   Message,
   Summary,
   Submit,
-  useField,
-  useMergedHandlers,
-  useFieldArray,
   setDefaults(defaults = {}) {
     Object.assign(config, defaults)
   },
@@ -33,5 +31,12 @@ Object.assign(Form, statics)
 
 Form.statics = statics
 
-export { statics }
+export {
+  statics,
+  useEventHandlers,
+  useMergedHandlers,
+  useField,
+  useFieldArray,
+  useFormSubmit,
+}
 export default Form

@@ -1,21 +1,18 @@
+import memoize from 'memoize-one'
 import PropTypes from 'prop-types'
+import elementType from 'prop-types-extra/lib/elementType'
 import React, { useCallback, useContext, useMemo } from 'react'
 import warning from 'warning'
-import memoize from 'memoize-one'
-import elementType from 'prop-types-extra/lib/elementType'
 import useCommittedRef from '@restart/hooks/useCommittedRef'
-
-import { filterAndMapErrors } from './utils/ErrorUtils'
 import {
-  withState,
-  FORM_DATA,
   FormActionsContext,
   FormErrorContext,
   FormSubmitsContext,
 } from './Contexts'
+import { filterAndMapErrors } from './utils/ErrorUtils'
 import useEventHandlers, { notify } from './utils/useEventHandlers'
 
-function useFormSubmit(props) {
+export function useFormSubmit(props) {
   const propsRef = useCommittedRef(props)
 
   const { triggers, events } = props
@@ -145,19 +142,4 @@ FormSubmit.defaultProps = {
   events: ['onClick'],
 }
 
-export default withState(
-  (ctx, props, ref) => (
-    <FormActionsContext.Consumer>
-      {actions => (
-        <FormSubmit
-          {...props}
-          ref={ref}
-          actions={actions}
-          submits={ctx.submits}
-          errors={ctx.errors}
-        />
-      )}
-    </FormActionsContext.Consumer>
-  ),
-  FORM_DATA.errors | FORM_DATA.SUBMITS
-)
+export default FormSubmit

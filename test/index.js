@@ -37,7 +37,7 @@ let mockConsole
 beforeAll(() => {
   const baseError = console.error
   mockConsole = jest.spyOn(console, 'error').mockImplementation((...args) => {
-    if (args[0].includes('act')) return
+    // if (args[0].includes('act')) return
     baseError(...args)
   })
 })

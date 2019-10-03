@@ -1,27 +1,26 @@
-import { BindingContext } from 'topeka'
-import expr from 'property-expr'
 import PropTypes from 'prop-types'
-import useUncontrolled from 'uncontrollable/hook'
-import React, { useRef, useMemo, useEffect, useImperativeHandle } from 'react'
-import warning from 'warning'
 import elementType from 'prop-types-extra/lib/elementType'
-import reach from 'yup/lib/util/reach'
+import expr from 'property-expr'
+import React, { useEffect, useImperativeHandle, useMemo, useRef } from 'react'
 import shallowequal from 'shallowequal'
-import useTimeout from '@restart/hooks/useTimeout'
-import useMounted from '@restart/hooks/useMounted'
+import { BindingContext } from 'topeka'
+import { useUncontrolled } from 'uncontrollable'
+import warning from 'warning'
+import reach from 'yup/lib/util/reach'
 import useEventCallback from '@restart/hooks/useEventCallback'
 import useMergeState from '@restart/hooks/useMergeState'
-
-import { notify } from './utils/useEventHandlers'
-import errToJSON from './utils/errToJSON'
-import * as ErrorUtils from './utils/ErrorUtils'
-import createErrorManager from './errorManager'
+import useMounted from '@restart/hooks/useMounted'
+import useTimeout from '@restart/hooks/useTimeout'
 import {
   FormActionsContext,
   FormErrorContext,
   FormSubmitsContext,
   FormTouchedContext,
 } from './Contexts'
+import createErrorManager from './errorManager'
+import * as ErrorUtils from './utils/ErrorUtils'
+import errToJSON from './utils/errToJSON'
+import { notify } from './utils/useEventHandlers'
 
 let done = e =>
   setTimeout(() => {
@@ -218,7 +217,7 @@ const Form = React.forwardRef((uncontrolledProps, ref) => {
           if (nextErrors !== errors) {
             maybeWarn(debug, errors, 'field validation')
 
-            notify(onError, nextErrors)
+            notify(onError, [nextErrors])
           }
         })
         .catch(done)
@@ -255,7 +254,7 @@ const Form = React.forwardRef((uncontrolledProps, ref) => {
 
     fields = [].concat(fields)
 
-    notify(onValidate, { type, fields, args })
+    notify(onValidate, [{ type, fields, args }])
     enqueue(fields)
     if (type !== 'onChange') flush(delay)
   }
@@ -265,11 +264,11 @@ const Form = React.forwardRef((uncontrolledProps, ref) => {
   }
 
   const handleError = errors => {
-    notify(onError, errors)
+    notify(onError, [errors])
   }
 
   const handleSubmitSuccess = validatedValue => {
-    notify(onSubmit, validatedValue)
+    notify(onSubmit, [validatedValue])
 
     return Promise.resolve(submitForm && submitForm(validatedValue)).then(
       () => {
@@ -282,7 +281,7 @@ const Form = React.forwardRef((uncontrolledProps, ref) => {
       },
       err => {
         setSubmitting(false)
-        notify(onSubmitFinished, err)
+        notify(onSubmitFinished, [err])
         throw err
       }
     )
@@ -299,8 +298,8 @@ const Form = React.forwardRef((uncontrolledProps, ref) => {
       submitAttempts: s.submitAttempts + 1,
     }))
 
-    notify(onError, errors)
-    notify(onInvalidSubmit, errors)
+    notify(onError, [errors])
+    notify(onInvalidSubmit, [errors])
     setSubmitting(false)
   }
 
@@ -313,7 +312,7 @@ const Form = React.forwardRef((uncontrolledProps, ref) => {
     if (isSubmittingRef.current) {
       return Promise.resolve(false)
     }
-    notify(onBeforeSubmit, { value, errors })
+    notify(onBeforeSubmit, [{ value, errors }])
 
     setSubmitting(true)
 

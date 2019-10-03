@@ -1,9 +1,10 @@
 import { mount } from 'enzyme'
 import React from 'react'
 import { act } from 'react-dom/test-utils'
-import { object, array, string } from 'yup'
-
+import { array, object, string } from 'yup'
 import Form from '../src'
+
+const wait = ms => new Promise(resolve => setTimeout(resolve, ms))
 
 describe('FieldArray', () => {
   let schema = object({
@@ -64,7 +65,7 @@ describe('FieldArray', () => {
     ).assertSingle('input.invalid')
   })
 
-  it('should update the form value correctly', () => {
+  it('should update the form value correctly', async () => {
     let value, last
     let changeSpy = sinon.spy(v => (value = v))
 
@@ -92,12 +93,16 @@ describe('FieldArray', () => {
         </Form.FieldArray>
       </Form>
     )
-    act(() => {
+
+    await act(() => {
       wrapper
         .find('.field')
         .first()
         .simulate('change', { target: { value: 'beige' } })
+
+      return wait()
     })
+
     changeSpy.should.have.been.calledOnce()
 
     value.should.eql({
@@ -110,11 +115,12 @@ describe('FieldArray', () => {
     })
 
     last = value
-    act(() => {
+    await act(() => {
       wrapper
         .find('.field2')
         .last()
         .simulate('change', { target: { value: 'LULZ' } })
+      return wait()
     })
     value.should.eql({
       colors: [
@@ -128,7 +134,7 @@ describe('FieldArray', () => {
     value.should.not.equal(last)
   })
 
-  it('should handle removing array items', () => {
+  it('should handle removing array items', async () => {
     let value
     let changeSpy = sinon.spy(v => (value = v))
     let defaultValue = {
@@ -155,8 +161,10 @@ describe('FieldArray', () => {
 
     list.prop('value').should.have.length(2)
 
-    act(() => {
+    await act(() => {
       list.instance().remove(1)
+
+      return wait()
     })
 
     value.should.eql({
@@ -198,14 +206,15 @@ describe('FieldArray', () => {
     let list = wrapper.find(ColorList)
     list.prop('value').should.have.length(2)
 
-    await ref.current.submit()
+    await act(() => ref.current.submit())
 
     // First color has an error
     errors.should.have.property('colors[0].name')
 
-    act(() => {
+    await act(() => {
       // remove the first color
       list.instance().remove(0)
+      return wait()
     })
     // The error for the first color should be gone
     errorSpy.should.have.been.calledTwice()

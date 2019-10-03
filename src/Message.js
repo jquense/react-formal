@@ -1,9 +1,8 @@
-import React from 'react'
 import PropTypes from 'prop-types'
-
-import uniq from './utils/uniqMessage'
+import React, { useContext, useMemo } from 'react'
+import { FormErrorContext } from './Contexts'
 import { filterAndMapErrors } from './utils/ErrorUtils'
-import { withState, FORM_DATA } from './Contexts'
+import uniq from './utils/uniqMessage'
 
 let flatten = (arr, next) => arr.concat(next)
 
@@ -13,33 +12,38 @@ let flatten = (arr, next) => arr.concat(next)
  *
  * @alias FormMessage
  */
-class Message extends React.Component {
-  render() {
-    let {
-      errors,
-      for: names,
+function Message({
+  errors: propsErrors,
+  for: names,
+  className,
+  filter = uniq,
+  extract = error => error.message || error,
+  children = (errors, props) => <span {...props}>{errors.join(', ')}</span>,
+  ...props
+}) {
+  const formErrors = useContext(FormErrorContext)
+
+  const errors = useMemo(
+    () =>
+      filterAndMapErrors({
+        errors: propsErrors || formErrors,
+        names,
+      }),
+    [names, propsErrors || formErrors]
+  )
+
+  if (!errors || !Object.keys(errors).length) return null
+
+  return children(
+    Object.values(errors)
+      .reduce(flatten, [])
+      .filter((...args) => filter(...args, extract))
+      .map(extract),
+    {
+      ...props,
       className,
-      extract = error => error.message || error,
-      filter = uniq,
-      children = (errors, props) => <span {...props}>{errors.join(', ')}</span>,
-      ...props
-    } = this.props
-
-    errors = filterAndMapErrors({ errors, names })
-
-    if (!errors || !Object.keys(errors).length) return null
-
-    return children(
-      Object.values(errors)
-        .reduce(flatten, [])
-        .filter((...args) => filter(...args, extract))
-        .map(extract),
-      {
-        ...props,
-        className,
-      }
-    )
-  }
+    }
+  )
 }
 
 Message.propTypes = {
@@ -70,7 +74,4 @@ Message.propTypes = {
   filter: PropTypes.func,
 }
 
-export default withState(
-  ({ errors }, props) => <Message errors={errors} {...props} />,
-  FORM_DATA.errors
-)
+export default Message

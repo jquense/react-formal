@@ -1,9 +1,9 @@
 import invariant from 'invariant'
 import PropTypes from 'prop-types'
 import React, { useRef } from 'react'
+import { useField } from './Field'
 import { move, remove, shift, unshift } from './utils/ErrorUtils'
-
-import { useField, useMergedHandlers } from './Field'
+import { useMergedHandlers } from './utils/useEventHandlers'
 
 function filter(errors, baseName) {
   const paths = Object.keys(errors || {})

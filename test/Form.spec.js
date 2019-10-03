@@ -1,12 +1,13 @@
 import { mount } from 'enzyme'
 import React from 'react'
 import { act } from 'react-dom/test-utils'
-import * as yup from 'yup'
 import createSlot from 'react-tackle-box/Slot'
-
+import * as yup from 'yup'
 import Form from '../src'
 import { FormActionsContext } from '../src/Contexts'
 import errorManager from '../src/errorManager'
+
+const wait = ms => new Promise(resolve => setTimeout(resolve, ms))
 
 let LeakySubmit = () => (
   <FormActionsContext.Consumer>
@@ -158,8 +159,9 @@ describe('Form', () => {
     change.should.have.been.called()
   })
 
-  it('should let native submits simulate onSubmit', done => {
-    let spy = sinon.spy(() => done())
+  it('should let native submits simulate onSubmit', async () => {
+    let spy = sinon.spy()
+
     let wrapper = mount(
       <Form onSubmit={spy} schema={schema} defaultValue={{}}>
         <Form.Field name="name" type="text" className="test" />
@@ -167,10 +169,16 @@ describe('Form', () => {
       </Form>
     )
 
-    wrapper.assertSingle('button').simulate('submit')
+    await act(() => {
+      wrapper.assertSingle('button').simulate('submit')
+
+      return wait()
+    })
+
+    expect(spy).to.have.been.calledOnce()
   })
 
-  it('should deduplicate form submissions', done => {
+  it('should deduplicate form submissions', async () => {
     let spy = sinon.spy()
     let wrapper = mount(
       <Form onSubmit={spy} schema={schema} defaultValue={{}}>
@@ -180,18 +188,18 @@ describe('Form', () => {
       { attachTo }
     )
 
-    wrapper
-      .assertSingle('button')
-      .getDOMNode()
-      .click()
+    await act(() => {
+      wrapper
+        .assertSingle('button')
+        .getDOMNode()
+        .click()
+      return wait()
+    })
 
-    setTimeout(() => {
-      spy.should.have.been.calledOnce()
-      done()
-    }, 10)
+    spy.should.have.been.calledOnce()
   })
 
-  it("doesn't call submitForm on error", done => {
+  it("doesn't call submitForm on error", async () => {
     let onInvalidSubmit = sinon.spy()
     let submitForm = sinon.spy(() => Promise.resolve())
 
@@ -209,16 +217,16 @@ describe('Form', () => {
       </Form>
     )
 
-    wrapper.assertSingle('FormSubmit').simulate('click')
+    await act(() => {
+      wrapper.assertSingle('FormSubmit').simulate('click')
+      return wait(100)
+    })
 
-    setTimeout(() => {
-      onInvalidSubmit.should.have.been.calledOnce()
-      submitForm.should.not.have.been.called()
-      done()
-    }, 100)
+    onInvalidSubmit.should.have.been.calledOnce()
+    submitForm.should.not.have.been.called()
   })
 
-  it('calls submitForm on success', done => {
+  it('calls submitForm on success', async () => {
     let onSubmit = sinon.spy()
     let submitForm = sinon.spy(() => Promise.resolve())
 
@@ -234,17 +242,17 @@ describe('Form', () => {
       </Form>
     )
 
-    wrapper.assertSingle('FormSubmit').simulate('click')
+    await act(() => {
+      wrapper.assertSingle('FormSubmit').simulate('click')
+      return wait()
+    })
 
-    setTimeout(() => {
-      onSubmit.should.have.been.calledOnce()
-      submitForm.should.have.been.calledOnce()
-      submitForm.should.have.been.calledAfter(onSubmit)
-      done()
-    }, 10)
+    onSubmit.should.have.been.calledOnce()
+    submitForm.should.have.been.calledOnce()
+    submitForm.should.have.been.calledAfter(onSubmit)
   })
 
-  it('submits through a Slot', done => {
+  it('submits through a Slot', async () => {
     let onSubmit = sinon.spy()
     let submitForm = sinon.spy(() => Promise.resolve())
 
@@ -268,17 +276,17 @@ describe('Form', () => {
       </div>
     )
 
-    wrapper.assertSingle('FormSubmit').simulate('click')
+    await act(() => {
+      wrapper.assertSingle('FormSubmit').simulate('click')
+      return wait()
+    })
 
-    setTimeout(() => {
-      onSubmit.should.have.been.calledOnce()
-      submitForm.should.have.been.calledOnce()
-      submitForm.should.have.been.calledAfter(onSubmit)
-      done()
-    }, 10)
+    onSubmit.should.have.been.calledOnce()
+    submitForm.should.have.been.calledOnce()
+    submitForm.should.have.been.calledAfter(onSubmit)
   })
 
-  it('does not submit while already submitting', async done => {
+  it('does not submit while already submitting', async () => {
     let ref = React.createRef()
     let onSubmit = sinon.spy()
     let submitForm = sinon.spy(() => new Promise(r => setTimeout(r, 5)))
@@ -298,18 +306,17 @@ describe('Form', () => {
       </div>
     )
 
-    wrapper
-      .assertSingle('FormSubmit')
-      .simulate('click')
-      .simulate('click')
+    await act(async () => {
+      wrapper
+        .assertSingle('FormSubmit')
+        .simulate('click')
+        .simulate('click')
 
-    await ref.current.submit()
+      await ref.current.submit()
+    })
 
-    setTimeout(() => {
-      onSubmit.should.have.been.calledOnce()
-      submitForm.should.have.been.calledOnce()
-      done()
-    }, 10)
+    onSubmit.should.have.been.calledOnce()
+    submitForm.should.have.been.calledOnce()
   })
 
   it('should only report ValidationErrors', () => {
@@ -333,9 +340,11 @@ describe('Form', () => {
       </div>
     )
 
-    return ref.current.submit().catch(err => {
-      err.should.equal('foo!')
-      spy.should.not.have.been.called()
+    return act(async () => {
+      await ref.current.submit().catch(err => {
+        err.should.equal('foo!')
+        spy.should.not.have.been.called()
+      })
     })
   })
 
@@ -376,25 +385,31 @@ describe('Form', () => {
       })
     })
 
-    it('remove errors for branches', done => {
-      let spy = errors => {
+    it('remove errors for branches', async () => {
+      let spy = sinon.spy(errors => {
         errors.should.not.have.key('name.first')
-        done()
-      }
+      })
 
-      mount(
-        <Form
-          onError={spy}
-          schema={schema}
-          errors={{ 'name.first': ['invalid'] }}
-          defaultValue={{}}
-        >
-          <Form.Field name="name" />
-          <Form.Field name="name.first" />
-        </Form>
-      )
-        .find('input[name="name"]')
-        .simulate('change')
+      await act(() => {
+        mount(
+          <Form
+            delay={0}
+            onError={spy}
+            schema={schema}
+            errors={{ 'name.first': ['invalid'] }}
+            defaultValue={{}}
+          >
+            <Form.Field name="name" />
+            <Form.Field name="name.first" />
+          </Form>
+        )
+          .find('input[name="name"]')
+          .simulate('change')
+
+        return wait(10)
+      })
+
+      expect(spy).to.have.been.calledOnce()
     })
 
     it('should deduplicate validation paths', () => {
