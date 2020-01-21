@@ -140,12 +140,6 @@ class FieldArray extends React.Component {
     onError(fn(errors || {}, name))
   }
 
-  mapValues = fn => {
-    const { value, name } = this.fieldProps
-
-    return value.map((item, index) => fn(item, `${name}[${index}]`, index))
-  }
-
   items = () => {
     const { value: values, name } = this.fieldProps
 
