@@ -1,54 +1,24 @@
 {
-  "name": "www",
-  "version": "1.0.0",
-  "description": "docs",
-  "main": "index.js",
+  "name": "docs-site",
+  "version": "0.0.0",
   "private": true,
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "serve": "gatsby serve",
-    "build": "gatsby build",
-    "develop": "gatsby develop",
-    "start": "yarn develop",
-    "deploy": "npm run build -- --prefix-paths && gh-pages -d public"
+    "start": "gatsby develop",
+    "build": "gatsby build"
   },
-  "author": "",
-  "license": "MIT",
   "dependencies": {
-    "@mdx-js/mdx": "^0.15.0",
-    "@mdx-js/tag": "^0.15.0",
-    "@monastic.panic/react-live": "^2.0.0",
-    "astroturf": "^0.8.4",
-    "bootstrap": "^4.2.1",
-    "classnames": "^2.2.5",
-    "css-literal-loader": "^0.6.0",
-    "gatsby": "^2.0.104",
-    "gatsby-link": "^2.0.9",
-    "gatsby-mdx": "^0.2.0",
-    "gatsby-plugin-astroturf": "^0.2.0",
-    "gatsby-plugin-catch-links": "^2.0.9",
-    "gatsby-plugin-sass": "^2.0.8",
-    "gatsby-remark-autolink-headers": "^2.0.12",
-    "gatsby-remark-prismjs": "^3.2.3",
-    "gatsby-source-filesystem": "2.0.18",
-    "gatsby-transformer-react-docgen": "^2.1.3",
-    "gatsby-transformer-remark": "^2.2.2",
-    "holderjs": "^2.9.6",
-    "lodash": "^4.17.11",
-    "node-sass": "^4.11.0",
-    "prismjs": "^1.15.0",
-    "prop-types": "^15.6.0",
-    "react": "^16.7.0",
-    "react-docgen": "3.0.0",
-    "react-dom": "^16.7.0",
-    "react-helmet": "^5.2.0",
-    "recompose": "^0.30.0",
-    "remark-slug": "^5.1.1"
-  },
-  "resolutions": {
-    "react-docgen": "3.0.0-rc.1"
-  },
-  "devDependencies": {
-    "gh-pages": "^2.0.1"
+    "@docpocalypse/code-live": "^0.3.4",
+    "@docpocalypse/gatsby-theme": "^0.8.9",
+    "@docpocalypse/gatsby-theme-core": "file:.yalc/@docpocalypse/gatsby-theme-core",
+    "@docpocalypse/props-table": "^0.3.1",
+    "astroturf": "^0.10.2",
+    "gatsby": "^2.18.17",
+    "gatsby-plugin-astroturf": "^0.2.1",
+    "gatsby-plugin-typedoc": "file:.yalc/gatsby-plugin-typedoc",
+    "gatsby-plugin-web-font-loader": "^1.0.4",
+    "gatsby-plugin-webfonts": "^1.1.1",
+    "polished": "^3.4.2",
+    "react": "^16.12.0",
+    "react-dom": "^16.12.0"
   }
 }

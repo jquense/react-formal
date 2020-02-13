@@ -1,7 +1,7 @@
 import invariant from 'invariant'
 import PropTypes from 'prop-types'
 import React, { useRef } from 'react'
-import { useField } from './Field'
+import useField from './useField'
 import { move, remove, shift, unshift } from './utils/ErrorUtils'
 import { useMergedHandlers } from './utils/useEventHandlers'
 
@@ -19,8 +19,8 @@ function filter(errors, baseName) {
 
 export function useFieldArray(props) {
   const [field, meta] = useField(props)
-  const { value, onChange } = field
-  const { errors, onError } = meta
+
+  const { errors, onError, value, onChange } = meta
 
   const helperRef = useRef({})
   const helpers = helperRef.current
@@ -65,7 +65,7 @@ export function useFieldArray(props) {
 
     invariant(
       fromIndex !== -1,
-      '`onMove` must be called with an item in the array'
+      '`onMove` must be called with an item in the array',
     )
 
     newValue.splice(toIndex, 0, ...newValue.splice(fromIndex, 1))
@@ -112,51 +112,6 @@ export function useFieldArray(props) {
   return [field, meta, helpers]
 }
 
-/**
- * A specialized `Form.Field` component that helps with common list manipulations.
- * Provide a `name`, like normal, to the field with the array and `<FieldArray>` will
- * inject a set of special `arrayHelpers` for handling removing, reordering,
- * editing and adding new items, as well as any error handling quirks that come with those
- * operations.
- *
- * ```js { "editable": true }
- * const schema = yup.object({
- *   friends: yup.array().of(
- *     yup.object({
- *       name: yup.string().required()
- *     })
- *   )
- * });
- *
- * render(
- *  <Form
- *   debug
- *   schema={schema}
- *   defaultValue={{
- *     friends: [{ name: 'Sally'}]
- *   }}
- * >
- *   <Form.FieldArray name="friends" events="blur">
- *    {({ value, arrayHelpers }) => (
- *       <ul>
- *        {value.map((value, idx) => (
- *          <li key={idx} >
- *            <div style={{ display: 'flex', alignItems: 'flex-start' }}>
- *              <Form.Field name={`friends[${idx}].name`} />
- *              <button type="button" onClick={() => arrayHelpers.remove(value)}>-</button>
- *              <button type="button" onClick={() => arrayHelpers.insert({ name: undefined }, idx)}>+</button>
- *            </div>
- *            <Form.Message for={`friends[${idx}].name`} />
- *          </li>
- *        ))}
- *       </ul>
- *     )}
- *   </Form.FieldArray>
- * </Form>
- * )
- * ```
- *
- */
 const FieldArray = React.forwardRef((props, ref) => {
   const { children } = props
   const [field, meta, arrayHelpers] = useFieldArray(props)

@@ -1,0 +1,85 @@
+@import url('https://fonts.googleapis.com/css?family=Raleway&display=swap');
+
+body {
+  @apply antialiased;
+
+  font-size: 1rem;
+  color: theme('body.color');
+  font-family: theme('fontFamily.default');
+}
+
+@media (min-width: 1400px) {
+  .container {
+    width: 970px;
+  }
+}
+
+@media (min-width: 1200px) {
+  .container {
+    width: 970px;
+  }
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  @apply mb-4 mt-6 font-medium;
+}
+
+h1 {
+  @apply text-4xl;
+}
+
+h2,
+h3,
+h4 {
+  @apply text-3xl;
+}
+
+p {
+  @apply mb-4;
+}
+
+// code {
+//   font-family: source-code-pro, Menlo, Monaco, Consolas, Courier New, monospace;
+//   background-color: theme('code.bg-color');
+//   color: theme('body.color');
+//   padding: 0.1rem;
+// }
+
+.side-nav {
+  padding-top: 30px;
+}
+
+.headlines {
+  margin-bottom: 30px;
+
+  p {
+    color: #7e7e7e;
+  }
+}
+
+.side-nav .nav > li > a {
+  border-left: 3px;
+  padding: 10px 10px;
+  font-size: 12px;
+
+  &:hover,
+  &:active,
+  &:focus {
+    background-color: transparent;
+  }
+
+  &.active {
+    border-left: 3px solid #ccc;
+  }
+}
+
+.side-heading {
+  position: relative;
+  display: block;
+  padding: 10px 15px;
+}

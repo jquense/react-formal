@@ -1,55 +1,50 @@
 const path = require('path')
+const { Kind } = require('gatsby-plugin-typedoc/types')
 
-const { root } = require('./constants')
+// exports.createResolvers = ({ createResolvers }) => {
+//   createResolvers({
+//     Docpocalypse: {
+//       tsType: {
+//         type: 'TypedocNode',
+//         resolve: async (src, args, context) => {
+//           const result =
+//             src.type === 'hook'
+//               ? await context.nodeModel.runQuery({
+//                   type: 'TypedocNode',
+//                   firstOnly: true,
+//                   query: {
+//                     filter: {
+//                       kind: { eq: Kind.Function },
+//                       name: { eq: src.name },
+//                     },
+//                   },
+//                 })
+//               : null
 
-let pkg = {}
-try {
-  pkg = require(`${root}/package.json`)
-} catch (err) {
-  console.error(err)
-}
-
-exports.onCreateWebpackConfig = function onCreateWebpackConfig({
-  actions,
-  plugins,
-  loaders,
-}) {
-  actions.setWebpackConfig({
-    devtool: 'cheap-inline-module-source-map',
-    module: {
-      rules: [
-        {
-          include: path.resolve(__dirname, 'src/examples'),
-          use: loaders.raw(),
-        },
-      ],
-    },
-    resolve: {
-      alias: {
-        [`${pkg.name}$`]: path.resolve(root, 'src/index.js'),
-        [`${pkg.name}/lib`]: path.resolve(root, 'src'),
-      },
-    },
-    plugins: [
-      // See https://github.com/FormidableLabs/react-live/issues/5
-      plugins.ignore(/^(xor|props)$/),
-    ],
-  })
-}
-
-exports.createPages = ({ actions }) => {
-  const { createRedirect } = actions
-  createRedirect({
-    fromPath: `/api`,
-    toPath: `/api/Form`,
-    isPermanent: true,
-  })
-}
+//           return result
+//         },
+//       },
+//     },
+//   })
+// }
 
 exports.onCreateBabelConfig = ({ actions }) => {
   actions.setBabelOptions({
     options: {
-      root,
+      babelrcRoots: true,
+    },
+  })
+}
+
+exports.onCreateWebpackConfig = function onCreateWebpackConfig({ actions }) {
+  actions.setWebpackConfig({
+    resolve: {
+      symlinks: false,
+      alias: {
+        react: path.resolve('./node_modules/react'),
+        'react-dom': path.resolve('./node_modules/react-dom'),
+        'react-formal': path.resolve('../src'),
+      },
     },
   })
 }

@@ -15,7 +15,7 @@ import {
   FormActionsContext,
   FormErrorContext,
   FormSubmitsContext,
-  FormTouchedContext,
+  FormTouchedContext
 } from './Contexts'
 import createErrorManager from './errorManager'
 import * as ErrorUtils from './utils/ErrorUtils'
@@ -54,74 +54,7 @@ function validatePath(path, { value, schema, ...rest }) {
 }
 
 /**
- * Form component renders a `value` to be updated and validated by child Fields.
- * Forms can be thought of as `<input/>`s for complex values, or models. A Form aggregates
- * a bunch of smaller inputs, each in charge of updating a small part of the overall model.
- * The Form will integrate and validate each change and fire a single unified `onChange` with the new `value`.
- *
- * Validation errors can be displayed anywhere inside a Form with Message Components.
- *
- * ```jsx { "editable": true }
- * var defaultStr = yup.string().default('')
- *
- * var customerSchema = yup
- *   .object({
- *     name: yup.object({
- *       first: defaultStr
- *         .required('please enter a first name'),
- *
- *       last: defaultStr
- *         .required('please enter a surname'),
- *     }),
- *
- *     dateOfBirth: yup.date()
- *       .max(new Date(), "Are you a time traveler?!"),
- *
- *     colorId: yup.number()
- *       .nullable()
- *       .required('Please select a dank color')
- *   });
- *
- * render(
- *   <Form
- *     schema={customerSchema}
- *     defaultValue={customerSchema.default()}
- *   >
- *     <div>
- *       {\/\*'grandchildren' are no problem \*\/}
- *       <label>Name</label>
- *
- *       <Form.Field
- *         name='name.first'
- *         placeholder='First name'
- *       />
- *       <Form.Field
- *         name='name.last'
- *         placeholder='Surname'
- *       />
- *
- *       <Form.Message for={['name.first', 'name.last']} className="validation-error"/>
- *     </div>
- *
- *     <label>Date of Birth</label>
- *     <Form.Field name='dateOfBirth'/>
- *     <Form.Message for='dateOfBirth' className="validation-error"/>
- *
- *     <label>Favorite Color</label>
- *     <Form.Field name='colorId' as='select'>
- *       <option value={null}>Select a color...</option>
- *       <option value={0}>Red</option>
- *       <option value={1}>Yellow</option>
- *       <option value={2}>Blue</option>
- *       <option value={3}>other</option>
- *     </Form.Field>
- *     <Form.Message for='colorId' className="validation-error"/>
- *
- *   <Form.Submit type='submit'>
- *     Submit
- *   </Form.Submit>
- * </Form>)
- * ```
+ * @alias Form
  */
 const Form = React.forwardRef((uncontrolledProps, ref) => {
   const {
@@ -129,7 +62,6 @@ const Form = React.forwardRef((uncontrolledProps, ref) => {
     value,
     errors,
     schema,
-
     submitForm,
     getter,
     setter,
@@ -154,7 +86,7 @@ const Form = React.forwardRef((uncontrolledProps, ref) => {
   } = useUncontrolled(uncontrolledProps, {
     value: 'onChange',
     errors: 'onError',
-    touched: 'onTouch',
+    touched: 'onTouch'
   })
   const flushTimeout = useTimeout()
   const submitTimeout = useTimeout()
@@ -168,14 +100,14 @@ const Form = React.forwardRef((uncontrolledProps, ref) => {
     strict,
     context,
     stripUnknown,
-    abortEarly: abortEarly == null ? false : abortEarly,
+    abortEarly: abortEarly == null ? false : abortEarly
   }
 
   const isSubmittingRef = useRef(false)
   const [submits, setSubmitState] = useMergeState(() => ({
     submitCount: 0,
     submitAttempts: 0,
-    submitting: false,
+    submitting: false
   }))
 
   function setSubmitting(submitting) {
@@ -211,7 +143,7 @@ const Form = React.forwardRef((uncontrolledProps, ref) => {
         .collect(fields, errors, {
           schema,
           value,
-          ...yupOptions,
+          ...yupOptions
         })
         .then(nextErrors => {
           if (nextErrors !== errors) {
@@ -275,7 +207,7 @@ const Form = React.forwardRef((uncontrolledProps, ref) => {
         setSubmitting(false)
         setSubmitState(s => ({
           submitCount: s.submitCount + 1,
-          submitAttempts: s.submitAttempts + 1,
+          submitAttempts: s.submitAttempts + 1
         }))
         notify(onSubmitFinished)
       },
@@ -295,7 +227,7 @@ const Form = React.forwardRef((uncontrolledProps, ref) => {
     maybeWarn(debug, errors, 'onSubmit')
 
     setSubmitState(s => ({
-      submitAttempts: s.submitAttempts + 1,
+      submitAttempts: s.submitAttempts + 1
     }))
 
     notify(onError, [errors])
@@ -322,7 +254,7 @@ const Form = React.forwardRef((uncontrolledProps, ref) => {
         : schema.validate(value, {
             ...yupOptions,
             abortEarly: false,
-            strict: false,
+            strict: false
           })
       )
         // no catch, we aren't interested in errors from onSubmit handlers
@@ -335,7 +267,7 @@ const Form = React.forwardRef((uncontrolledProps, ref) => {
     submit,
     validate(fields) {
       errorManager.collect(fields, errors, { schema, value, ...yupOptions })
-    },
+    }
   }))
 
   const formActions = Object.assign(useRef({}).current, {
@@ -343,7 +275,7 @@ const Form = React.forwardRef((uncontrolledProps, ref) => {
     yupContext: context,
     onSubmit: handleSubmit,
     onValidate: handleValidationRequest,
-    onFieldError: handleFieldError,
+    onFieldError: handleFieldError
   })
 
   if (Element === 'form') elementProps.noValidate = true // disable html5 validation
@@ -396,7 +328,7 @@ Form.propTypes = {
   /**
    * Callback that is called when the `value` prop changes.
    *
-   * ```js
+   * ```ts static
    * function(
    *   value: object,
    *   updatedPaths: array<string>
@@ -414,7 +346,7 @@ Form.propTypes = {
    * understands how to pull out the strings message. By default it understands strings and objects
    * with a `'message'` property.
    *
-   * ```js
+   * ```jsx static
    * <Form errors={{
    *  "name.first": [
    *    'First names are required',
@@ -431,7 +363,7 @@ Form.propTypes = {
   /**
    * Callback that is called when a validation error occurs. It is called with an `errors` object
    *
-   * ```jsx { "editable": true }
+   * ```jsx
    * class Example extends React.Component {
    *   constructor(props) {
    *     this.state = { errors: {} }
@@ -465,7 +397,8 @@ Form.propTypes = {
   /**
    * Callback that is called whenever a validation is triggered.
    * It is called _before_ the validation is actually run.
-   * ```js
+   *
+   * ```js static
    * function onValidate(event){
    *   let { type, fields, args } = event
    * }
@@ -476,7 +409,7 @@ Form.propTypes = {
   /**
    * Callback that is fired in response to a submit, _before validation runs.
    *
-   * ```js
+   * ```js static
    * function onSubmit(formValue){
    *   // do something with valid value
    * }
@@ -487,7 +420,7 @@ Form.propTypes = {
   /**
    * Callback that is fired in response to a submit, after validation runs for the entire form.
    *
-   * ```js
+   * ```js static
    * function onSubmit(formValue){
    *   // do something with valid value
    * }
@@ -504,7 +437,7 @@ Form.propTypes = {
    * Callback that is fired when the native onSubmit event is triggered. Only relevant when
    * the `component` prop renders a `<form/>` tag. onInvalidSubmit will trigger only if the form is invalid.
    *
-   * ```js
+   * ```js static
    * function onInvalidSubmit(errors){
    *   // do something with errors
    * }
@@ -516,7 +449,7 @@ Form.propTypes = {
    * A value getter function. `getter` is called with `path` and `value` and
    * should return the plain **javascript** value at the path.
    *
-   * ```ts
+   * ```ts static
    * function(
    *  path: string,
    *  value: any,
@@ -531,7 +464,8 @@ Form.propTypes = {
    *
    * The default implementation uses the [react immutability helpers](http://facebook.github.io/react/docs/update.html),
    * letting you treat the form `value` as immutable.
-   * ```js
+   *
+   * ```ts static
    * function(
    *  path: string,
    *  formValue: object,
@@ -594,7 +528,7 @@ Form.propTypes = {
   /**
    * toggle debug mode, which `console.warn`s validation errors
    */
-  debug: PropTypes.bool,
+  debug: PropTypes.bool
 }
 
 Form.defaultProps = {
@@ -605,7 +539,7 @@ Form.defaultProps = {
   defaultErrors: ErrorUtils.EMPTY_ERRORS,
   defaultTouched: {},
   getter,
-  setter,
+  setter
 }
 
 Form.getter = getter

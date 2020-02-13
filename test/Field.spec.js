@@ -30,7 +30,7 @@ describe('Field', () => {
     mount(
       <Form schema={schema} defaultValue={{}}>
         <Form.Field name="name" as={TestInput} className="test" />
-      </Form>
+      </Form>,
     )
       .find(TestInput)
       .instance()
@@ -53,7 +53,7 @@ describe('Field', () => {
         <Form.Field name="bool" />
         <Form.Field as="select" name="string" />
         <Form.Field as="textarea" name="string" />
-      </Form>
+      </Form>,
     )
 
     // console.log(wrapper.debug())
@@ -72,7 +72,7 @@ describe('Field', () => {
         <Form.Field name="name" as="select" />
         <Form.Field name="name" as="textarea" />
         <Form.Field name="name" as={TestInput} />
-      </Form>
+      </Form>,
     )
     wrapper.assertSingle(TestInput)
     wrapper.assertSingle('textarea')
@@ -89,7 +89,7 @@ describe('Field', () => {
             done()
           }}
         />
-      </Form>
+      </Form>,
     )
       .assertSingle('input')
       .simulate('change')
@@ -101,7 +101,7 @@ describe('Field', () => {
     mount(
       <Form schema={schema} defaultValue={{}} onChange={spy}>
         <Form.Field name="name" as={TestInput} />
-      </Form>
+      </Form>,
     )
       //.tap(_ => console.log(_.debug()))
       .assertSingle('input')
@@ -117,7 +117,7 @@ describe('Field', () => {
       <Form schema={schema} defaultValue={{}} onChange={spy}>
         <Form.Field name="age" id="first" />
         <Form.Field type="range" name="age" id="second" />
-      </Form>
+      </Form>,
     )
 
     form
@@ -139,7 +139,7 @@ describe('Field', () => {
     mount(
       <Form schema={schema} defaultValue={{}} onTouch={spy}>
         <Form.Field name="name" as={TestInput} />
-      </Form>
+      </Form>,
     )
       .assertSingle('input')
       .simulate('change', 'foo')
@@ -153,7 +153,7 @@ describe('Field', () => {
     mount(
       <Form schema={schema} defaultValue={{}} onTouch={spy}>
         <Form.Field name="name" as={TestInput} />
-      </Form>
+      </Form>,
     )
       .assertSingle('input')
       .simulate('change', 'foo')
@@ -166,7 +166,7 @@ describe('Field', () => {
     let wrapper = mount(
       <Form schema={schema} defaultValue={{}}>
         <Form.Field name="name" />
-      </Form>
+      </Form>,
     )
 
     expect(wrapper.assertSingle('input').prop('value')).to.equal('')
@@ -177,7 +177,7 @@ describe('Field', () => {
     mount(
       <Form schema={schema} defaultValue={{}} onChange={spy}>
         <Form.Field name="name" as={TestInput} mapFromValue="value" />
-      </Form>
+      </Form>,
     )
       .assertSingle('input')
       .simulate('change', { value: 'john' })
@@ -190,7 +190,7 @@ describe('Field', () => {
     mount(
       <Form schema={schema} defaultValue={{}} onChange={spy}>
         <Form.Field name="name" as={TestInput} mapFromValue={e => e.value} />
-      </Form>
+      </Form>,
     )
       .assertSingle('input')
       .simulate('change', { value: 'john' })
@@ -210,7 +210,7 @@ describe('Field', () => {
             other: e => e.value,
           }}
         />
-      </Form>
+      </Form>,
     )
 
     spy.should.have.been.and.calledWith({})
@@ -232,7 +232,7 @@ describe('Field', () => {
             text: 'text',
           }}
         />
-      </Form>
+      </Form>,
     )
       .assertSingle('input')
       .simulate('change', { value: 'john', text: 'hi' })
@@ -253,7 +253,7 @@ describe('Field', () => {
             done()
           }}
         />
-      </Form>
+      </Form>,
     )
       .assertSingle('input')
       .simulate('change')
@@ -270,25 +270,25 @@ describe('Field', () => {
             inst = r
           }}
         />
-      </Form>
+      </Form>,
     )
     ;(inst instanceof TestInput).should.be.true()
   })
 
   it('should work with conditional schema', () => {
-    const spy = sinon.stub(console, 'error').callsFake(() => {})
+    const spy = sinon.stub(console, 'warn').callsFake(() => {})
 
     let render = name => {
       mount(
         <Form schema={schema} defaultValue={{ ...schema.default(), name }}>
           <Form.Field name="more.isCool" />
-        </Form>
+        </Form>,
       )
     }
     // render('jason')
     // spy.should.not.have.been.called()
     render('john')
-    spy.should.have.been.called()
+    expect(spy).to.have.been.called()
   })
 
   describe('meta', () => {
@@ -317,7 +317,7 @@ describe('Field', () => {
           defaultTouched={{ name: true }}
         >
           <Form.Field name="name" as={Input} />
-        </Form>
+        </Form>,
       )
     })
 
@@ -335,7 +335,7 @@ describe('Field', () => {
       mount(
         <Form schema={schema} defaultValue={{}} defaultErrors={{ name: 'foo' }}>
           <Form.Field noValidate name="name" as={Input} />
-        </Form>
+        </Form>,
       )
     })
 
@@ -349,7 +349,7 @@ describe('Field', () => {
           onError={errorSpy}
         >
           <Form.Field name="name" as={TestInput} />
-        </Form>
+        </Form>,
       )
         .find(TestInput)
         .props()
@@ -368,7 +368,7 @@ describe('Field', () => {
           onError={errorSpy}
         >
           <Form.Field name="name" as={TestInput} />
-        </Form>
+        </Form>,
       )
         .find(TestInput)
         .props()
@@ -397,7 +397,7 @@ describe('Field', () => {
             name="number"
             events={({ valid }) => (valid ? ['onBlur'] : ['onChange'])}
           />
-        </Form>
+        </Form>,
       )
       // Field is valid only; `onBlur`
       wrapper.find('input').simulate('change', { target: { value: '4' } })
@@ -427,7 +427,7 @@ describe('Field', () => {
           onError={errorSpy}
         >
           <Form.Field name="name" as={TestInput} />
-        </Form>
+        </Form>,
       )
         .find(TestInput)
         .props()
@@ -445,7 +445,7 @@ describe('Field', () => {
       mount(
         <Form schema={schema} defaultValue={{}} defaultErrors={{ name: 'foo' }}>
           <Form.Field name="name" errorClass="invalid" />
-        </Form>
+        </Form>,
       ).assertSingle('input.invalid')
     })
 
@@ -457,7 +457,7 @@ describe('Field', () => {
           defaultErrors={{ 'name.first': 'foo' }}
         >
           <Form.Field name="name" errorClass="invalid" />
-        </Form>
+        </Form>,
       ).assertSingle('input.invalid')
     })
 
@@ -469,7 +469,7 @@ describe('Field', () => {
           defaultErrors={{ 'name.first': 'foo' }}
         >
           <Form.Field exclusive name="name" errorClass="invalid" />
-        </Form>
+        </Form>,
       ).assertNone('input.invalid')
     })
 
@@ -477,7 +477,7 @@ describe('Field', () => {
       mount(
         <Form schema={schema} defaultValue={{}} defaultErrors={{ name: 'foo' }}>
           <Form.Field exclusive name="name" errorClass="invalid" />
-        </Form>
+        </Form>,
       ).assertSingle('input.invalid')
     })
   })
@@ -487,7 +487,7 @@ describe('Field', () => {
       mount(
         <Form schema={schema} defaultValue={{}}>
           <Form.Field name="name" />
-        </Form>
+        </Form>,
       )
         .find('input')
         .prop('onError')
@@ -499,7 +499,7 @@ describe('Field', () => {
       mount(
         <Form schema={schema} defaultValue={{}}>
           <Form.Field />
-        </Form>
+        </Form>,
       )
         .find('input')
         .prop('onError')
@@ -512,7 +512,7 @@ describe('Field', () => {
       mount(
         <Form schema={schema} defaultValue={{}} onError={spy}>
           <Form.Field name="name" />
-        </Form>
+        </Form>,
       )
         .find('input')
         .prop('onError')({ foo: 'bar' })
@@ -526,7 +526,7 @@ describe('Field', () => {
       const onError = mount(
         <Form schema={schema} defaultValue={{}}>
           <Form.Field name="name" />
-        </Form>
+        </Form>,
       )
         .find('input')
         .prop('onError')

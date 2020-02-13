@@ -1,0 +1,52 @@
+A specialized `Form.Field` component that helps with common list manipulations.
+Provide a `name`, like normal, to the field with the array and `<FieldArray>` will
+inject a set of special `arrayHelpers` for handling removing, reordering,
+editing and adding new items, as well as any error handling quirks that come with those
+operations.
+
+```jsx
+const schema = yup.object({
+  friends: yup.array().of(
+    yup.object({
+      name: yup.string().required()
+    })
+  )
+});
+
+<Form
+  debug
+  schema={schema}
+  defaultValue={{
+    friends: [{ name: "Sally" }]
+  }}
+>
+  <Form.FieldArray name="friends" events="blur">
+    {({ value, arrayHelpers }) => (
+      <ul>
+        {value.map((value, idx) => (
+          <li key={idx}>
+            <div className="flex items-start">
+              <Form.Field name={`friends[${idx}].name`} />
+              <button
+                type="button"
+                className="ml-3"
+                onClick={() => arrayHelpers.remove(value)}
+              >
+                -
+              </button>
+              <button
+                type="button"
+                className="ml-3"
+                onClick={() => arrayHelpers.insert({ name: undefined }, idx)}
+              >
+                +
+              </button>
+            </div>
+            <Form.Message for={`friends[${idx}].name`} />
+          </li>
+        ))}
+      </ul>
+    )}
+  </Form.FieldArray>
+</Form>;
+```

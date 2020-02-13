@@ -7,7 +7,7 @@ import useCommittedRef from '@restart/hooks/useCommittedRef'
 import {
   FormActionsContext,
   FormErrorContext,
-  FormSubmitsContext,
+  FormSubmitsContext
 } from './Contexts'
 import { filterAndMapErrors } from './utils/ErrorUtils'
 import useEventHandlers, { notify } from './utils/useEventHandlers'
@@ -65,11 +65,13 @@ export function useFormSubmit(props) {
 
   return [
     eventHandlers,
-    useMemo(() => ({ errors, ...submits }), [errors, submits]),
+    useMemo(() => ({ errors, ...submits }), [errors, submits])
   ]
 }
 /**
  * A Form submit button, for triggering validations for the entire form or specific fields.
+ *
+ * @alias Submit
  */
 function FormSubmit(props) {
   const { events: _, triggers, children, as: Component, ...rest } = props
@@ -102,12 +104,12 @@ FormSubmit.propTypes = {
    * of FormSubmit (`as` will be ignored). In addition to passing through props some
    * additional form submission metadata is injected to handle loading and disabled behaviors.
    *
-   * ```js
+   * ```jsx static
    * <Form.Submit>
    *   {({ errors, props, submitting, submitCount, submitAttempts }) =>
    *     <button {...props} disabled={submitCount > 1}>
    *       submitting ? 'Saving…' : 'Submit'}
-   *     </button>
+   *     </button>}
    * </Form.Submit>
    * ```
    */
@@ -126,7 +128,7 @@ FormSubmit.propTypes = {
    */
   events: PropTypes.oneOfType([
     PropTypes.string,
-    PropTypes.arrayOf(PropTypes.string),
+    PropTypes.arrayOf(PropTypes.string)
   ]),
 
   /** @private */
@@ -134,12 +136,12 @@ FormSubmit.propTypes = {
   /** @private */
   actions: PropTypes.object,
   /** @private */
-  submits: PropTypes.object,
+  submits: PropTypes.object
 }
 
 FormSubmit.defaultProps = {
   as: 'button',
-  events: ['onClick'],
+  events: ['onClick']
 }
 
 export default FormSubmit

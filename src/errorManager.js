@@ -1,8 +1,10 @@
+import { EMPTY_ERRORS } from './utils/ErrorUtils'
 import errToJSON from './utils/errToJSON'
 import { reduce, trim } from './utils/paths'
-import { EMPTY_ERRORS } from './utils/ErrorUtils'
 
 let isValidationError = err => err && err.name === 'ValidationError'
+
+const f = [1, 23].includes(1)
 
 export default function errorManager(handleValidation) {
   return {
@@ -26,8 +28,8 @@ export default function errorManager(handleValidation) {
             if (!isValidationError(validationError)) throw validationError
 
             errToJSON(validationError, nextErrors)
-          }
-        )
+          },
+        ),
       )
 
       return Promise.all(validations).then(results => {

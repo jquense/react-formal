@@ -1,0 +1,52 @@
+The Field Component renders a form control and handles input value updates and validations.
+Changes to the Field value are automatically propagated back up to the containing Form
+Component.
+
+Fields provide a light abstraction over normal input components where values and onChange handlers
+are take care of for you. Beyond that they just render the input for their type, Fields whille pass along
+any props and children to the input so you can easily configure new input types.
+
+```jsx { "editable": true }
+<Form
+  noValidate
+  schema={modelSchema}
+  defaultValue={{
+    name: { first: 'Sally' },
+    colorID: 0
+  }}
+>
+  <label htmlFor="example-firstName">Name</label>
+  <Form.Field
+    name="name.first"
+    placeholder="First name"
+    id="example-firstName"
+  />
+  <label htmlFor="example-color">Favorite Color</label>
+  <Form.Field as="select" name="colorId" id="example-color">
+    <option value={0}>Red</option>
+    <option value={1}>Yellow</option>
+    <option value={2}>Blue</option>
+    <option value={3}>other</option>
+  </Form.Field>
+  <Form.Submit type="submit">Submit</Form.Submit>
+</Form>
+```
+
+In addition to injecting Field components with events and the field `value`, a
+special prop called `meta` is also provided to all Field renderer components. `meta`
+contains a bunch of helpful context as well some methods for doing advanced field operations.
+
+<!-- ```ts
+interface Meta {
+  value: any;                // the Field Value
+  valid: boolean;            // Whether the field is currently valid
+  invalid: boolean;          // inverse of valid
+  touched: boolean:          // whether the field has been touched yet
+  errors: ErrorObjectMap;    // the errors for this field and any neted fields
+  schema?: YupSchema;        // The schema for this field
+  context: YupSchemaContext; // the yup context object
+  // onError allows manually _replacing_ errors for the Field `name`
+  // any existing errors for this path will be removed first
+  onError(errors: ErrorObjectMap): void
+}
+``` -->

@@ -1,0 +1,5 @@
+extends: ../.eslintrc.yml
+rules:
+  react/prop-types: off
+settings:
+  "import/extensions": [".js", ".ts", ".tsx"]

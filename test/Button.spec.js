@@ -1,7 +1,6 @@
+import { mount } from 'enzyme'
 import React from 'react'
 import Form from '../src'
-
-import { mount } from 'enzyme'
 
 describe('Form Button', () => {
   it('should passthrough props', () => {
@@ -20,16 +19,5 @@ describe('Form Button', () => {
 
     stub.should.have.been.calledOnce()
     stub.restore()
-  })
-
-  it('should render with child function', () => {
-    mount(
-      <Form.Submit>
-        {({ submitting }) => <button>{`busy: ${submitting}`}</button>}
-      </Form.Submit>
-    )
-      .find('button')
-      .text()
-      .should.equal('busy: false')
   })
 })

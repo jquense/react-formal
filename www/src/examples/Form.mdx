@@ -1,0 +1,58 @@
+Form component renders a `value` to be updated and validated by child Fields.
+Forms can be thought of as `<input/>`s for complex values, or models. A Form aggregates
+a bunch of smaller inputs, each in charge of updating a small part of the overall model.
+The Form will integrate and validate each change and fire a single unified `onChange` with the new `value`.
+
+Validation errors can be displayed anywhere inside a Form with Message Components.
+
+```jsx
+import Form from "react-formal";
+import * as yup from "yup";
+
+const defaultStr = yup.string().default("");
+
+const customerSchema = yup.object({
+  name: yup.object({
+    first: defaultStr.required("please enter a first name"),
+    last: defaultStr.required("please enter a surname")
+  }),
+
+  dateOfBirth: yup.date().max(new Date(), "Are you a time traveler?!"),
+
+  colorId: yup
+    .number()
+    .nullable()
+    .required("Please select a dank color")
+});
+
+render(
+  <Form schema={customerSchema} defaultValue={customerSchema.default()}>
+    <div>
+      {/* 'grandchildren' are no problem */}
+      <label>Name</label>
+      <Form.Field name="name.first" placeholder="First name" />
+      <Form.Field name="name.last" placeholder="Surname" />
+      <Form.Message
+        for={["name.first", "name.last"]}
+        className="validation-error"
+      />
+    </div>
+
+    <label>Date of Birth</label>
+    <Form.Field name="dateOfBirth" />
+    <Form.Message for="dateOfBirth" className="validation-error" />
+
+    <label>Favorite Color</label>
+    <Form.Field name="colorId" as="select">
+      <option value={null}>Select a color...</option>
+      <option value={0}>Red</option>
+      <option value={1}>Yellow</option>
+      <option value={2}>Blue</option>
+      <option value={3}>other</option>
+    </Form.Field>
+    <Form.Message for="colorId" className="validation-error" />
+
+    <Form.Submit type="submit">Submit</Form.Submit>
+  </Form>
+);
+```
