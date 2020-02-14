@@ -34,17 +34,17 @@ ShallowWrapper.prototype.assertNone = assertLength(0)
 
 let mockConsole
 
-beforeAll(() => {
-  const baseError = console.error
-  mockConsole = jest.spyOn(console, 'error').mockImplementation((...args) => {
-    // if (args[0].includes('act')) return
-    baseError(...args)
-  })
-})
+// beforeAll(() => {
+//   const baseError = console.error
+//   mockConsole = jest.spyOn(console, 'error').mockImplementation((...args) => {
+//     // if (args[0].includes('act')) return
+//     baseError(...args)
+//   })
+// })
 
-afterAll(() => {
-  const len = mockConsole.mock.calls.length
-  mockConsole.mockRestore()
+// afterAll(() => {
+//   const len = mockConsole.mock.calls.length
+//   mockConsole.mockRestore()
 
-  if (len) console.error(`${len} act() errors were fired`)
-})
+//   if (len) console.error(`${len} act() errors were fired`)
+// })

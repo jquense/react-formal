@@ -29,7 +29,6 @@ function isFilterErrorsEqual([a], [b]) {
     a.names === b.names &&
     a.mapErrors === b.mapErrors
 
-  // !isEqual && console.log('filter equalg cm ""', a.errors, b.errors)
   return isEqual
 }
 
@@ -154,6 +153,12 @@ export type FieldProps = Record<string, (...args: any[]) => any> & {
 }
 
 /**
+ * @callback MapToValue
+ * @param {Object} formValue The root value for the entire _Form_.
+ * @returns {any}
+ */
+
+/**
  * Create a new form field for the provided name, takes the same options
  * as `Field` props.
  *
@@ -169,9 +174,17 @@ export type FieldProps = Record<string, (...args: any[]) => any> & {
  *   )
  * }
  * ```
+ *
+ * @param options
+ * @param {string} options.name The Field name, which should be path corresponding to a specific form `value` path.
+ * @param {any=}   options.value For checkbox/boolean fields override the HTML default value for checks from `'on'`
+ * @param {MapToValue=} options.mapToValue A mapper from the form value to fieldProps.value`
+ * @param {(string|MapFromValue)=} options.mapFromValue A mapper from the form value to fieldProps.value`
+ * @param {(string|string[]|null)=} options.validates Triggers validation for additional field paths
+ * @param {(string|string[]|EventMapper)=} options.events A set of event names to generate field handlers for.
  */
-export default function useField(props: UseFieldOptions) {
-  let { mapToValue, mapFromValue, name, validates, noValidate } = props
+export default function useField(options: UseFieldOptions) {
+  let { mapToValue, mapFromValue, name, validates, noValidate } = options
 
   const formActions = useContext(FormActionsContext)
 
@@ -182,13 +195,13 @@ export default function useField(props: UseFieldOptions) {
     [name, validates],
   )
 
-  const meta = useFieldMeta(props, formActions!)
+  const meta = useFieldMeta(options, formActions!)
 
   // put the original value on meta in case the coerced one differs
   meta.value = value
   meta.onChange = onChange
 
-  let events = props.events || config.events
+  let events = options.events || config.events
   events = typeof events === 'function' ? events(meta) : events
 
   meta.events = events
@@ -197,7 +210,6 @@ export default function useField(props: UseFieldOptions) {
     events,
     useCallback(
       (event, args) => {
-        // console.log(onChange.toString())
         notify(onChange, args)
 
         if (noValidate || !formActions) return
@@ -216,13 +228,16 @@ export default function useField(props: UseFieldOptions) {
 
   if (/checkbox|radio/.test(meta.nativeType)) {
     fieldProps.checked = fieldProps.value
-    fieldProps.value = props.value
+    fieldProps.value = options.value
   } else if (meta.nativeType === 'file') {
     fieldProps.value = ''
   }
 
   if (!noValidate) {
-    fieldProps.className = cn(props.className, meta.invalid && meta.errorClass)
+    fieldProps.className = cn(
+      options.className,
+      meta.invalid && meta.errorClass,
+    )
   }
 
   return [fieldProps, meta] as [FieldProps, FieldMeta]

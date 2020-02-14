@@ -15,7 +15,7 @@ import {
   FormActionsContext,
   FormErrorContext,
   FormSubmitsContext,
-  FormTouchedContext
+  FormTouchedContext,
 } from './Contexts'
 import createErrorManager from './errorManager'
 import * as ErrorUtils from './utils/ErrorUtils'
@@ -86,7 +86,7 @@ const Form = React.forwardRef((uncontrolledProps, ref) => {
   } = useUncontrolled(uncontrolledProps, {
     value: 'onChange',
     errors: 'onError',
-    touched: 'onTouch'
+    touched: 'onTouch',
   })
   const flushTimeout = useTimeout()
   const submitTimeout = useTimeout()
@@ -100,14 +100,14 @@ const Form = React.forwardRef((uncontrolledProps, ref) => {
     strict,
     context,
     stripUnknown,
-    abortEarly: abortEarly == null ? false : abortEarly
+    abortEarly: abortEarly == null ? false : abortEarly,
   }
 
   const isSubmittingRef = useRef(false)
   const [submits, setSubmitState] = useMergeState(() => ({
     submitCount: 0,
     submitAttempts: 0,
-    submitting: false
+    submitting: false,
   }))
 
   function setSubmitting(submitting) {
@@ -143,7 +143,7 @@ const Form = React.forwardRef((uncontrolledProps, ref) => {
         .collect(fields, errors, {
           schema,
           value,
-          ...yupOptions
+          ...yupOptions,
         })
         .then(nextErrors => {
           if (nextErrors !== errors) {
@@ -207,7 +207,7 @@ const Form = React.forwardRef((uncontrolledProps, ref) => {
         setSubmitting(false)
         setSubmitState(s => ({
           submitCount: s.submitCount + 1,
-          submitAttempts: s.submitAttempts + 1
+          submitAttempts: s.submitAttempts + 1,
         }))
         notify(onSubmitFinished)
       },
@@ -215,7 +215,7 @@ const Form = React.forwardRef((uncontrolledProps, ref) => {
         setSubmitting(false)
         notify(onSubmitFinished, [err])
         throw err
-      }
+      },
     )
   }
 
@@ -227,7 +227,7 @@ const Form = React.forwardRef((uncontrolledProps, ref) => {
     maybeWarn(debug, errors, 'onSubmit')
 
     setSubmitState(s => ({
-      submitAttempts: s.submitAttempts + 1
+      submitAttempts: s.submitAttempts + 1,
     }))
 
     notify(onError, [errors])
@@ -254,7 +254,7 @@ const Form = React.forwardRef((uncontrolledProps, ref) => {
         : schema.validate(value, {
             ...yupOptions,
             abortEarly: false,
-            strict: false
+            strict: false,
           })
       )
         // no catch, we aren't interested in errors from onSubmit handlers
@@ -267,7 +267,7 @@ const Form = React.forwardRef((uncontrolledProps, ref) => {
     submit,
     validate(fields) {
       errorManager.collect(fields, errors, { schema, value, ...yupOptions })
-    }
+    },
   }))
 
   const formActions = Object.assign(useRef({}).current, {
@@ -275,7 +275,7 @@ const Form = React.forwardRef((uncontrolledProps, ref) => {
     yupContext: context,
     onSubmit: handleSubmit,
     onValidate: handleValidationRequest,
-    onFieldError: handleFieldError
+    onFieldError: handleFieldError,
   })
 
   if (Element === 'form') elementProps.noValidate = true // disable html5 validation
@@ -313,7 +313,7 @@ function maybeWarn(debug, errors, target) {
     let keys = Object.keys(errors)
     warning(
       !keys.length,
-      `[react-formal] (${target}) invalid fields: ${keys.join(', ')}`
+      `[react-formal] (${target}) invalid fields: ${keys.join(', ')}`,
     )
   }
 }
@@ -393,6 +393,14 @@ Form.propTypes = {
    * ```
    */
   onError: PropTypes.func,
+
+  /** An object hash of field paths and whether they have been "touched" yet */
+  touched: PropTypes.object,
+
+  /**
+   * Callback that is called when a field is touched. It is called with an `touched` object
+   */
+  onTouch: PropTypes.func,
 
   /**
    * Callback that is called whenever a validation is triggered.
@@ -513,7 +521,7 @@ Form.propTypes = {
       let schema = props[name]
       if (!schema.__isYupSchema__ && !(schema.resolve && schema.validate))
         err = new Error(
-          '`schema` must be a proper yup schema: (' + componentName + ')'
+          '`schema` must be a proper yup schema: (' + componentName + ')',
         )
     }
 
@@ -528,7 +536,7 @@ Form.propTypes = {
   /**
    * toggle debug mode, which `console.warn`s validation errors
    */
-  debug: PropTypes.bool
+  debug: PropTypes.bool,
 }
 
 Form.defaultProps = {
@@ -539,9 +547,10 @@ Form.defaultProps = {
   defaultErrors: ErrorUtils.EMPTY_ERRORS,
   defaultTouched: {},
   getter,
-  setter
+  setter,
 }
 
+Form.displayName = 'Form'
 Form.getter = getter
 Form.setter = setter
 

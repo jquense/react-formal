@@ -1,5 +1,5 @@
 const path = require('path')
-const { Kind } = require('gatsby-plugin-typedoc/types')
+// const { Kind } = require('gatsby-plugin-typedoc/types')
 
 // exports.createResolvers = ({ createResolvers }) => {
 //   createResolvers({

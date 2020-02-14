@@ -26,11 +26,11 @@ module.exports = {
         },
       },
     },
-    {
-      resolve: 'gatsby-plugin-typedoc',
-      options: {
-        projects: [src],
-      },
-    },
+    // {
+    //   resolve: 'gatsby-plugin-typedoc',
+    //   options: {
+    //     projects: [src],
+    //   },
+    // },
   ],
 }

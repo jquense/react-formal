@@ -1,5 +1,6 @@
 import { mount } from 'enzyme'
 import React from 'react'
+import { act } from 'react-dom/test-utils'
 import * as yup from 'yup'
 import Form from '../src'
 
@@ -285,13 +286,12 @@ describe('Field', () => {
         </Form>,
       )
     }
-    // render('jason')
-    // spy.should.not.have.been.called()
+
     render('john')
     expect(spy).to.have.been.called()
   })
 
-  describe('meta', () => {
+  describe.only('meta', () => {
     it('should pass meta to field', done => {
       let Input = ({ meta }) => {
         // //first pass isn't correct since form hasn't propagated it's state yet.
@@ -341,38 +341,42 @@ describe('Field', () => {
 
     it('should field onError should remove existing errors', () => {
       let errorSpy = sinon.spy()
-      mount(
-        <Form
-          schema={schema}
-          defaultValue={{}}
-          defaultErrors={{ name: 'foo', bar: 'baz' }}
-          onError={errorSpy}
-        >
-          <Form.Field name="name" as={TestInput} />
-        </Form>,
-      )
-        .find(TestInput)
-        .props()
-        .meta.onError({})
+      act(() => {
+        mount(
+          <Form
+            schema={schema}
+            defaultValue={{}}
+            defaultErrors={{ name: 'foo', bar: 'baz' }}
+            onError={errorSpy}
+          >
+            <Form.Field name="name" as={TestInput} />
+          </Form>,
+        )
+          .find(TestInput)
+          .props()
+          .meta.onError({})
+      })
 
       errorSpy.should.have.been.calledOnce.and.calledWith({ bar: 'baz' })
     })
 
     it('should field onError should update field errors', () => {
       let errorSpy = sinon.spy()
-      mount(
-        <Form
-          schema={schema}
-          defaultValue={{}}
-          defaultErrors={{ name: 'foo', bar: 'baz' }}
-          onError={errorSpy}
-        >
-          <Form.Field name="name" as={TestInput} />
-        </Form>,
-      )
-        .find(TestInput)
-        .props()
-        .meta.onError({ name: 'foo', 'name.first': 'baz' })
+      act(() => {
+        mount(
+          <Form
+            schema={schema}
+            defaultValue={{}}
+            defaultErrors={{ name: 'foo', bar: 'baz' }}
+            onError={errorSpy}
+          >
+            <Form.Field name="name" as={TestInput} />
+          </Form>,
+        )
+          .find(TestInput)
+          .props()
+          .meta.onError({ name: 'foo', 'name.first': 'baz' })
+      })
 
       errorSpy.should.have.been.calledOnce.and.calledWith({
         name: 'foo',
@@ -381,7 +385,7 @@ describe('Field', () => {
       })
     })
 
-    it('should set events via a function', done => {
+    it.only('should set events via a function', done => {
       let schema = yup.object({
         number: yup.number().min(5),
       })
@@ -400,38 +404,44 @@ describe('Field', () => {
         </Form>,
       )
       // Field is valid only; `onBlur`
-      wrapper.find('input').simulate('change', { target: { value: '4' } })
-      wrapper.find('input').simulate('blur', { target: { value: '4' } })
-
-      setTimeout(() => {
-        spy.callCount.should.equal(1)
-        // field is invalid now: `onChange`
+      act(() => {
+        wrapper.find('input').simulate('change', { target: { value: '4' } })
         wrapper.find('input').simulate('blur', { target: { value: '4' } })
+      })
+      setTimeout(() => {
+        act(() => {
+          spy.callCount.should.equal(1)
+          // field is invalid now: `onChange`
+          wrapper.find('input').simulate('blur', { target: { value: '4' } })
 
-        spy.callCount.should.equal(1)
+          spy.callCount.should.equal(1)
 
-        wrapper.find('input').simulate('change', { target: { value: '6' } })
+          wrapper.find('input').simulate('change', { target: { value: '6' } })
 
-        spy.callCount.should.equal(2)
+          spy.callCount.should.equal(2)
+        })
         done()
       }, 100)
     })
 
     it('should field onError should replace field errors', () => {
       let errorSpy = sinon.spy()
-      mount(
-        <Form
-          schema={schema}
-          defaultValue={{}}
-          defaultErrors={{ name: 'foo', bar: 'baz' }}
-          onError={errorSpy}
-        >
-          <Form.Field name="name" as={TestInput} />
-        </Form>,
-      )
-        .find(TestInput)
-        .props()
-        .meta.onError({ 'name.first': 'baz' })
+
+      act(() => {
+        mount(
+          <Form
+            schema={schema}
+            defaultValue={{}}
+            defaultErrors={{ name: 'foo', bar: 'baz' }}
+            onError={errorSpy}
+          >
+            <Form.Field name="name" as={TestInput} />
+          </Form>,
+        )
+          .find(TestInput)
+          .props()
+          .meta.onError({ 'name.first': 'baz' })
+      })
 
       errorSpy.should.have.been.calledOnce.and.calledWith({
         'name.first': 'baz',

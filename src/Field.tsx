@@ -201,6 +201,13 @@ interface FieldProps {
     | ((fieldProps: FieldProps, meta: FieldMeta) => React.ReactNode)
 
   /**
+   * A value to pass to checkboxs/radios/boolean inputs
+   */
+  htmlValue: any
+
+  className?: string
+
+  /**
    * Instruct the field to not inject the `meta` prop into the input
    */
   noMeta?: boolean
@@ -212,8 +219,38 @@ interface FieldProps {
 }
 
 const Field = React.forwardRef((props: FieldProps, ref) => {
-  const { children, noMeta, type, asProps, as: Input = 'input' } = props
-  const [field, meta] = useField(props)
+  const {
+    children,
+    noMeta,
+    type,
+    asProps,
+    as: Input = 'input',
+    name,
+    mapFromValue,
+    mapToValue,
+    validates,
+    events,
+    htmlValue,
+    exclusive,
+    noValidate,
+    errorClass,
+    className,
+    ...rest
+  } = props
+  const [field, meta] = useField({
+    name,
+    type,
+    mapFromValue,
+    mapToValue,
+    validates,
+    events,
+    exclusive,
+    noValidate,
+    errorClass,
+    className,
+    // @ts-ignore
+    value: props.value || htmlValue,
+  })
 
   let fieldProps: any = {
     type,
@@ -228,9 +265,10 @@ const Field = React.forwardRef((props: FieldProps, ref) => {
   if (typeof children === 'function') {
     return children(fieldProps, meta)
   }
+  console.log('H', fieldProps)
 
   return (
-    <Input {...asProps} {...fieldProps} type={meta.nativeType}>
+    <Input {...rest} {...asProps} {...fieldProps} type={meta.nativeType}>
       {children}
     </Input>
   )

@@ -8,6 +8,12 @@ body {
   font-family: theme('fontFamily.default');
 }
 
+// .token {
+//   @apply font-mono;
+
+//   font-size: 90%;
+// }
+
 @media (min-width: 1400px) {
   .container {
     width: 970px;
