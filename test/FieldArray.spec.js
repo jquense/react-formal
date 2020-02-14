@@ -13,7 +13,7 @@ describe('FieldArray', () => {
         object({
           name: string().required(),
           hexCode: string().required(),
-        })
+        }),
       )
       .default(() => [{ name: 'red', hexCode: '#ff0000' }]),
   })
@@ -39,6 +39,10 @@ describe('FieldArray', () => {
     }
   }
 
+  const renderColorList = (props, meta, arrayHelpers) => (
+    <ColorList {...props} arrayHelpers={arrayHelpers} />
+  )
+
   it('should render forms correctly', () => {
     mount(
       <Form
@@ -61,7 +65,7 @@ describe('FieldArray', () => {
             </ul>
           )}
         </Form.FieldArray>
-      </Form>
+      </Form>,
     ).assertSingle('input.invalid')
   })
 
@@ -91,7 +95,7 @@ describe('FieldArray', () => {
             </ul>
           )}
         </Form.FieldArray>
-      </Form>
+      </Form>,
     )
 
     await act(() => {
@@ -151,10 +155,8 @@ describe('FieldArray', () => {
         defaultValue={defaultValue}
         defaultErrors={{ 'colors[0].name': 'foo' }}
       >
-        <Form.FieldArray name="colors">
-          <ColorList />
-        </Form.FieldArray>
-      </Form>
+        <Form.FieldArray name="colors">{renderColorList}</Form.FieldArray>
+      </Form>,
     )
 
     let list = wrapper.find(ColorList)
@@ -197,11 +199,9 @@ describe('FieldArray', () => {
           onError={errorSpy}
           defaultValue={defaultValue}
         >
-          <Form.FieldArray name="colors">
-            <ColorList />
-          </Form.FieldArray>
+          <Form.FieldArray name="colors">{renderColorList}</Form.FieldArray>
         </Form>
-      </div>
+      </div>,
     )
     let list = wrapper.find(ColorList)
     list.prop('value').should.have.length(2)

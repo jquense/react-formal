@@ -147,7 +147,7 @@ export interface UseFieldOptions extends UseFieldMetaOptions {
   events?: string[] | string | ((meta: FieldMeta) => string[] | string) | null
 }
 
-export type FieldProps = Record<string, (...args: any[]) => any> & {
+export type RenderFieldProps = Record<string, (...args: any[]) => any> & {
   value: any
   checked?: boolean
 }
@@ -240,5 +240,5 @@ export default function useField(options: UseFieldOptions) {
     )
   }
 
-  return [fieldProps, meta] as [FieldProps, FieldMeta]
+  return [fieldProps, meta] as [RenderFieldProps, FieldMeta]
 }

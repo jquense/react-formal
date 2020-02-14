@@ -634,7 +634,7 @@ Form.propTypes = {
 
 Form.displayName = 'Form'
 
-declare interface Form {
+export declare interface Form {
   <T extends Yup.ObjectSchema>(
     props: FormProps<T> & React.RefAttributes<FormHandle>,
   ): React.ReactElement | null

@@ -1,6 +1,6 @@
 import { ValidationError } from 'yup'
 
-type JsonError = { values: unknown[]; error: string; message: any }
+export type JsonError = { values: unknown[]; error: string; message: any }
 
 export default function errToJSON(
   error: ValidationError,
