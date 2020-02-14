@@ -1,37 +1,41 @@
 import omitBy from 'lodash/omitBy'
 import pick from 'lodash/pick'
+import { Errors } from '../types'
+import { inPath, toArray } from './paths'
 
-import { inPath } from './paths'
+export const EMPTY_ERRORS: Errors = Object.freeze({})
 
-export const EMPTY_ERRORS = Object.freeze({})
-
-export let isChildPath = (basePath, path) =>
+export let isChildPath = (basePath: string, path: string) =>
   path !== basePath && inPath(basePath, path)
 
-function mapKeys(errors, baseName, fn) {
+function mapKeys(
+  errors: Errors,
+  baseName: string,
+  fn: (idx: number, tail: string, path: string) => string | null,
+) {
   if (errors === EMPTY_ERRORS) return errors
 
   const newErrors = {}
   let workDone = false
   Object.keys(errors).forEach(path => {
-    let newKey = path
+    let newKey: string | null = path
 
     if (isChildPath(baseName, path)) {
       const matches = path.slice(baseName.length).match(/\[(\d+)\](.*)$/)
-      newKey = fn(+matches[1], matches[2] || '', path)
+      newKey = fn(+matches![1], matches![2] || '', path)
       if (!workDone && newKey !== path) workDone = true
     }
 
-    newErrors[newKey] = errors[path]
+    newErrors[newKey!] = errors[path]
   })
 
   return workDone ? newErrors : errors
 }
 
-const prefixName = (name, baseName) =>
+const prefixName = (name: string, baseName: string) =>
   baseName + (!name || name[0] === '[' ? '' : '.') + name
 
-export function prefix(errors, baseName) {
+export function prefix(errors: Errors, baseName: string): Errors {
   const paths = Object.keys(errors)
   const result = {}
 
@@ -42,7 +46,7 @@ export function prefix(errors, baseName) {
   return result
 }
 
-export function unprefix(errors, baseName) {
+export function unprefix(errors: Errors, baseName: string): Errors {
   const paths = Object.keys(errors)
   const result = {}
 
@@ -53,12 +57,12 @@ export function unprefix(errors, baseName) {
   return result
 }
 
-export function pickErrors(errors, names) {
+export function pickErrors(errors: Errors, names: string[]) {
   if (!names.length) return errors
   return pick(errors, names)
 }
 
-export function filter(errors, baseName) {
+export function filter(errors: Errors, baseName: string): Errors {
   const paths = Object.keys(errors)
   const result = {}
 
@@ -71,24 +75,27 @@ export function filter(errors, baseName) {
   return result
 }
 
+export interface FilterAndMapErrorsOptions {
+  errors?: Errors
+  names: string | string[]
+  mapErrors?: (errors: Errors, names: string[]) => Errors
+}
+
 export function filterAndMapErrors({
   errors,
   names,
-  resolveNames,
   mapErrors = pickErrors,
-}) {
+}: FilterAndMapErrorsOptions): Errors | undefined {
   if (!errors || errors === EMPTY_ERRORS) return errors
 
-  names = resolveNames ? resolveNames() : names
-
-  return mapErrors(errors, names ? [].concat(names) : [])
+  return mapErrors(errors, toArray(names))
 }
 
-export function remove(errors, ...basePaths) {
+export function remove(errors: Errors, ...basePaths: string[]) {
   return omitBy(errors, (_, path) => basePaths.some(b => inPath(b, path)))
 }
 
-export function shift(errors, baseName, atIndex) {
+export function shift(errors: Errors, baseName: string, atIndex: number) {
   const current = `${baseName}[${atIndex}]`
 
   return mapKeys(remove(errors, current), baseName, (index, tail) => {
@@ -100,7 +107,7 @@ export function shift(errors, baseName, atIndex) {
   })
 }
 
-export function unshift(errors, baseName, atIndex) {
+export function unshift(errors: Errors, baseName: string, atIndex: number) {
   return mapKeys(errors, baseName, (index, tail) => {
     if (index > atIndex) {
       return `${baseName}[${index + 1}]${tail}`
@@ -110,7 +117,12 @@ export function unshift(errors, baseName, atIndex) {
   })
 }
 
-export function move(errors, baseName, fromIndex, toIndex) {
+export function move(
+  errors: Errors,
+  baseName: string,
+  fromIndex: number,
+  toIndex: number,
+) {
   return mapKeys(errors, baseName, (index, tail) => {
     if (fromIndex > toIndex) {
       if (index === fromIndex) return `${baseName}[${toIndex}]${tail}`
@@ -128,7 +140,12 @@ export function move(errors, baseName, fromIndex, toIndex) {
   })
 }
 
-export function swap(errors, baseName, indexA, indexB) {
+export function swap(
+  errors: Errors,
+  baseName: string,
+  indexA: number,
+  indexB: number,
+) {
   return mapKeys(errors, baseName, (index, tail) => {
     if (index === indexA) return `${baseName}[${indexB}]${tail}`
     if (index === indexB) return `${baseName}[${indexA}]${tail}`
@@ -136,7 +153,7 @@ export function swap(errors, baseName, indexA, indexB) {
   })
 }
 
-export function inclusiveMapErrors(errors, names) {
+export function inclusiveMapErrors(errors: Errors, names: string[]) {
   if (!names.length || errors === EMPTY_ERRORS) return EMPTY_ERRORS
   let activeErrors = {}
   let paths = Object.keys(errors)

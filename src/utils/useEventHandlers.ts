@@ -4,7 +4,7 @@ import { toArray } from './paths'
 
 export function notify<T extends (...args: any) => any>(
   handler: T | undefined,
-  args: Parameters<T>,
+  args?: Parameters<T>,
 ) {
   // FIXME: seems to be a babel bug here...
   // eslint-disable-next-line prefer-spread

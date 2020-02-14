@@ -1,11 +1,20 @@
 import PropTypes from 'prop-types'
 import React, { useContext, useMemo } from 'react'
 import { FormErrorContext } from './Contexts'
+import { Errors } from './types'
 import { filterAndMapErrors } from './utils/ErrorUtils'
 import uniq from './utils/uniqMessage'
 
 let flatten = (arr, next) => arr.concat(next)
 
+export interface MessageProps {
+  errors?: Errors
+  for: string | string[]
+  className?: string
+  filter?: (item: any, i?: number, list?: any[]) => boolean
+  extract?: (errors: any[], props: any) => any
+  children?: (errors: any[], props: any) => React.ReactNode
+}
 /**
  * Represents a Form validation error message. Only renders when the
  * value that it is `for` is invalid.
@@ -17,10 +26,12 @@ function Message({
   for: names,
   className,
   filter = uniq,
-  extract = error => error.message || error,
-  children = (errors, props) => <span {...props}>{errors.join(', ')}</span>,
+  extract = (error: any) => error.message || error,
+  children = (errors: any[], props: any) => (
+    <span {...props}>{errors.join(', ')}</span>
+  ),
   ...props
-}) {
+}: MessageProps) {
   const formErrors = useContext(FormErrorContext)
 
   const errors = useMemo(
@@ -29,20 +40,24 @@ function Message({
         errors: propsErrors || formErrors,
         names,
       }),
-    [names, propsErrors || formErrors]
+    [names, propsErrors || formErrors],
   )
 
   if (!errors || !Object.keys(errors).length) return null
 
-  return children(
-    Object.values(errors)
-      .reduce(flatten, [])
-      .filter((...args) => filter(...args, extract))
-      .map(extract),
-    {
-      ...props,
-      className,
-    }
+  return (
+    <>
+      {children(
+        Object.values(errors)
+          .reduce(flatten, [])
+          .filter(filter)
+          .map(extract),
+        {
+          ...props,
+          className,
+        },
+      )}
+    </>
   )
 }
 

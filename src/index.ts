@@ -1,4 +1,5 @@
 import invariant from 'invariant'
+import { ValidationError } from 'yup'
 import Field from './Field'
 import FieldArray, { useFieldArray } from './FieldArray'
 import Form from './Form'
@@ -9,6 +10,7 @@ import config from './config'
 import useField from './useField'
 import errToJSON from './utils/errToJSON'
 import useEventHandlers, { useMergedHandlers } from './utils/useEventHandlers'
+
 const statics = {
   Field,
   FieldArray,
@@ -18,7 +20,7 @@ const statics = {
   setDefaults(defaults = {}) {
     Object.assign(config, defaults)
   },
-  toErrors(err) {
+  toErrors(err: ValidationError) {
     invariant(
       err && err.name === 'ValidationError',
       '`toErrors()` only works with ValidationErrors.',
@@ -27,9 +29,7 @@ const statics = {
   },
 }
 
-Object.assign(Form, statics)
-
-Form.statics = statics
+Object.assign(Form, statics, { statics })
 
 export {
   statics,
@@ -39,4 +39,5 @@ export {
   useFieldArray,
   useFormSubmit,
 }
+
 export default Form

@@ -1,8 +1,7 @@
-import React from 'react'
 import PropTypes from 'prop-types'
 import elementType from 'prop-types-extra/lib/elementType'
-
-import Message from './Message'
+import React from 'react'
+import Message, { MessageProps } from './Message'
 
 /**
  * Display all Form validation `errors` in a single summary list.
@@ -22,7 +21,12 @@ import Message from './Message'
  * </Form>
  * ```
  */
-class Summary extends React.PureComponent {
+class Summary extends React.PureComponent<
+  MessageProps & {
+    formatMessage: (err: any, idx: number, errors: any[]) => React.ReactNode
+  },
+  any
+> {
   static propTypes = {
     /**
      * An error message renderer, Should return a `ReactElement`

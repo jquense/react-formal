@@ -112,7 +112,7 @@ function useFieldMeta(opts: UseFieldMetaOptions, actions: FormActions) {
   })
 
   meta.errors = filteredErrors
-  meta.invalid = !!Object.keys(filteredErrors).length
+  meta.invalid = !!Object.keys(filteredErrors!).length
   meta.valid = !meta.invalid
 
   // @ts-ignore
@@ -144,7 +144,7 @@ export interface UseFieldOptions extends UseFieldMetaOptions {
   mapFromValue?: MapFromValue
   className?: string
   validates?: string | string[] | null
-  events?: string[] | string | ((meta: FieldMeta) => string[] | string)
+  events?: string[] | string | ((meta: FieldMeta) => string[] | string) | null
 }
 
 export type FieldProps = Record<string, (...args: any[]) => any> & {

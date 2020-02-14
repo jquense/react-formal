@@ -1,7 +1,7 @@
 import uniq from 'lodash/uniq'
 import prop from 'property-expr'
 
-export const toArray = <T>(arr: T | T[] | null): T[] =>
+export const toArray = <T>(arr?: T | T[] | null): T[] =>
   arr == null ? [] : ([] as T[]).concat(arr)
 
 export function isQuoted(str: string) {

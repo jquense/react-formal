@@ -52,7 +52,7 @@ describe('Form', () => {
           <Form.Message for="fieldA" className="msg" />
           <Form.Message for="fieldB" className="msg" />
         </div>
-      </Form>
+      </Form>,
     )
 
     wrapper
@@ -69,7 +69,7 @@ describe('Form', () => {
       <Form schema={schema} defaultValue={schema.default()} onChange={change}>
         <Form.Field name="name.first" className="field" />
         <Form.Field name="name.last" className="field" />
-      </Form>
+      </Form>,
     )
 
     wrapper
@@ -116,7 +116,7 @@ describe('Form', () => {
               'name.last': v => v.last,
             }}
           />
-        </Form>
+        </Form>,
       )
 
     let value = { first: 'Jill', last: 'smith' }
@@ -140,7 +140,7 @@ describe('Form', () => {
         >
           <Form.Field name="name.first" className="field" />
           <Form.Field name="name.last" className="field" />
-        </Form>
+        </Form>,
       )
 
     wrapper
@@ -166,7 +166,7 @@ describe('Form', () => {
       <Form onSubmit={spy} schema={schema} defaultValue={{}}>
         <Form.Field name="name" type="text" className="test" />
         <button type="submit">Submit</button>
-      </Form>
+      </Form>,
     )
 
     await act(() => {
@@ -185,7 +185,7 @@ describe('Form', () => {
         <Form.Field name="name" type="text" className="test" />
         <Form.Submit type="submit" />
       </Form>,
-      { attachTo }
+      { attachTo },
     )
 
     await act(() => {
@@ -214,7 +214,7 @@ describe('Form', () => {
       >
         <Form.Field name="name" type="text" className="test" />
         <Form.Submit type="submit" />
-      </Form>
+      </Form>,
     )
 
     await act(() => {
@@ -239,7 +239,7 @@ describe('Form', () => {
       >
         <Form.Field name="name" type="text" className="test" />
         <Form.Submit type="submit" />
-      </Form>
+      </Form>,
     )
 
     await act(() => {
@@ -273,7 +273,7 @@ describe('Form', () => {
         </Form>
 
         <Slot.Outlet />
-      </div>
+      </div>,
     )
 
     await act(() => {
@@ -303,7 +303,7 @@ describe('Form', () => {
           <Form.Field name="name" type="text" className="test" />
           <Form.Submit type="submit" />
         </Form>
-      </div>
+      </div>,
     )
 
     await act(async () => {
@@ -337,7 +337,7 @@ describe('Form', () => {
           <Form.Field name="name" type="text" className="test" />
           <LeakySubmit />
         </Form>
-      </div>
+      </div>,
     )
 
     return act(async () => {
@@ -365,7 +365,7 @@ describe('Form', () => {
       new yup.ValidationError([
         new yup.ValidationError('foo', null, 'bar'),
         new yup.ValidationError('bar', null, 'foo'),
-      ])
+      ]),
     ).should.to.eql({
       foo: [{ message: 'bar', values: undefined, type: undefined }],
       bar: [{ message: 'foo', values: undefined, type: undefined }],
@@ -401,7 +401,7 @@ describe('Form', () => {
           >
             <Form.Field name="name" />
             <Form.Field name="name.first" />
-          </Form>
+          </Form>,
         )
           .find('input[name="name"]')
           .simulate('change')

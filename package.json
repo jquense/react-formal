@@ -2,8 +2,9 @@
   "name": "react-formal",
   "version": "2.0.0-3",
   "description": "Classy HTML form management for React",
-  "main": "lib/index.cjs.js",
-  "module": "es/index.js",
+  "main": "lib/cjs/index.cjs.js",
+  "types": "lib/cjs/index.d.ts",
+  "module": "lib/esm/index.js",
   "author": {
     "name": "Jason Quense",
     "email": "monastic.panic@gmail.com"
@@ -14,6 +15,7 @@
     "url": "git+https://github.com/jquense/react-formal.git"
   },
   "license": "MIT",
+  "sideEffects": false,
   "files": [
     "lib",
     "es"
@@ -44,9 +46,14 @@
     "lint": "eslint src",
     "docs": "yarn --cwd www start",
     "docs:deploy": "yarn --cwd www deploy",
-    "build": "4c build src -d lib",
+    "build:pick": "cherry-pick --name=@restart/hooks --cwd=lib --input-dir=../src --cjs-dir=cjs --esm-dir=esm",
+    "build": "rimraf lib && 4c build src && yarn build:pick",
     "prepublishOnly": "npm run build",
     "release": "rollout"
+  },
+  "publishConfig": {
+    "access": "public",
+    "directory": "lib"
   },
   "peerDependencies": {
     "react": ">=16.4.0"
@@ -84,6 +91,7 @@
     "babel-preset-jason": "^6.1.2",
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
+    "cherry-pick": "^0.5.0",
     "dirty-chai": "^2.0.1",
     "enzyme": "^3.11.0",
     "enzyme-adapter-react-16": "^1.15.2",

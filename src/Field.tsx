@@ -9,7 +9,7 @@ import useField, {
 } from './useField'
 import { useMergedHandlers } from './utils/useEventHandlers'
 
-interface FieldProps {
+export interface FieldProps {
   /**
    * The Component Input the form should render. You can sepcify a native element such as 'textbox' or 'select'
    * or provide a Component type class directly. When no type is provided the Field will attempt determine
@@ -265,7 +265,7 @@ const Field = React.forwardRef((props: FieldProps, ref) => {
   if (typeof children === 'function') {
     return children(fieldProps, meta)
   }
-  console.log('H', fieldProps)
+  // console.log('H', fieldProps)
 
   return (
     <Input {...rest} {...asProps} {...fieldProps} type={meta.nativeType}>
