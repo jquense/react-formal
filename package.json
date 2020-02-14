@@ -1,6 +1,6 @@
 {
   "name": "react-formal",
-  "version": "2.0.0-1",
+  "version": "2.0.0-2",
   "description": "Classy HTML form management for React",
   "main": "lib/index.cjs.js",
   "module": "es/index.js",
@@ -11,7 +11,7 @@
   "homepage": "http://jquense.github.io/react-formal/",
   "repository": {
     "type": "git",
-    "url": "https://github.com/jquense/react-formal"
+    "url": "git+https://github.com/jquense/react-formal.git"
   },
   "license": "MIT",
   "files": [
@@ -101,5 +101,10 @@
     "sinon": "^7.5.0",
     "sinon-chai": "^3.3.0",
     "typescript": "^3.7.3"
-  }
+  },
+  "bugs": {
+    "url": "https://github.com/jquense/react-formal/issues"
+  },
+  "readme": "ERROR: No README data found!",
+  "_id": "react-formal@2.0.0-1"
 }
