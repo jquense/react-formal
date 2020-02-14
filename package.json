@@ -1,6 +1,6 @@
 {
   "name": "react-formal",
-  "version": "2.0.0-4",
+  "version": "2.0.0-5",
   "description": "Classy HTML form management for React",
   "main": "lib/cjs/index.cjs.js",
   "types": "lib/cjs/index.d.ts",
@@ -114,5 +114,5 @@
     "url": "https://github.com/jquense/react-formal/issues"
   },
   "readme": "ERROR: No README data found!",
-  "_id": "react-formal@2.0.0-3"
+  "_id": "react-formal@2.0.0-4"
 }
