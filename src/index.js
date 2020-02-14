@@ -1,14 +1,14 @@
 import invariant from 'invariant'
-import Field, { useField } from './Field'
+import Field from './Field'
 import FieldArray, { useFieldArray } from './FieldArray'
 import Form from './Form'
 import Submit, { useFormSubmit } from './FormSubmit'
 import Message from './Message'
 import Summary from './Summary'
 import config from './config'
+import useField from './useField'
 import errToJSON from './utils/errToJSON'
 import useEventHandlers, { useMergedHandlers } from './utils/useEventHandlers'
-
 const statics = {
   Field,
   FieldArray,
@@ -21,7 +21,7 @@ const statics = {
   toErrors(err) {
     invariant(
       err && err.name === 'ValidationError',
-      '`toErrors()` only works with ValidationErrors.'
+      '`toErrors()` only works with ValidationErrors.',
     )
     return errToJSON(err)
   },
