@@ -12,7 +12,25 @@ module.exports = {
       resolve: 'gatsby-plugin-astroturf',
       options: { enableCssProp: true },
     },
-
+    {
+      resolve: `gatsby-plugin-webfonts`,
+      options: {
+        fonts: {
+          google: [
+            {
+              family: 'Abril+Fatface',
+              subsets: ['latin'],
+              display: 'swap',
+            },
+            {
+              family: 'Open+Sans',
+              subsets: ['latin'],
+              display: 'swap',
+            },
+          ],
+        },
+      },
+    },
     {
       resolve: '@docpocalypse/gatsby-theme',
       options: {

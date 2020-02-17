@@ -32,7 +32,7 @@ h3,
 h4,
 h5,
 h6 {
-  @apply mb-4 mt-6 font-medium;
+  @apply mb-4 mt-6 font-medium font-brand;
 }
 
 h1 {
@@ -42,13 +42,16 @@ h1 {
 h2,
 h3,
 h4 {
-  @apply text-3xl;
+  @apply text-3xl tracking-wide;
 }
 
 p {
   @apply mb-4;
 }
 
+input::placeholder {
+  @apply text-gray-500;
+}
 // code {
 //   font-family: source-code-pro, Menlo, Monaco, Consolas, Courier New, monospace;
 //   background-color: theme('code.bg-color');

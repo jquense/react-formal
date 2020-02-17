@@ -14,7 +14,7 @@ import { useMergedHandlers } from './utils/useEventHandlers'
  * When Field renders an Element, it injects a few props.
  * In the case none DOM elements it also injects `meta`
  */
-export type InjectedFieldProps = RenderFieldProps & {
+export type InjectedFieldProps<TValue = any> = RenderFieldProps<TValue> & {
   type: string
   meta: FieldMeta
 }

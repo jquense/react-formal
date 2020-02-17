@@ -115,8 +115,20 @@ export interface FormHandle {
   validate(fields: string[]): void
 }
 
+export declare interface Form {
+  <T extends Yup.ObjectSchema>(
+    props: FormProps<T> & React.RefAttributes<FormHandle>,
+  ): React.ReactElement | null
+
+  displayName?: string
+  propTypes?: any
+
+  // getter: typeof formGetter
+  // setter: typeof formSetter
+}
+
 /** @alias Form */
-const Form = React.forwardRef(
+const _Form: Form = React.forwardRef(
   <T extends Yup.ObjectSchema>(
     {
       children,
@@ -411,7 +423,7 @@ function maybeWarn(debug, errors, target) {
   }
 }
 
-Form.propTypes = {
+_Form.propTypes = {
   /**
    * Form value object, can be left [uncontrolled](/controllables);
    * use the `defaultValue` prop to initialize an uncontrolled form.
@@ -632,21 +644,13 @@ Form.propTypes = {
   debug: PropTypes.bool,
 }
 
-Form.displayName = 'Form'
+_Form.displayName = 'Form'
 
-export declare interface Form {
-  <T extends Yup.ObjectSchema>(
-    props: FormProps<T> & React.RefAttributes<FormHandle>,
-  ): React.ReactElement | null
+// _Form.setter = formGetter
+// _Form.getter = formSetter
+//
 
-  displayName?: string
-  propTypes?: any
-
-  getter: typeof formGetter
-  setter: typeof formSetter
-}
-
-export default Object.assign(Form, {
+export default Object.assign(_Form, {
   getter: formGetter,
-  setter: formSetter,
-}) as Form
+  setter: formGetter,
+})

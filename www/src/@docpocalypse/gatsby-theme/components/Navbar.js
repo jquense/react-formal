@@ -1,17 +1,23 @@
+import cn from 'classnames'
 import { Link } from 'gatsby'
 import React from 'react'
 import Logo from '../../../components/Logo'
 
-function Navbar() {
+function Navbar({ className, bg = 'bg-primary' }) {
   return (
     <div
-      css="height: theme('navbar.height');"
-      className="sticky z-40 top-0 bg-primary text-white px-6 text-xl flex items-center font-medium h-navbar"
+      className={cn(
+        className,
+        bg,
+        'sticky z-40 top-0 w-full text-white px-6 text-xl flex items-center font-medium h-navbar',
+      )}
     >
-      <Link to="/" className="inline-flex items-center">
-        React&nbsp;
-        <Logo style={{ width: 40 }} />
-        &nbsp;Formal
+      <Link
+        to="/"
+        className="inline-flex items-center font-brand tracking-wide text-2xl"
+      >
+        <Logo style={{ width: 30 }} className="mr-4" />
+        React Formal
       </Link>
 
       <nav className="ml-auto">

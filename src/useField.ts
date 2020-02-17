@@ -149,8 +149,11 @@ export interface UseFieldOptions extends UseFieldMetaOptions {
   events?: string[] | string | ((meta: FieldMeta) => string[] | string) | null
 }
 
-export type RenderFieldProps = Record<string, (...args: any[]) => any> & {
-  value: any
+export type RenderFieldProps<TValue = any> = Record<
+  string,
+  (...args: any[]) => any
+> & {
+  value: TValue
   checked?: boolean
 }
 

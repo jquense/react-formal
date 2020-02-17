@@ -6,12 +6,15 @@ Fields provide a light abstraction over normal input components where values and
 are take care of for you. Beyond that they just render the input for their type, Fields whille pass along
 any props and children to the input so you can easily configure new input types.
 
-```jsx { "editable": true }
+```jsx
+import Form from "react-formal";
+import schema from "../schema";
+
 <Form
   noValidate
-  schema={modelSchema}
+  schema={schema}
   defaultValue={{
-    name: { first: 'Sally' },
+    name: { first: "Sally" },
     colorID: 0
   }}
 >
@@ -29,7 +32,7 @@ any props and children to the input so you can easily configure new input types.
     <option value={3}>other</option>
   </Form.Field>
   <Form.Submit type="submit">Submit</Form.Submit>
-</Form>
+</Form>;
 ```
 
 In addition to injecting Field components with events and the field `value`, a
