@@ -57,8 +57,10 @@ export interface FieldMeta {
   /** A valid HTML input type */
   nativeType: string
   onError: (errors: Errors) => void
+
   value: any
-  onChange: (v: any) => void
+  onChange: (nextFieldValue: unknown) => void
+
   events: string[]
 }
 
@@ -199,28 +201,32 @@ export default function useField(options: UseFieldOptions) {
 
   // put the original value on meta in case the coerced one differs
   meta.value = value
-  meta.onChange = onChange
 
   let events = options.events || config.events
   events = typeof events === 'function' ? events(meta) : events
 
   meta.events = events
 
+  // Add an onChange handler to `meta` so that custom inputs
+  // don't need to infer the events configured for a Field
+  meta.onChange = useCallback(
+    (value: any) => {
+      onChange(value)
+      if (noValidate || !formActions) return
+      formActions.onValidate(fieldsToValidate, 'onChange', [value])
+    },
+    [onChange, fieldsToValidate, formActions && formActions.onValidate],
+  )
+
   const fieldProps: any = useEventHandlers(
     events,
     useCallback(
       (event, args) => {
         notify(onChange, args)
-
         if (noValidate || !formActions) return
         formActions.onValidate(fieldsToValidate, event, args)
       },
-      [
-        onChange,
-        noValidate,
-        fieldsToValidate,
-        formActions && formActions.onValidate,
-      ],
+      [onChange, fieldsToValidate, formActions && formActions.onValidate],
     ),
   )
   fieldProps.name = name

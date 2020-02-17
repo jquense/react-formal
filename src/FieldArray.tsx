@@ -23,8 +23,8 @@ export type FieldArrayProps = UseFieldArrayOptions & {
   ) => React.ReactNode
 }
 
-function FieldArray({ children, ...props }: FieldArrayProps) {
-  const [field, meta, arrayHelpers] = useFieldArray(props)
+function FieldArray<T = any>({ children, ...props }: FieldArrayProps) {
+  const [field, meta, arrayHelpers] = useFieldArray<T>(props)
 
   const nextProps: any = {
     ...field,

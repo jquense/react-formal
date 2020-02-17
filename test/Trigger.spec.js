@@ -18,7 +18,7 @@ describe('Triggers', () => {
               {props => <input {...props} value={props.value || ''} />}
             </Form.Field>
           </div>
-        </Form>
+        </Form>,
       )
 
     wrapper.find('input').simulate('change')
@@ -34,7 +34,7 @@ describe('Triggers', () => {
           <div>
             <Form.Submit triggers={['fieldA', 'fieldB']} />
           </div>
-        </Form>
+        </Form>,
       )
 
     wrapper.find('button').simulate('click')
@@ -60,7 +60,7 @@ describe('Triggers', () => {
 
           <Form.Submit events="onClick" triggers={['fieldA']} />
         </div>
-      </Form>
+      </Form>,
     )
 
     await act(() => {
@@ -87,7 +87,7 @@ describe('Triggers', () => {
 
           <Form.Submit />
         </div>
-      </Form>
+      </Form>,
     )
 
     await act(() => {
@@ -106,11 +106,11 @@ describe('Triggers', () => {
         <Form ref={ref} schema={schema} submitForm={spy}>
           <div>
             <Form.Field name="fieldA">
-              {({ meta }) => <span>submitting: {String(meta.submitting)}</span>}
+              {(_, meta) => <span>submitting: {String(meta.submitting)}</span>}
             </Form.Field>
           </div>
         </Form>
-      </div>
+      </div>,
     )
 
     let trigger = wrapper.find('span')
@@ -151,7 +151,7 @@ describe('Triggers', () => {
             <Submit name="fieldA" />
           </div>
         </Form>
-      </div>
+      </div>,
     )
 
     let trigger = wrapper.find('span')

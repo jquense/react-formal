@@ -5,11 +5,21 @@ import useField, {
   FieldMeta,
   MapFromValue,
   MapToValue,
+  RenderFieldProps,
   TriggerEvents,
 } from './useField'
 import { useMergedHandlers } from './utils/useEventHandlers'
 
-export interface FieldProps {
+/**
+ * When Field renders an Element, it injects a few props.
+ * In the case none DOM elements it also injects `meta`
+ */
+export type InjectedFieldProps = RenderFieldProps & {
+  type: string
+  meta: FieldMeta
+}
+
+export interface FieldProps extends React.HTMLAttributes<HTMLInputElement> {
   /**
    * The Component Input the form should render. You can sepcify a native element such as 'textbox' or 'select'
    * or provide a Component type class directly. When no type is provided the Field will attempt determine
@@ -198,19 +208,20 @@ export interface FieldProps {
    */
   children?:
     | React.ReactNode
-    | ((fieldProps: FieldProps, meta: FieldMeta) => React.ReactNode)
+    | ((fieldProps: RenderFieldProps, meta: FieldMeta) => React.ReactNode)
 
   /**
    * A value to pass to checkboxs/radios/boolean inputs
    */
-  htmlValue: any
+  htmlValue?: any
 
   className?: string
 
   /**
-   * Instruct the field to not inject the `meta` prop into the input
+   * Instruct the field to not inject the `meta` prop into the input,
+   * defaults to `true` when `as` is a non DOM component
    */
-  noMeta?: boolean
+  injectMeta?: boolean
 
   /** An HTML input type attribute */
   type?: string
@@ -221,10 +232,10 @@ export interface FieldProps {
 const Field = React.forwardRef((props: FieldProps, ref) => {
   const {
     children,
-    noMeta,
     type,
     asProps,
     as: Input = 'input',
+    injectMeta = typeof Input !== 'string',
     name,
     mapFromValue,
     mapToValue,
@@ -258,14 +269,13 @@ const Field = React.forwardRef((props: FieldProps, ref) => {
     ...useMergedHandlers(meta.events, props, field),
   }
 
-  if (!noMeta) fieldProps.meta = meta
+  if (injectMeta) fieldProps.meta = meta
   if (ref) fieldProps.ref = ref
 
   // Escape hatch for more complex Field types.
   if (typeof children === 'function') {
     return children(fieldProps, meta)
   }
-  // console.log('H', fieldProps)
 
   return (
     <Input {...rest} {...asProps} {...fieldProps} type={meta.nativeType}>
@@ -303,7 +313,7 @@ Field.propTypes = {
   exclusive: PropTypes.bool,
   noValidate: PropTypes.bool,
   children: PropTypes.oneOfType([PropTypes.node, PropTypes.func]),
-  noMeta: PropTypes.bool,
+  injectMeta: PropTypes.bool,
 }
 
 export default Field

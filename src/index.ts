@@ -19,10 +19,12 @@ export type FieldArrayMeta = import('./useFieldArray').FieldArrayMeta
 export type UseFieldArrayOptions = import('./useFieldArray').UseFieldArrayOptions
 
 export type FieldMeta = import('./useField').FieldMeta
+export type RenderFieldProps = import('./useField').RenderFieldProps
 export type UseFieldOptions = import('./useField').UseFieldOptions
 
 export type JsonError = import('./utils/errToJSON').JsonError
 export type FieldProps = import('./Field').FieldProps
+export type InjectedFieldProps = import('./Field').InjectedFieldProps
 export type MessageProps = import('./Message').MessageProps
 export type FormProps<
   TSchema extends ObjectSchema,
