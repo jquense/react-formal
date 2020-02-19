@@ -1,10 +1,9 @@
 import styled from 'astroturf';
-import cn from 'classnames';
 import { Link } from 'gatsby';
 import React, { useState } from 'react';
 import { Navbar } from '@docpocalypse/gatsby-theme';
 import useGlobalListener from '@restart/hooks/useGlobalListener';
-import Logo from './Logo';
+import Logo from '../components/Logo';
 
 const HeroLink = styled(Link, { allowAs: true })`
   color: white;
@@ -15,8 +14,6 @@ const HeroLink = styled(Link, { allowAs: true })`
     color: darken(white, 5%);
   }
 `;
-
-const propTypes = {};
 
 function SplashPageLayout(props) {
   const [stuck, setStuck] = useState(false);
@@ -30,12 +27,12 @@ function SplashPageLayout(props) {
   );
 
   return (
-    <div>
+    <div className="min-h-screen flex flex-col">
       <Navbar
         css="transition: background-color 300ms; position: fixed;"
         bg={!stuck ? 'bg-transparent' : 'bg-primary'}
       />
-      <main>
+      <main className="flex flex-col">
         <div className="px-4 text-white bg-primary relative">
           <svg
             viewBox="0 0 700 400"
@@ -45,13 +42,14 @@ function SplashPageLayout(props) {
           >
             <path
               d="M349.884 874.72L-.003.006h699.772L349.884 874.72z"
-              fill="#fff"
-              fillOpacity=".07"
+              // fill="#fff"
+              className="fill-current text-accent"
+              // fillOpacity=".07"
             />
           </svg>
           <div className="mt-navbar" />
-          <div className="mx-auto container py-24 flex items-center flex-col z-10 ">
-            <h1 className="m-0 flex text-6xl mb-5 z-10 w-full">
+          <div className="mx-auto container py-24 flex items-center flex-col relative z-10 ">
+            <h1 className="m-0 flex text-6xl mb-5 w-full">
               <span className="flex-1 text-right">React</span>
               <Logo className="mx-4" />
               <span className="flex-1">Formal</span>
@@ -99,17 +97,44 @@ function SplashPageLayout(props) {
             </div>
           </div>
         </div>
-        <div className="bg-accent text-gray-100">
+        {/* <div className="bg-accent text-gray-100 flex-1">
           <div className="mx-auto container">{props.children}</div>
-        </div>
+        </div> */}
       </main>
-      <footer className="mx-auto text-xs  container text-gray-500">
-        bowtie icon by Nicole Hammonds from the Noun Project
+      <footer className="bg-primary flex-1 relative overflow-hidden text-gray-600 flex flex-col">
+        <svg
+          viewBox="0 730 700 400"
+          xmlns="http://www.w3.org/2000/svg"
+          className="absolute block"
+          css="top:0; left: 50%; transform: translateX(-50%);"
+        >
+          <path
+            d="M349.884 874.72L-.003.006h699.772L349.884 874.72z"
+            className="fill-current text-accent"
+          />
+        </svg>
+        <div className="mx-auto container text-center grid grid-cols-3 gap-12 z-10 relative pt-12 pb-8">
+          {/* <div className="grid grid-cols-1 gap-6">
+            <Link
+              to="/api/Form"
+              className="pr-2 text-white hover:text-gray-300"
+            >
+              Documentation
+            </Link>
+            <a
+              href="https://github.com/jquense/react-formal"
+              className="text-white hover:text-gray-50"
+            >
+              Github
+            </a>
+          </div> */}
+        </div>
+        <div className="text-xs mt-auto self-center  z-10">
+          bowtie icon by Nicole Hammonds from the Noun Project
+        </div>
       </footer>
     </div>
   );
 }
-
-SplashPageLayout.propTypes = propTypes;
 
 export default SplashPageLayout;

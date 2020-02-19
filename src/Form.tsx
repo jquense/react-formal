@@ -617,9 +617,9 @@ _Form.propTypes = {
    * For more information about the yup api check out: https://github.com/jquense/yup/blob/master/README.md
    * @type {YupSchema}
    */
-  schema(props, name, componentName, ...args) {
+  schema(props, name, componentName, loc, secret) {
     let err = !props.noValidate
-      ? PropTypes.any.isRequired(props, name, componentName, ...args)
+      ? PropTypes.any.isRequired(props, name, componentName, loc, secret)
       : null
 
     if (props[name]) {

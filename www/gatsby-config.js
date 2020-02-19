@@ -1,6 +1,6 @@
-const path = require('path')
+const path = require('path');
 
-const src = path.resolve(__dirname, '../src')
+const src = path.resolve(__dirname, '../src');
 
 module.exports = {
   siteMetadata: {
@@ -18,7 +18,7 @@ module.exports = {
         fonts: {
           google: [
             {
-              family: 'Abril+Fatface',
+              family: 'Abril Fatface',
               subsets: ['latin'],
               display: 'swap',
             },
@@ -40,7 +40,7 @@ module.exports = {
         tailwindConfig: require.resolve('./tailwind.config'),
 
         getImportName(docNode) {
-          return `import { ${docNode.name} } from '${docNode.packageName}'`
+          return `import { ${docNode.name} } from '${docNode.packageName}'`;
         },
       },
     },
@@ -51,4 +51,4 @@ module.exports = {
     //   },
     // },
   ],
-}
+};

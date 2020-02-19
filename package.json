@@ -51,6 +51,11 @@
     "prepublishOnly": "npm run build",
     "release": "rollout"
   },
+  "prettier": {
+    "singleQuote": true,
+    "trailingComma": "all",
+    "quoteProps": "consistent"
+  },
   "publishConfig": {
     "access": "public",
     "directory": "lib"
@@ -62,7 +67,7 @@
     "@restart/hooks": "^0.3.20",
     "@types/lodash": "^4.14.149",
     "@types/react": "^16.9.19",
-    "@types/yup": "^0.26.30",
+    "@types/yup": "^0.26.31",
     "chain-function": "^1.0.0",
     "classnames": "^2.2.5",
     "invariant": "^2.2.4",
@@ -73,7 +78,7 @@
     "property-expr": "^1.4.0",
     "react-context-toolbox": "^2.0.2",
     "shallowequal": "^1.1.0",
-    "topeka": "^4.2.0",
+    "topeka": "^4.2.2",
     "uncontrollable": "^7.1.1",
     "warning": "^4.0.3",
     "yup": "^0.28.1"
@@ -85,7 +90,7 @@
     "@babel/cli": "7.8.4",
     "@babel/core": "7.8.4",
     "@babel/preset-typescript": "^7.8.3",
-    "@typescript-eslint/eslint-plugin": "^2.19.2",
+    "@typescript-eslint/eslint-plugin": "^2.20.0",
     "babel-eslint": "^10.0.3",
     "babel-jest": "^25.1.0",
     "babel-preset-jason": "^6.1.2",

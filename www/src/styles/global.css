@@ -1,9 +1,16 @@
 @import url('https://fonts.googleapis.com/css?family=Raleway&display=swap');
 
+html {
+  margin: 0;
+  padding: 0;
+}
+
 body {
   @apply antialiased;
 
   font-size: 1rem;
+  padding: 0;
+  margin: 0;
   color: theme('body.color');
   font-family: theme('fontFamily.default');
 }
