@@ -107,9 +107,9 @@ describe('FieldArray', () => {
       return wait()
     })
 
-    changeSpy.should.have.been.calledOnce()
+    expect(changeSpy).have.been.calledOnce()
 
-    value.should.eql({
+    expect(value).toEqual({
       colors: [
         {
           name: 'beige',
@@ -126,7 +126,7 @@ describe('FieldArray', () => {
         .simulate('change', { target: { value: 'LULZ' } })
       return wait()
     })
-    value.should.eql({
+    expect(value).toEqual({
       colors: [
         {
           name: 'beige',
@@ -135,7 +135,7 @@ describe('FieldArray', () => {
       ],
     })
 
-    value.should.not.equal(last)
+    expect(value).not.toBe(last)
   })
 
   it('should handle removing array items', async () => {
@@ -161,7 +161,7 @@ describe('FieldArray', () => {
 
     let list = wrapper.find(ColorList)
 
-    list.prop('value').should.have.length(2)
+    expect(list.prop('value')).toHaveLength(2)
 
     await act(() => {
       list.instance().remove(1)
@@ -169,7 +169,7 @@ describe('FieldArray', () => {
       return wait()
     })
 
-    value.should.eql({
+    expect(value).toEqual({
       colors: [
         {
           name: 'red',
@@ -204,12 +204,12 @@ describe('FieldArray', () => {
       </div>,
     )
     let list = wrapper.find(ColorList)
-    list.prop('value').should.have.length(2)
+    expect(list.prop('value')).toHaveLength(2)
 
     await act(() => ref.current.submit())
 
     // First color has an error
-    errors.should.have.property('colors[0].name')
+    expect(errors).toHaveProperty('colors[0].name')
 
     await act(() => {
       // remove the first color
@@ -217,10 +217,10 @@ describe('FieldArray', () => {
       return wait()
     })
     // The error for the first color should be gone
-    errorSpy.should.have.been.calledTwice()
-    errors.should.not.have.property('colors[0].name')
+    expect(errorSpy).have.been.calledTwice()
+    expect(errors).not.toHaveProperty('colors[0].name')
 
-    value.should.eql({
+    expect(value).toEqual({
       colors: [{ name: 'other red', hexCode: '#ff0000' }],
     })
   })

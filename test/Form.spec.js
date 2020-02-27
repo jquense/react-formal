@@ -38,11 +38,11 @@ describe('Form', () => {
   })
 
   it('should expose setter', () => {
-    Form.setter('foo', {}, 5).should.eql({ foo: 5 })
+    expect(Form.setter('foo', {}, 5)).toEqual({ foo: 5 })
   })
 
   it('should expose setter', () => {
-    Form.getter('foo', { foo: 5 }).should.equal(5)
+    expect(Form.getter('foo', { foo: 5 })).toBe(5)
   })
 
   it('should pass errors', () => {
@@ -55,10 +55,9 @@ describe('Form', () => {
       </Form>,
     )
 
-    wrapper
+    expect(wrapper
       .find('span.msg')
-      .text()
-      .should.equal('hi, good day')
+      .text()).toBe('hi, good day')
   })
 
   it('should update the form value', function() {
@@ -77,9 +76,9 @@ describe('Form', () => {
       .first()
       .simulate('change', { target: { value: 'Jill' } })
 
-    change.should.have.been.calledOnce()
+    expect(change).have.been.calledOnce()
 
-    value.should.eql({
+    expect(value).toEqual({
       name: {
         first: 'Jill',
         last: '',
@@ -93,14 +92,14 @@ describe('Form', () => {
       .last()
       .simulate('change', { target: { value: 'Smith' } })
 
-    value.should.eql({
+    expect(value).toEqual({
       name: {
         first: 'Jill',
         last: 'Smith',
       },
     })
 
-    value.should.not.equal(last)
+    expect(value).not.toBe(last)
   })
 
   it('should pass updated paths', function() {
@@ -126,7 +125,7 @@ describe('Form', () => {
       .first()
       .simulate('change', { target: { value } })
 
-    paths.should.eql(['name.first', 'name.last'])
+    expect(paths).toEqual(['name.first', 'name.last'])
   })
 
   xit('should respect noValidate', () => {
@@ -148,7 +147,7 @@ describe('Form', () => {
       .first()
       .simulate('change')
 
-    change.should.not.have.been.called()
+    expect(change).not.have.been.called()
 
     wrapper
       .setProps({ noValidate: false })
@@ -156,7 +155,7 @@ describe('Form', () => {
       .first()
       .simulate('change')
 
-    change.should.have.been.called()
+    expect(change).have.been.called()
   })
 
   it('should let native submits simulate onSubmit', async () => {
@@ -196,7 +195,7 @@ describe('Form', () => {
       return wait()
     })
 
-    spy.should.have.been.calledOnce()
+    expect(spy).have.been.calledOnce()
   })
 
   it("doesn't call submitForm on error", async () => {
@@ -222,8 +221,8 @@ describe('Form', () => {
       return wait(100)
     })
 
-    onInvalidSubmit.should.have.been.calledOnce()
-    submitForm.should.not.have.been.called()
+    expect(onInvalidSubmit).have.been.calledOnce()
+    expect(submitForm).not.have.been.called()
   })
 
   it('calls submitForm on success', async () => {
@@ -247,9 +246,9 @@ describe('Form', () => {
       return wait()
     })
 
-    onSubmit.should.have.been.calledOnce()
-    submitForm.should.have.been.calledOnce()
-    submitForm.should.have.been.calledAfter(onSubmit)
+    expect(onSubmit).have.been.calledOnce()
+    expect(submitForm).have.been.calledOnce()
+    expect(submitForm).have.been.calledAfter(onSubmit)
   })
 
   it('submits through a Slot', async () => {
@@ -281,9 +280,9 @@ describe('Form', () => {
       return wait()
     })
 
-    onSubmit.should.have.been.calledOnce()
-    submitForm.should.have.been.calledOnce()
-    submitForm.should.have.been.calledAfter(onSubmit)
+    expect(onSubmit).have.been.calledOnce()
+    expect(submitForm).have.been.calledOnce()
+    expect(submitForm).have.been.calledAfter(onSubmit)
   })
 
   it('does not submit while already submitting', async () => {
@@ -315,8 +314,8 @@ describe('Form', () => {
       await ref.current.submit()
     })
 
-    onSubmit.should.have.been.calledOnce()
-    submitForm.should.have.been.calledOnce()
+    expect(onSubmit).have.been.calledOnce()
+    expect(submitForm).have.been.calledOnce()
   })
 
   it('should only report ValidationErrors', () => {
@@ -342,14 +341,14 @@ describe('Form', () => {
 
     return act(async () => {
       await ref.current.submit().catch(err => {
-        err.should.equal('foo!')
-        spy.should.not.have.been.called()
+        expect(err).toBe('foo!')
+        expect(spy).not.have.been.called()
       })
-    })
+    });
   })
 
   it('return hash of errors from a assertSingle error', () => {
-    Form.toErrors(new yup.ValidationError('hello!', {}, 'path')).should.to.eql({
+    expect(Form.toErrors(new yup.ValidationError('hello!', {}, 'path'))).toEqual({
       path: [
         {
           message: 'hello!',
@@ -361,12 +360,12 @@ describe('Form', () => {
   })
 
   it('return hash of errors from aggregate error', () => {
-    Form.toErrors(
+    expect(Form.toErrors(
       new yup.ValidationError([
         new yup.ValidationError('foo', null, 'bar'),
         new yup.ValidationError('bar', null, 'foo'),
       ]),
-    ).should.to.eql({
+    )).toEqual({
       foo: [{ message: 'bar', values: undefined, type: undefined }],
       bar: [{ message: 'foo', values: undefined, type: undefined }],
     })
@@ -387,7 +386,7 @@ describe('Form', () => {
 
     it('remove errors for branches', async () => {
       let spy = sinon.spy(errors => {
-        errors.should.not.have.key('name.first')
+        expect(errors).not.have.key('name.first')
       })
 
       await act(() => {
@@ -420,8 +419,8 @@ describe('Form', () => {
       })
         .collect(['name', 'name.meta', 'name.first'])
         .then(() => {
-          paths.should.eql(['name'])
-        })
+          expect(paths).toEqual(['name'])
+        });
     })
 
     it('should remove paths', () => {
@@ -435,10 +434,10 @@ describe('Form', () => {
       return errorManager(() => {})
         .collect('name', errors)
         .then(errors => {
-          errors.should.eql({
+          expect(errors).toEqual({
             id: ['invalid'],
           })
-        })
+        });
     })
 
     it('should return same object when unchanged', () => {
@@ -452,8 +451,8 @@ describe('Form', () => {
       return errorManager(() => {})
         .collect('foo', errors)
         .then(newErrors => {
-          errors.should.equal(newErrors)
-        })
+          expect(errors).toBe(newErrors)
+        });
     })
   })
 })

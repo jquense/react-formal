@@ -3,31 +3,31 @@ var paths = require('../src/utils/paths')
 describe('PATH utils', ()=>{
 
   it('should clean part', ()=>{
-    paths.clean("'hi'").should.equal('hi')
-    paths.clean('hi').should.equal('hi')
-    paths.clean('"hi"').should.equal('hi')
-    paths.clean('hi').should.equal('hi')
+    expect(paths.clean("'hi'")).toBe('hi')
+    expect(paths.clean('hi')).toBe('hi')
+    expect(paths.clean('"hi"')).toBe('hi')
+    expect(paths.clean('hi')).toBe('hi')
   })
 
   it('should check if paths contains', ()=>{
 
-    paths.inPath('a', 'a.b').should.equal(true)
-    paths.inPath('a', 'b.a').should.equal(false)
+    expect(paths.inPath('a', 'a.b')).toBe(true)
+    expect(paths.inPath('a', 'b.a')).toBe(false)
 
-    paths.inPath('a[0]', 'a[0].b').should.equal(true)
-    paths.inPath('a.b', 'a.c').should.equal(false)
-    paths.inPath('a.b.c', 'a.b.c.d').should.equal(true)
-    paths.inPath('a.b.c.d', 'a.b.c').should.equal(false)
+    expect(paths.inPath('a[0]', 'a[0].b')).toBe(true)
+    expect(paths.inPath('a.b', 'a.c')).toBe(false)
+    expect(paths.inPath('a.b.c', 'a.b.c.d')).toBe(true)
+    expect(paths.inPath('a.b.c.d', 'a.b.c')).toBe(false)
 
-    paths.inPath('a["b"].c', 'a.b["c"].d').should.equal(true)
+    expect(paths.inPath('a["b"].c', 'a.b["c"].d')).toBe(true)
   })
 
   it('should reduce array of paths', ()=>{
 
-    paths.reduce(['a', 'a.b']).should.eql(['a'])
-    paths.reduce(['a.b', 'a']).should.eql(['a'])
+    expect(paths.reduce(['a', 'a.b'])).toEqual(['a'])
+    expect(paths.reduce(['a.b', 'a'])).toEqual(['a'])
 
-    paths.reduce(['a.b.c', 'a.b', 'a.c']).should.eql(['a.b', 'a.c'])
+    expect(paths.reduce(['a.b.c', 'a.b', 'a.c'])).toEqual(['a.b', 'a.c'])
   })
 
   it('should trim paths', ()=>{
@@ -37,8 +37,8 @@ describe('PATH utils', ()=>{
       'id': ['invalid']
     }
 
-    paths.trim('name', errors).should.not.equal(errors)
-    paths.trim('name', errors).should.eql({
+    expect(paths.trim('name', errors)).not.toBe(errors)
+    expect(paths.trim('name', errors)).toEqual({
       'id': ['invalid']
     })
   })
@@ -49,6 +49,6 @@ describe('PATH utils', ()=>{
       'name.first': ['invalid'],
       'id': ['invalid']
     }
-    paths.trim('foo', errors).should.equal(errors)
+    expect(paths.trim('foo', errors)).toBe(errors)
   })
 })

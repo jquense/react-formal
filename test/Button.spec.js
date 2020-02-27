@@ -4,9 +4,8 @@ import Form from '../src'
 
 describe('Form Button', () => {
   it('should passthrough props', () => {
-    mount(<Form.Submit className="foo" />)
-      .find('button.foo')
-      .should.have.length(1)
+    expect(mount(<Form.Submit className="foo" />)
+      .find('button.foo')).toHaveLength(1)
   })
 
   it('should chain events', () => {
@@ -15,9 +14,9 @@ describe('Form Button', () => {
 
     mount(<Form.Submit onClick={spy} />).simulate('click')
 
-    spy.should.have.been.calledOnce()
+    expect(spy).have.been.calledOnce()
 
-    stub.should.have.been.calledOnce()
+    expect(stub).have.been.calledOnce()
     stub.restore()
   })
 })

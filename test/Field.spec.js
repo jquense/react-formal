@@ -28,14 +28,14 @@ describe('Field', () => {
   }
 
   it('should pass props to inner type', () => {
-    mount(
+    expect(mount(
       <Form schema={schema} defaultValue={{}}>
         <Form.Field name="name" as={TestInput} className="test" />
       </Form>,
     )
       .find(TestInput)
       .instance()
-      .props.className.should.include('test'); // test invalid-field
+      .props.className).toEqual(expect.arrayContaining(['test'])); // test invalid-field
   });
 
   it('should fall back to using schema types', () => {
@@ -108,7 +108,7 @@ describe('Field', () => {
       .assertSingle('input')
       .simulate('change', { target: { value: 'foo' } });
 
-    spy.should.have.been.calledWith({ name: 'foo' });
+    expect(spy).have.been.calledWith({ name: 'foo' });
   });
 
   it('should coerce value to number', () => {
@@ -125,13 +125,13 @@ describe('Field', () => {
       .find('input[type="number"]')
       .simulate('change', { target: { value: '3.56', type: 'number' } });
 
-    spy.should.have.been.calledWith({ age: 3.56 });
+    expect(spy).have.been.calledWith({ age: 3.56 });
 
     form
       .find('input[type="range"]')
       .simulate('change', { target: { value: '42', type: 'range' } });
 
-    spy.should.have.been.calledWith({ age: 42 });
+    expect(spy).have.been.calledWith({ age: 42 });
   });
 
   it('should update touched value', () => {
@@ -145,7 +145,7 @@ describe('Field', () => {
       .assertSingle('input')
       .simulate('change', 'foo');
 
-    spy.should.have.been.calledWith({ name: true }, ['name']);
+    expect(spy).have.been.calledWith({ name: true }, ['name']);
   });
 
   it('should update touched once per field', () => {
@@ -160,7 +160,7 @@ describe('Field', () => {
       .simulate('change', 'foo')
       .simulate('change', 'bar');
 
-    spy.callCount.should.equal(1);
+    expect(spy.callCount).toBe(1);
   });
 
   it('ensures values are never undefined', () => {
@@ -170,7 +170,7 @@ describe('Field', () => {
       </Form>,
     );
 
-    expect(wrapper.assertSingle('input').prop('value')).to.equal('');
+    expect(wrapper.assertSingle('input').prop('value')).toBe('');
   });
 
   it('maps value from string', () => {
@@ -183,7 +183,7 @@ describe('Field', () => {
       .assertSingle('input')
       .simulate('change', { value: 'john' });
 
-    spy.should.have.been.calledOnce.and.calledWith({ name: 'john' });
+    expect(spy).have.been.calledOnce.and.calledWith({ name: 'john' });
   });
 
   it('maps value from function', () => {
@@ -196,7 +196,7 @@ describe('Field', () => {
       .assertSingle('input')
       .simulate('change', { value: 'john' });
 
-    spy.should.have.been.calledOnce.and.calledWith({ name: 'john' });
+    expect(spy).have.been.calledOnce.and.calledWith({ name: 'john' });
   });
 
   it('gets value from accessor', () => {
@@ -214,11 +214,11 @@ describe('Field', () => {
       </Form>,
     );
 
-    spy.should.have.been.and.calledWith({});
+    expect(spy).have.been.and.calledWith({});
 
     wrapper.assertSingle('input').simulate('change', { value: 'john' });
 
-    spy.should.have.been.and.calledWith({ other: 'john' });
+    expect(spy).have.been.and.calledWith({ other: 'john' });
   });
 
   it('maps values from hash', () => {
@@ -238,7 +238,7 @@ describe('Field', () => {
       .assertSingle('input')
       .simulate('change', { value: 'john', text: 'hi' });
 
-    spy.should.have.been.calledOnce.and.calledWith({
+    expect(spy).have.been.calledOnce.and.calledWith({
       name: 'john',
       text: 'hi',
     });
@@ -252,8 +252,8 @@ describe('Field', () => {
           name="name"
           as={TestInput}
           mapFromValue={(...args) => {
-            args.length.should.equal(2);
-            args[1].should.equal('hi');
+            expect(args.length).toBe(2);
+            expect(args[1]).toBe('hi');
             done();
           }}
         />
@@ -276,7 +276,7 @@ describe('Field', () => {
         />
       </Form>,
     );
-    (inst instanceof TestInput).should.be.true();
+    expect(inst instanceof TestInput).toBe(true);
   });
 
   it('should work with conditional schema', () => {
@@ -300,12 +300,12 @@ describe('Field', () => {
         // //first pass isn't correct since form hasn't propagated it's state yet.
         // if (!meta.invalid) return null
 
-        meta.invalid.should.equals(true);
-        meta.valid.should.equals(false);
+        expect(meta.invalid).toBe(true);
+        expect(meta.valid).toBe(false);
 
-        meta.touched.should.equals(true);
+        expect(meta.touched).toBe(true);
 
-        meta.errors.should.eqls({
+        expect(meta.errors).eqls({
           name: 'foo',
         });
         done();
@@ -326,9 +326,9 @@ describe('Field', () => {
 
     it('should pass meta to field with noValidate', done => {
       let Input = ({ meta }) => {
-        meta.invalid.should.equals(true);
-        meta.valid.should.equals(false);
-        meta.errors.should.eqls({
+        expect(meta.invalid).toBe(true);
+        expect(meta.valid).toBe(false);
+        expect(meta.errors).eqls({
           name: 'foo',
         });
         done();
@@ -360,7 +360,7 @@ describe('Field', () => {
           .meta.onError({});
       });
 
-      errorSpy.should.have.been.calledOnce.and.calledWith({ bar: 'baz' });
+      expect(errorSpy).have.been.calledOnce.and.calledWith({ bar: 'baz' });
     });
 
     it('should field onError should update field errors', () => {
@@ -381,7 +381,7 @@ describe('Field', () => {
           .meta.onError({ 'name': 'foo', 'name.first': 'baz' });
       });
 
-      errorSpy.should.have.been.calledOnce.and.calledWith({
+      expect(errorSpy).have.been.calledOnce.and.calledWith({
         'name': 'foo',
         'name.first': 'baz',
         'bar': 'baz',
@@ -413,15 +413,15 @@ describe('Field', () => {
       });
       setTimeout(() => {
         act(() => {
-          spy.callCount.should.equal(1);
+          expect(spy.callCount).toBe(1);
           // field is invalid now: `onChange`
           wrapper.find('input').simulate('blur', { target: { value: '4' } });
 
-          spy.callCount.should.equal(1);
+          expect(spy.callCount).toBe(1);
 
           wrapper.find('input').simulate('change', { target: { value: '6' } });
 
-          spy.callCount.should.equal(2);
+          expect(spy.callCount).toBe(2);
         });
         done();
       }, 100);
@@ -446,7 +446,7 @@ describe('Field', () => {
           .meta.onError({ 'name.first': 'baz' });
       });
 
-      errorSpy.should.have.been.calledOnce.and.calledWith({
+      expect(errorSpy).have.been.calledOnce.and.calledWith({
         'name.first': 'baz',
         'bar': 'baz',
       });
@@ -497,26 +497,24 @@ describe('Field', () => {
 
   xdescribe('form fields', () => {
     it('should inject onError', () => {
-      mount(
+      expect(mount(
         <Form schema={schema} defaultValue={{}}>
           <Form.Field name="name" />
         </Form>,
       )
         .find('input')
-        .prop('onError')
-        .should.be.a('function');
+        .prop('onError')).toBeInstanceOf(Function);
     });
 
     // skip for now since name is still required.
     xit('should not inject onError for nameless fields', () => {
-      mount(
+      expect(mount(
         <Form schema={schema} defaultValue={{}}>
           <Form.Field />
         </Form>,
       )
         .find('input')
-        .prop('onError')
-        .should.be.a('function');
+        .prop('onError')).toBeInstanceOf(Function);
     });
 
     it('should propagate onError to form', () => {
@@ -530,7 +528,7 @@ describe('Field', () => {
         .find('input')
         .prop('onError')({ foo: 'bar' });
 
-      spy.should.have.been.calledOnce.and.calledWith({
+      expect(spy).have.been.calledOnce.and.calledWith({
         'name.foo': 'bar',
       });
     });
@@ -544,9 +542,9 @@ describe('Field', () => {
         .find('input')
         .prop('onError');
 
-      onError({ foo: 'bar' }).should.eql({ 'name.foo': 'bar' });
-      onError({ '[1].foo': 'bar' }).should.eql({ 'name[1].foo': 'bar' });
-      onError({ '[1].baz.foo': 'bar' }).should.eql({
+      expect(onError({ foo: 'bar' })).toEqual({ 'name.foo': 'bar' });
+      expect(onError({ '[1].foo': 'bar' })).toEqual({ 'name[1].foo': 'bar' });
+      expect(onError({ '[1].baz.foo': 'bar' })).toEqual({
         'name[1].baz.foo': 'bar',
       });
     });

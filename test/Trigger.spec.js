@@ -23,8 +23,8 @@ describe('Triggers', () => {
 
     wrapper.find('input').simulate('change')
 
-    spy.should.have.been.calledOnce()
-    spy.args[0][0].fields.should.eql(['fieldA'])
+    expect(spy).have.been.calledOnce()
+    expect(spy.args[0][0].fields).toEqual(['fieldA'])
   })
 
   it('should simulate event once with multiple names', () => {
@@ -39,13 +39,13 @@ describe('Triggers', () => {
 
     wrapper.find('button').simulate('click')
 
-    spy.should.have.been.calledOnce()
-    spy.args[0][0].fields.should.eql(['fieldA', 'fieldB'])
+    expect(spy).have.been.calledOnce()
+    expect(spy.args[0][0].fields).toEqual(['fieldA', 'fieldB'])
   })
 
   it('should simulate for `triggers`', async () => {
     const spy = sinon.spy(({ fields }) => {
-      fields.should.eql(['fieldA'])
+      expect(fields).toEqual(['fieldA'])
     })
 
     let wrapper = mount(
@@ -115,19 +115,19 @@ describe('Triggers', () => {
 
     let trigger = wrapper.find('span')
 
-    trigger.text().should.equal('submitting: false')
+    expect(trigger.text()).toBe('submitting: false')
 
     await act(async () => {
       let promise = ref.current.submit()
 
       await wait()
 
-      trigger.text().should.equal('submitting: true')
+      expect(trigger.text()).toBe('submitting: true')
 
       return promise
     })
 
-    trigger.text().should.equal('submitting: false')
+    expect(trigger.text()).toBe('submitting: false')
   })
 
   it('Submit should handle submitting state', async () => {
@@ -156,18 +156,18 @@ describe('Triggers', () => {
 
     let trigger = wrapper.find('span')
 
-    trigger.text().should.equal('false: 0')
+    expect(trigger.text()).toBe('false: 0')
 
     await act(async () => {
       let promise = ref.current.submit()
 
       await wait()
 
-      trigger.text().should.equal('true: 0')
+      expect(trigger.text()).toBe('true: 0')
 
       return promise
     })
 
-    trigger.text().should.equal('false: 1')
+    expect(trigger.text()).toBe('false: 1')
   })
 })

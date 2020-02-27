@@ -8,7 +8,7 @@ global.sinon = require('sinon')
 global.chai.use(require('dirty-chai'))
 global.chai.use(require('sinon-chai'))
 global.chai.use(require('chai-as-promised'))
-global.chai.should()
+expect(global.chai)()
 
 global.expect = global.chai.expect
 
@@ -17,9 +17,9 @@ configure({ adapter: new Adapter() })
 function assertLength(length) {
   return function $assertLength(selector) {
     let result = this.find(selector)
-    result.should.have.length(length)
+    expect(result).toHaveLength(length)
     return result
-  }
+  };
 }
 ReactWrapper.prototype.print = function print() {
   console.log(this.debug())

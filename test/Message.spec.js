@@ -6,7 +6,7 @@ import Form from '../src'
 describe('Message', () => {
   it('should allow empty for', () => {
     let renderSpy = sinon.spy(msgs => {
-      msgs.should.eql(['hi', 'good day'])
+      expect(msgs).toEqual(['hi', 'good day'])
       return null
     })
     mount(
@@ -17,12 +17,12 @@ describe('Message', () => {
       </Form>
     )
 
-    renderSpy.should.have.been.called()
+    expect(renderSpy).have.been.called()
   })
 
   it('should allow group summaries', done => {
     let renderSpy = sinon.spy(msgs => {
-      msgs.should.eql(['foo', 'hi', 'good day'])
+      expect(msgs).toEqual(['foo', 'hi', 'good day'])
       return null
     })
 
@@ -44,7 +44,7 @@ describe('Message', () => {
     )
 
     setTimeout(() => {
-      renderSpy.should.have.been.called()
+      expect(renderSpy).have.been.called()
       done()
     }, 10)
   })

@@ -32,9 +32,9 @@ describe('NestedForm', () => {
       .first()
       .simulate('change', { target: { value: 'Jill' } })
 
-    change.should.have.been.calledOnce()
+    expect(change).have.been.calledOnce()
 
-    value.should.eql({
+    expect(value).toEqual({
       name: {
         first: 'Jill',
         last: '',
@@ -48,13 +48,13 @@ describe('NestedForm', () => {
       .last()
       .simulate('change', { target: { value: 'Smith' } })
 
-    value.should.eql({
+    expect(value).toEqual({
       name: {
         first: 'Jill',
         last: 'Smith',
       },
     })
 
-    value.should.not.equal(last)
+    expect(value).not.toBe(last)
   })
 })
