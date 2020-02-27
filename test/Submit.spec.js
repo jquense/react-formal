@@ -6,8 +6,27 @@ import Form, { useFormSubmit } from '../src';
 
 const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
 
-describe('Triggers', () => {
+describe('Submit', () => {
   const schema = yup.object({ fieldA: yup.mixed(), fieldB: yup.mixed() });
+
+  it('should passthrough props', () => {
+    expect(
+      mount(<Form.Submit className="foo" />).find('button.foo'),
+    ).toHaveLength(1);
+  });
+
+  it('should warn when submit is used outside of Form', () => {
+    let stub = jest.spyOn(console, 'error').mockImplementation(() => {});
+    let spy = jest.fn();
+
+    mount(<Form.Submit onClick={spy} />).simulate('click');
+
+    expect(spy).toHaveBeenCalledTimes(1);
+
+    expect(stub).toHaveBeenCalledTimes(1);
+
+    stub.mockRestore();
+  });
 
   it('should simulate event for name', () => {
     let spy = jest.fn(),

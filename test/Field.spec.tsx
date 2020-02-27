@@ -16,7 +16,10 @@ describe('Field', () => {
     }),
   });
 
-  class TestInput extends React.Component {
+  class TestInput extends React.Component<{
+    value?: string;
+    onChange: (evt: React.ChangeEvent, field: string) => void;
+  }> {
     render() {
       return (
         <input
@@ -26,6 +29,12 @@ describe('Field', () => {
       );
     }
   }
+
+  // it('test types', () => {
+  //   const MyInput = ({ foo: _ }: { foo: number }) => <span />;
+
+  //   <Form.Field name="f" as={MyInput} foo={2}  />;
+  // });
 
   it('should pass props to inner type', () => {
     expect(
@@ -191,7 +200,11 @@ describe('Field', () => {
     let spy = jest.fn();
     mount(
       <Form schema={schema} defaultValue={{}} onChange={spy}>
-        <Form.Field name="name" as={TestInput} mapFromValue={e => e.value} />
+        <Form.Field
+          name="name"
+          as={TestInput}
+          mapFromValue={(e: any) => e.value}
+        />
       </Form>,
     )
       .assertSingle('input')
@@ -209,7 +222,7 @@ describe('Field', () => {
           as={TestInput}
           mapToValue={spy}
           mapFromValue={{
-            other: e => e.value,
+            other: (e: any) => e.value,
           }}
         />
       </Form>,
@@ -230,7 +243,7 @@ describe('Field', () => {
           name="name"
           as={TestInput}
           mapFromValue={{
-            name: e => e.value,
+            name: (e: any) => e.value,
             text: 'text',
           }}
         />
@@ -521,7 +534,7 @@ describe('Field', () => {
       expect(
         mount(
           <Form schema={schema} defaultValue={{}}>
-            <Form.Field />
+            {/* <Form.Field /> */}
           </Form>,
         )
           .find('input')

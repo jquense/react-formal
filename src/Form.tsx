@@ -25,7 +25,7 @@ import {
   FormSubmitsContext,
   FormTouchedContext,
 } from './Contexts';
-import createErrorManager from './errorManager';
+import createErrorManager, { isValidationError } from './errorManager';
 import { BeforeSubmitData, Errors, Touched, ValidateData } from './types';
 import * as ErrorUtils from './utils/ErrorUtils';
 import errToJSON from './utils/errToJSON';
@@ -42,7 +42,7 @@ export interface FormProps<
 
   schema?: TSchema;
   value?: TValue;
-  defaultValue?: TValue;
+  defaultValue?: Partial<TValue>;
   errors?: Errors;
   defaultErrors?: Errors;
 
@@ -81,9 +81,6 @@ let done = (e: Error) =>
     throw e;
   });
 
-let isValidationError = (err: any): err is Yup.ValidationError =>
-  err && err.name === 'ValidationError';
-
 const formGetter = (path: string, model: any) =>
   path ? expr.getter(path, true)(model || {}) : model;
 
@@ -101,7 +98,10 @@ function useErrorContext(errors?: Errors) {
   return ref.current;
 }
 
-function validatePath(path: string, { value, schema, ...rest }): Promise<void> {
+function validatePath(
+  path: string,
+  { value, schema, ...rest },
+): Promise<Error | void> {
   return schema
     .validateAt(path, value, rest)
     .then(() => null)
@@ -278,7 +278,7 @@ const _Form: Form = React.forwardRef(
     const handleValidationRequest = (
       fields: string | string[],
       type: string,
-      args: any[],
+      args?: any[],
     ) => {
       if (noValidate) return;
 
@@ -344,7 +344,13 @@ const _Form: Form = React.forwardRef(
       if (isSubmittingRef.current) {
         return Promise.resolve(false);
       }
-      notify(onBeforeSubmit, [{ value: value!, errors }]);
+
+      notify(onBeforeSubmit, [
+        {
+          value: schema ? schema.cast(value!) : (value as any),
+          errors,
+        },
+      ]);
 
       setSubmitting(true);
 

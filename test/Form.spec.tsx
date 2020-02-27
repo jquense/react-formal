@@ -6,13 +6,14 @@ import * as yup from 'yup';
 import Form from '../src';
 import { FormActionsContext } from '../src/Contexts';
 import errorManager from '../src/errorManager';
+import { FormHandle } from '../src/Form';
 
-const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
+const wait = (ms = 0) => new Promise(resolve => setTimeout(resolve, ms));
 
 let LeakySubmit = () => (
   <FormActionsContext.Consumer>
-    {({ onSubmit }) => (
-      <button type="submit" onClick={onSubmit}>
+    {ctx => (
+      <button type="submit" onClick={ctx!.onSubmit}>
         Submit
       </button>
     )}
@@ -109,8 +110,8 @@ describe('Form', () => {
             name="name.first"
             className="field"
             mapFromValue={{
-              'name.first': v => v.first,
-              'name.last': v => v.last,
+              'name.first': (v: any) => v.first,
+              'name.last': (v: any) => v.last,
             }}
           />
         </Form>,
@@ -284,7 +285,7 @@ describe('Form', () => {
   });
 
   it('does not submit while already submitting', async () => {
-    let ref = React.createRef();
+    let ref = React.createRef<FormHandle>();
     let onSubmit = jest.fn();
     let submitForm = jest.fn(() => new Promise(r => setTimeout(r, 5)));
 
@@ -309,7 +310,7 @@ describe('Form', () => {
         .simulate('click')
         .simulate('click');
 
-      await ref.current.submit();
+      await ref.current!.submit();
     });
 
     expect(onSubmit).toHaveBeenCalledTimes(1);
@@ -317,7 +318,7 @@ describe('Form', () => {
   });
 
   it('should only report ValidationErrors', () => {
-    let ref = React.createRef();
+    let ref = React.createRef<FormHandle>();
 
     let spy = jest.fn();
     mount(
@@ -338,7 +339,7 @@ describe('Form', () => {
     );
 
     return act(async () => {
-      await ref.current.submit().catch(err => {
+      await ref.current!.submit().catch(err => {
         expect(err).toBe('foo!');
         expect(spy).not.toHaveBeenCalled();
       });
@@ -362,6 +363,7 @@ describe('Form', () => {
   it('return hash of errors from aggregate error', () => {
     expect(
       Form.toErrors(
+        // @ts-ignore
         new yup.ValidationError([
           new yup.ValidationError('foo', null, 'bar'),
           new yup.ValidationError('bar', null, 'foo'),

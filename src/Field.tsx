@@ -10,7 +10,6 @@ import useField, {
 } from './useField';
 import { useMergedHandlers } from './utils/useEventHandlers';
 
-const noop = () => {};
 /**
  * When Field renders an Element, it injects a few props.
  * In the case none DOM elements it also injects `meta`
@@ -20,12 +19,7 @@ export type InjectedFieldProps<TValue = any> = RenderFieldProps<TValue> & {
   meta: FieldMeta;
 };
 
-export type InputProps =
-  | JSX.IntrinsicElements['input']
-  | JSX.IntrinsicElements['select']
-  | JSX.IntrinsicElements['textarea'];
-
-export type FieldProps = InputProps & {
+export type FieldProps<TAs extends React.ElementType = any> = {
   /**
    * The Component Input the form should render. You can sepcify a native element such as 'textbox' or 'select'
    * or provide a Component type class directly. When no type is provided the Field will attempt determine
@@ -33,6 +27,8 @@ export type FieldProps = InputProps & {
    * will render a `type='number'` input by default.
    *
    * ```jsx
+   * import Form from 'react-formal';
+   *
    * <Form noValidate schema={modelSchema}>
    *   Use the schema to determine type
    *   <Form.Field
@@ -51,7 +47,8 @@ export type FieldProps = InputProps & {
    *   (need native 'datetime' support to see it)
    *   <Form.Field
    *     name='dateOfBirth'
-   *     as={MyDateInput}/>
+   *     as={MyDateInput}
+   *   />
    *
    * </Form>
    * ```
@@ -59,7 +56,7 @@ export type FieldProps = InputProps & {
    * Custom Inputs should comply with the basic input api contract: set a value via a `value` prop and
    * broadcast changes to that value via an `onChange` handler.
    */
-  as?: React.ElementType;
+  as?: TAs;
 
   /**
    * The Field name, which should be path corresponding to a specific form `value` path.
@@ -96,7 +93,7 @@ export type FieldProps = InputProps & {
    * ```js static
    * <Form.Field
    *   name='name'
-   *   mapFromValue={fieldValue => fieldValue.first + ' ' + fieldValue.last}
+   *   mapFromValue={fieldValue => `${fieldValue.first} {fieldValue.last}`}
    * />
    * ```
    *
@@ -104,29 +101,35 @@ export type FieldProps = InputProps & {
    * to fields in the field value using a string field name, or a function accessor.
    *
    * ```js
+   * import Form from 'react-formal';
+   *
    * <Form
    *   schema={modelSchema}
    *   defaultValue={modelSchema.default()}
    * >
-   *   <label htmlFor="ex-mapToValue-firstName">Name</label>
-   *   <Form.Field
-   *     name='name.first'
-   *     placeholder='First name'
-   *     id="ex-mapToValue-firstName"
-   *   />
+   *   <label>
+   *     Name
+   *     <Form.Field
+   *       name='name.first'
+   *       placeholder='First name'
+   *     />
+   *   </label>
    *
-   *   <label htmlFor="ex-mapToValue-dob">Date of Birth</label>
-   *   <Form.Field
-   *     name='dateOfBirth'
-   *     id="ex-mapToValue-dob"
-   *     mapFromValue={{
-   *       'dateOfBirth': date => date,
-   *       'age': date =>
-   *         (new Date()).getFullYear() - date.getFullYear()
-   *   }}/>
+   *   <label>
+   *     Date of Birth
+   *     <Form.Field
+   *       name='dateOfBirth'
+   *       mapFromValue={{
+   *          'dateOfBirth': date => date,
+   *          'age': date =>
+   *            (new Date()).getFullYear() - date.getFullYear()
+   *      }}/>
+   *   </label>
    *
-   *   <label htmlFor="ex-mapToValue-age">Age</label>
-   *   <Form.Field name='age' id="ex-mapToValue-age"/>
+   *   <label>
+   *     Age
+   *     <Form.Field name='age' />
+   *   </label>
    *
    *   <Form.Submit type='submit'>Submit</Form.Submit>
    * </Form>
@@ -217,7 +220,7 @@ export type FieldProps = InputProps & {
     | ((
         fieldProps: RenderFieldProps & {
           type: string;
-          ref?: React.RefAttributes<any>;
+          ref?: React.Ref<any>;
         },
         meta: FieldMeta,
       ) => React.ReactNode);
@@ -237,19 +240,29 @@ export type FieldProps = InputProps & {
 
   /** An HTML input type attribute */
   type?: string;
+
+  onChange?: (...args: any[]) => any;
+  onBlur?: (...args: any[]) => any;
 };
 
-declare interface Field {
-  <TAs extends React.ElementType = any>(
-    props: FieldProps &
-      Omit<React.ComponentPropsWithoutRef<TAs>, keyof FieldProps>,
+export declare interface Field {
+  <TAs extends React.ElementType = 'input'>(
+    props: FieldProps<TAs> &
+      React.RefAttributes<any> &
+      Omit<
+        React.ComponentPropsWithoutRef<TAs>,
+        keyof FieldProps | 'meta' | 'value' | 'checked' | 'onChange' | 'onBlur'
+      >,
   ): React.ReactElement | null;
 
   displayName?: string;
 
   propTypes?: any;
 }
-const Field: Field = React.forwardRef((props: FieldProps, ref) => {
+/**
+ * @alias Field
+ */
+const _Field: Field = React.forwardRef((props: FieldProps, ref) => {
   const {
     children,
     type,
@@ -305,10 +318,9 @@ const Field: Field = React.forwardRef((props: FieldProps, ref) => {
   );
 });
 
-Field.displayName = 'Field';
+_Field.displayName = 'Field';
 
-// @ts-ignore
-Field.propTypes = {
+_Field.propTypes = {
   name: PropTypes.string.isRequired,
   as: PropTypes.oneOfType([elementType, PropTypes.string]),
   events: PropTypes.oneOfType([
@@ -333,4 +345,4 @@ Field.propTypes = {
   injectMeta: PropTypes.bool,
 };
 
-export default Field;
+export default _Field;
