@@ -1,11 +1,15 @@
-import { css } from 'astroturf'
-import React from 'react'
-import { LinkedHeading, MDXProvider, Pre } from '@docpocalypse/gatsby-theme'
-import PropDescription from '@docpocalypse/gatsby-theme/src/components/PropDescription.tsx'
-import renderProps from '@docpocalypse/props-table'
+import { css } from 'astroturf';
+import React, { useMemo } from 'react';
+import {
+  LinkedHeading,
+  MDXProvider,
+  PropDescription,
+  Pre,
+} from '@docpocalypse/gatsby-theme';
+import renderProps from '@docpocalypse/props-table';
 // import Pre from '../../../components/Pre'
 
-const propTypes = {}
+const propTypes = {};
 
 const tokenMap = css`
   .union {
@@ -13,54 +17,63 @@ const tokenMap = css`
       content: ' | ';
     }
   }
-`
-
-const components = {
-  pre: Pre,
-}
+`;
 
 function PropsTable({ metadata }) {
-  const props = renderProps(metadata.props || [], { tokenMap })
+  const { name } = metadata;
+  const props = renderProps(metadata.props || [], { tokenMap });
+  const components = useMemo(
+    () => ({
+      pre: props => <Pre {...props} name={name} />,
+    }),
+    [name],
+  );
 
   return (
     <>
       {props.map(prop => (
         <React.Fragment key={prop.name}>
-          <LinkedHeading id={prop.name} h={3}>
-            <div className="inline-flex items-center">
-              <span className="font-mono mr-4">{prop.name}</span>
+          <LinkedHeading
+            h={3}
+            id={prop.name}
+            css="margin-top: theme(spacing.8) !important"
+          >
+            <div className="inline-flex tracking-wider items-center">
+              <span>{prop.name}</span>
               {prop.propData.required && (
-                <strong className="text-sm rounded bg-primary text-white px-3 leading-tight py-1">
+                <strong className="rounded bg-accent text-white text-xs font-default ml-2 px-2">
                   required
                 </strong>
               )}
             </div>
           </LinkedHeading>
 
-          <div className="-mt-2 mb-3">
-            <div>
-              <strong>type:</strong>{' '}
-              <span className="font-mono">{prop.type}</span>
-            </div>
-            {prop.defaultValue && (
-              <>
-                <strong>default</strong>: <code>{prop.defaultValue}</code>
-              </>
-            )}
-          </div>
-
           <MDXProvider components={components}>
             <PropDescription
-              mdx={prop.propData.description.childMdx}
+              mdx={prop.propData.description.mdx}
               html={prop.description}
             />
           </MDXProvider>
+          <div className="mb-3 text-sm">
+            <div>
+              <strong>type:</strong>
+              <span className="ml-1 font-mono text-info-dark">{prop.type}</span>
+            </div>
+            {prop.defaultValue && (
+              <div className="mt-1">
+                <strong>default:</strong>
+                <code className="ml-1 text-info-dark font-mono">
+                  {prop.defaultValue}
+                </code>
+              </div>
+            )}
+          </div>
         </React.Fragment>
       ))}
     </>
-  )
+  );
 }
 
-PropsTable.propTypes = propTypes
+PropsTable.propTypes = propTypes;
 
-export default PropsTable
+export default PropsTable;

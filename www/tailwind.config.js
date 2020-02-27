@@ -102,22 +102,22 @@ module.exports = {
       '@apply my-6': true,
 
       '& .preview': {
-        '@apply p-6 rounded-t-lg bg-gray-200': '',
+        '@apply py-6 px-10 rounded-t-lg bg-gray-200': '',
 
         'borderBottom': 'none',
 
+        '& fieldset': {
+          '@apply mb-4': '',
+        },
+
         '& input, & select': {
-          '@apply rounded bg-gray-50 leading-normal outline-none w-full mb-6 py-1 px-3 block border border-gray-50 text-primary': true,
+          '@apply rounded bg-gray-50 leading-normal outline-none w-full mb-2 py-1 px-3 block border border-gray-50 text-primary': true,
           'height': '40px',
           'transition':
             'border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out',
 
           '&:focus': {
             '@apply shadow-outline': '',
-          },
-
-          '& + :global(.validation-error)': {
-            '@apply -mt-6 text-danger block text-sm': '',
           },
 
           '&:global(.invalid-field)': {
@@ -127,11 +127,25 @@ module.exports = {
             '@apply text-gray-600': '',
           },
         },
+
         '& label': {
-          '@apply mb-1 text-gray-800 block': '',
+          '@apply text-gray-800 block': '',
+
+          '& + :global(.error)': {
+            '@apply text-danger -mt-2 block text-sm py-1': '',
+          },
         },
+
+        '& label > input, & label > select': {
+          '@apply mt-1': '',
+        },
+
+        '& pre': {
+          '@apply pt-3': '',
+        },
+
         '& button': {
-          '@apply border border-cta text-cta rounded px-4 mt-4 appearance-none text-center whitespace-no-wrap outline-none': true,
+          '@apply border border-cta text-cta rounded px-8 mt-4 appearance-none text-center whitespace-no-wrap outline-none': true,
           'height': '40px',
           'transition': `
             color 0.15s ease-in-out,
@@ -150,10 +164,26 @@ module.exports = {
           },
         },
       },
+      '& .info': {
+        color: 'white',
+      },
+
+      '& .error': {
+        '@apply p-6 pt-0 rounded-b-lg font-mono text-sm text-danger': true,
+        'backgroundColor': '#282c34',
+      },
+
       '& .editor': {
-        '@apply p-6 rounded-b-lg font-mono text-sm': true,
+        '@apply p-6 rounded-lg font-mono text-sm': true,
 
         'backgroundColor': '#282c34',
+
+        '&:not(:first-child)': {
+          '@apply rounded-t-none': true,
+        },
+        '&:not(:last-child)': {
+          '@apply rounded-b-none': true,
+        },
       },
     },
   },

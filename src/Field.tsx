@@ -1,25 +1,30 @@
-import PropTypes from 'prop-types'
-import elementType from 'prop-types-extra/lib/elementType'
-import React from 'react'
+import PropTypes from 'prop-types';
+import elementType from 'prop-types-extra/lib/elementType';
+import React from 'react';
 import useField, {
   FieldMeta,
   MapFromValue,
   MapToValue,
   RenderFieldProps,
   TriggerEvents,
-} from './useField'
-import { useMergedHandlers } from './utils/useEventHandlers'
+} from './useField';
+import { useMergedHandlers } from './utils/useEventHandlers';
 
 /**
  * When Field renders an Element, it injects a few props.
  * In the case none DOM elements it also injects `meta`
  */
 export type InjectedFieldProps<TValue = any> = RenderFieldProps<TValue> & {
-  type: string
-  meta: FieldMeta
-}
+  type: string;
+  meta: FieldMeta;
+};
 
-export interface FieldProps extends React.HTMLAttributes<HTMLInputElement> {
+export type InputProps =
+  | JSX.IntrinsicElements['input']
+  | JSX.IntrinsicElements['select']
+  | JSX.IntrinsicElements['textarea'];
+
+export type FieldProps = InputProps & {
   /**
    * The Component Input the form should render. You can sepcify a native element such as 'textbox' or 'select'
    * or provide a Component type class directly. When no type is provided the Field will attempt determine
@@ -53,7 +58,7 @@ export interface FieldProps extends React.HTMLAttributes<HTMLInputElement> {
    * Custom Inputs should comply with the basic input api contract: set a value via a `value` prop and
    * broadcast changes to that value via an `onChange` handler.
    */
-  as?: React.ElementType
+  as?: React.ElementType;
 
   /**
    * The Field name, which should be path corresponding to a specific form `value` path.
@@ -73,14 +78,14 @@ export interface FieldProps extends React.HTMLAttributes<HTMLInputElement> {
    *
    * ```
    */
-  name: string
+  name: string;
 
   /**
    * Event name or array of event names that the Field should trigger a validation.
    * You can also specify a function that receives the Field `meta` object and returns an array of events
    * in order to change validation strategies based on validity.
    */
-  events?: TriggerEvents
+  events?: TriggerEvents;
 
   /**
    * Customize how the Field value maps to the overall Form `value`.
@@ -126,7 +131,7 @@ export interface FieldProps extends React.HTMLAttributes<HTMLInputElement> {
    * </Form>
    * ```
    */
-  mapFromValue?: MapFromValue
+  mapFromValue?: MapFromValue;
 
   /**
    * Map the Form value to the Field value. By default
@@ -141,12 +146,12 @@ export interface FieldProps extends React.HTMLAttributes<HTMLInputElement> {
    * />
    * ```
    */
-  mapToValue?: MapToValue
+  mapToValue?: MapToValue;
 
   /**
    * The css class added to the Field Input when it fails validation
    */
-  errorClass?: string
+  errorClass?: string;
 
   /**
    * Tells the Field to trigger validation for specific paths.
@@ -161,7 +166,7 @@ export interface FieldProps extends React.HTMLAttributes<HTMLInputElement> {
    * <Form.Field name='name' validates={['name', 'surname']} />
    * ```
    */
-  validates?: string | string[]
+  validates?: string | string[];
 
   /**
    * Indicates whether child fields of the named field
@@ -175,12 +180,12 @@ export interface FieldProps extends React.HTMLAttributes<HTMLInputElement> {
    *
    * Are all considered "part" of a field named `'names'` by default.
    */
-  exclusive?: boolean
+  exclusive?: boolean;
 
   /**
    * Disables validation for the Field.
    */
-  noValidate?: boolean
+  noValidate?: boolean;
 
   /**
    * When children is the traditional react element or nodes, they are
@@ -208,32 +213,45 @@ export interface FieldProps extends React.HTMLAttributes<HTMLInputElement> {
    */
   children?:
     | React.ReactNode
-    | ((fieldProps: RenderFieldProps, meta: FieldMeta) => React.ReactNode)
+    | ((
+        fieldProps: RenderFieldProps & {
+          type: string;
+          ref?: React.RefAttributes<any>;
+        },
+        meta: FieldMeta,
+      ) => React.ReactNode);
 
   /**
    * A value to pass to checkboxs/radios/boolean inputs
    */
-  htmlValue?: any
+  htmlValue?: any;
 
-  className?: string
+  className?: string;
 
   /**
    * Instruct the field to not inject the `meta` prop into the input,
    * defaults to `true` when `as` is a non DOM component
    */
-  injectMeta?: boolean
+  injectMeta?: boolean;
 
   /** An HTML input type attribute */
-  type?: string
+  type?: string;
+};
 
-  asProps?: any
+declare interface Field {
+  <TAs extends React.ElementType = any>(
+    props: FieldProps &
+      Omit<React.ComponentPropsWithoutRef<TAs>, keyof FieldProps>,
+  ): React.ReactElement | null;
+
+  displayName?: string;
+
+  propTypes?: any;
 }
-
-const Field = React.forwardRef((props: FieldProps, ref) => {
+const Field: Field = React.forwardRef((props: FieldProps, ref) => {
   const {
     children,
     type,
-    asProps,
     as: Input = 'input',
     injectMeta = typeof Input !== 'string',
     name,
@@ -242,12 +260,12 @@ const Field = React.forwardRef((props: FieldProps, ref) => {
     validates,
     events,
     htmlValue,
-    exclusive,
     noValidate,
     errorClass,
     className,
+    exclusive = false,
     ...rest
-  } = props
+  } = props;
   const [field, meta] = useField({
     name,
     type,
@@ -261,34 +279,31 @@ const Field = React.forwardRef((props: FieldProps, ref) => {
     className,
     // @ts-ignore
     value: props.value || htmlValue,
-  })
+  });
 
   let fieldProps: any = {
     type,
     ...field,
     ...useMergedHandlers(meta.events, props, field),
-  }
+  };
 
-  if (injectMeta) fieldProps.meta = meta
-  if (ref) fieldProps.ref = ref
+  if (ref) fieldProps.ref = ref;
 
   // Escape hatch for more complex Field types.
   if (typeof children === 'function') {
-    return children(fieldProps, meta)
+    // @ts-ignore
+    return children(fieldProps, meta);
   }
 
+  if (injectMeta) fieldProps.meta = meta;
   return (
-    <Input {...rest} {...asProps} {...fieldProps} type={meta.nativeType}>
+    <Input {...rest} {...fieldProps} type={meta.nativeType}>
       {children}
     </Input>
-  )
-})
+  );
+});
 
-Field.displayName = 'Field'
-Field.defaultProps = {
-  as: 'input',
-  exclusive: false,
-}
+Field.displayName = 'Field';
 
 // @ts-ignore
 Field.propTypes = {
@@ -314,6 +329,6 @@ Field.propTypes = {
   noValidate: PropTypes.bool,
   children: PropTypes.oneOfType([PropTypes.node, PropTypes.func]),
   injectMeta: PropTypes.bool,
-}
+};
 
-export default Field
+export default Field;

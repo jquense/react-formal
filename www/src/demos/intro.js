@@ -1,5 +1,5 @@
-const Form = require('react-formal')
-const { object, string, number, date } = require('yup')
+const Form = require('react-formal');
+const { object, string, number, date } = require('yup');
 
 const modelSchema = object({
   name: object({
@@ -12,7 +12,7 @@ const modelSchema = object({
   colorId: number()
     .nullable()
     .required('Please select a color'),
-})
+});
 
 render(
   <Form schema={modelSchema} defaultValue={modelSchema.default()}>
@@ -22,15 +22,12 @@ render(
       <Form.Field name="name.first" placeholder="First name" />
       <Form.Field name="name.last" placeholder="Surname" />
 
-      <Form.Message
-        for={['name.first', 'name.last']}
-        className="validation-error"
-      />
+      <Form.Message for={['name.first', 'name.last']} className="error" />
     </div>
 
     <label>Date of Birth</label>
     <Form.Field name="dateOfBirth" />
-    <Form.Message for="dateOfBirth" className="validation-error" />
+    <Form.Message for="dateOfBirth" className="error" />
 
     <label>Favorite Color</label>
     <Form.Field name="colorId" as="select">
@@ -40,8 +37,8 @@ render(
       <option value={2}>Blue</option>
       <option value={3}>other</option>
     </Form.Field>
-    <Form.Message for="colorId" className="validation-error" />
+    <Form.Message for="colorId" className="error" />
 
     <Form.Submit type="submit">Submit</Form.Submit>
-  </Form>
-)
+  </Form>,
+);

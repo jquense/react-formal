@@ -1,127 +1,127 @@
 /* eslint-disable @typescript-eslint/no-use-before-define */
-import PropTypes from 'prop-types'
-import elementType from 'prop-types-extra/lib/elementType'
-import expr from 'property-expr'
+import PropTypes from 'prop-types';
+import elementType from 'prop-types-extra/lib/elementType';
+import expr from 'property-expr';
 import React, {
   SyntheticEvent,
   useEffect,
   useImperativeHandle,
   useMemo,
   useRef,
-} from 'react'
-import shallowequal from 'shallowequal'
-import { BindingContext } from 'topeka'
-import { useUncontrolledProp } from 'uncontrollable'
-import warning from 'warning'
-import * as Yup from 'yup'
-import reach from 'yup/lib/util/reach'
-import useEventCallback from '@restart/hooks/useEventCallback'
-import useMergeState from '@restart/hooks/useMergeState'
-import useMounted from '@restart/hooks/useMounted'
-import useTimeout from '@restart/hooks/useTimeout'
+} from 'react';
+import shallowequal from 'shallowequal';
+import { BindingContext } from 'topeka';
+import { useUncontrolledProp } from 'uncontrollable';
+import warning from 'warning';
+import * as Yup from 'yup';
+import reach from 'yup/lib/util/reach';
+import useEventCallback from '@restart/hooks/useEventCallback';
+import useMergeState from '@restart/hooks/useMergeState';
+import useMounted from '@restart/hooks/useMounted';
+import useTimeout from '@restart/hooks/useTimeout';
 import {
   FormActionsContext,
   FormErrorContext,
   FormSubmitsContext,
   FormTouchedContext,
-} from './Contexts'
-import createErrorManager from './errorManager'
-import { BeforeSubmitData, Errors, Touched, ValidateData } from './types'
-import * as ErrorUtils from './utils/ErrorUtils'
-import errToJSON from './utils/errToJSON'
-import { toArray } from './utils/paths'
-import { notify } from './utils/useEventHandlers'
+} from './Contexts';
+import createErrorManager from './errorManager';
+import { BeforeSubmitData, Errors, Touched, ValidateData } from './types';
+import * as ErrorUtils from './utils/ErrorUtils';
+import errToJSON from './utils/errToJSON';
+import { toArray } from './utils/paths';
+import { notify } from './utils/useEventHandlers';
 
 export interface FormProps<
   TSchema extends Yup.ObjectSchema,
   TValue = Yup.InferType<TSchema>
 > {
-  as?: React.ElementType | null | false
-  className?: string
-  children?: React.ReactElement | React.ReactElement[]
+  as?: React.ElementType | null | false;
+  className?: string;
+  children?: React.ReactElement | React.ReactElement[];
 
-  schema?: TSchema
-  value?: TValue
-  defaultValue?: TValue
-  errors?: Errors
-  defaultErrors?: Errors
+  schema?: TSchema;
+  value?: TValue;
+  defaultValue?: TValue;
+  errors?: Errors;
+  defaultErrors?: Errors;
 
-  touched?: Touched
-  defaultTouched?: Touched
+  touched?: Touched;
+  defaultTouched?: Touched;
 
-  noValidate?: boolean
-  onChange?: (input: TValue, changedPaths: string[]) => void
-  onError?: (errors: Errors) => void
-  onTouch?: (touched: Touched, changedPaths: string[]) => void
-  onValidate?: (data: ValidateData) => void
-  onBeforeSubmit?: (data: BeforeSubmitData<TValue>) => void
-  onSubmit?: (validatedValue: TValue) => void
-  onInvalidSubmit?: (errors: Errors) => void
-  onSubmitFinished?: (error?: Error) => void
+  noValidate?: boolean;
+  onChange?: (input: TValue, changedPaths: string[]) => void;
+  onError?: (errors: Errors) => void;
+  onTouch?: (touched: Touched, changedPaths: string[]) => void;
+  onValidate?: (data: ValidateData) => void;
+  onBeforeSubmit?: (data: BeforeSubmitData<TValue>) => void;
+  onSubmit?: (validatedValue: TValue) => void;
+  onInvalidSubmit?: (errors: Errors) => void;
+  onSubmitFinished?: (error?: Error) => void;
 
-  submitForm?: (input: TValue) => Promise<any>
-  getter?: (path: string, value: TValue) => any
-  setter?: (path: string, value: TValue, fieldValue: any) => TValue
-  context?: object
+  submitForm?: (input: TValue) => Promise<any>;
+  getter?: (path: string, value: TValue) => any;
+  setter?: (path: string, value: TValue, fieldValue: any) => TValue;
+  context?: object;
 
-  delay?: number
+  delay?: number;
 
-  stripUnknown?: boolean
-  abortEarly?: boolean
-  strict?: boolean
+  stripUnknown?: boolean;
+  abortEarly?: boolean;
+  strict?: boolean;
 
   /** Adds some additional runtime console warnings */
-  debug?: boolean
+  debug?: boolean;
 
-  [other: string]: any
+  [other: string]: any;
 }
 
 let done = (e: Error) =>
   setTimeout(() => {
-    throw e
-  })
+    throw e;
+  });
 
 let isValidationError = (err: any): err is Yup.ValidationError =>
-  err && err.name === 'ValidationError'
+  err && err.name === 'ValidationError';
 
 const formGetter = (path: string, model: any) =>
-  path ? expr.getter(path, true)(model || {}) : model
+  path ? expr.getter(path, true)(model || {}) : model;
 
-const formSetter = BindingContext.defaultProps.setter
+const formSetter = BindingContext.defaultProps.setter;
 
 function useErrorContext(errors?: Errors) {
-  const ref = useRef<Errors | null>(null)
+  const ref = useRef<Errors | null>(null);
   if (!ref.current) {
-    return (ref.current = errors ?? null)
+    return (ref.current = errors ?? null);
   }
   if (!shallowequal(ref.current.errors, errors)) {
-    ref.current = errors ?? null
+    ref.current = errors ?? null;
   }
 
-  return ref.current
+  return ref.current;
 }
 
 function validatePath(path: string, { value, schema, ...rest }): Promise<void> {
   return schema
     .validateAt(path, value, rest)
     .then(() => null)
-    .catch(err => err)
+    .catch(err => err);
 }
 
-const EMPTY_TOUCHED = {}
+const EMPTY_TOUCHED = {};
 
 export interface FormHandle {
-  submit: () => Promise<false | void>
-  validate(fields: string[]): void
+  submit: () => Promise<false | void>;
+  validate(fields: string[]): void;
 }
 
 export declare interface Form {
   <T extends Yup.ObjectSchema>(
     props: FormProps<T> & React.RefAttributes<FormHandle>,
-  ): React.ReactElement | null
+  ): React.ReactElement | null;
 
-  displayName?: string
-  propTypes?: any
+  displayName?: string;
+  propTypes?: any;
 
   // getter: typeof formGetter
   // setter: typeof formSetter
@@ -170,69 +170,69 @@ const _Form: Form = React.forwardRef(
       propValue,
       defaultValue,
       propOnChange,
-    )
+    );
     const [errors, onError] = useUncontrolledProp(
       propErrors,
       defaultErrors,
       propOnError,
-    )
+    );
     const [touched, onTouch] = useUncontrolledProp(
       propTouched,
       defaultTouched,
       propOnTouch,
-    )
+    );
 
-    const flushTimeout = useTimeout()
-    const submitTimeout = useTimeout()
-    const isMounted = useMounted()
+    const flushTimeout = useTimeout();
+    const submitTimeout = useTimeout();
+    const isMounted = useMounted();
 
-    const queueRef = useRef<string[]>([])
+    const queueRef = useRef<string[]>([]);
 
-    const errorManager = useMemo(() => createErrorManager(validatePath), [])
+    const errorManager = useMemo(() => createErrorManager(validatePath), []);
 
     const yupOptions = {
       strict,
       context,
       stripUnknown,
       abortEarly: abortEarly == null ? false : abortEarly,
-    }
+    };
 
-    const isSubmittingRef = useRef(false)
+    const isSubmittingRef = useRef(false);
     const [submits, setSubmitState] = useMergeState(() => ({
       submitCount: 0,
       submitAttempts: 0,
       submitting: false,
-    }))
+    }));
 
     function setSubmitting(submitting) {
-      if (!isMounted()) return
+      if (!isMounted()) return;
 
-      isSubmittingRef.current = submitting
-      setSubmitState({ submitting })
+      isSubmittingRef.current = submitting;
+      setSubmitState({ submitting });
     }
 
-    const errorContext = useErrorContext(errors)
+    const errorContext = useErrorContext(errors);
 
-    const isUpdateRef = useRef(false)
+    const isUpdateRef = useRef(false);
     useEffect(() => {
       // don't do this on mount
       if (!isUpdateRef.current) {
-        isUpdateRef.current = true
-        return
+        isUpdateRef.current = true;
+        return;
       }
 
       if (errors) {
-        enqueue(Object.keys(errors))
+        enqueue(Object.keys(errors));
       }
-    }, [schema])
+    }, [schema]);
 
     const flush = () => {
       flushTimeout.set(() => {
-        let fields = queueRef.current
+        let fields = queueRef.current;
 
-        if (!fields.length) return
+        if (!fields.length) return;
 
-        queueRef.current = []
+        queueRef.current = [];
         errorManager
           .collect(fields, errors, {
             schema,
@@ -241,112 +241,112 @@ const _Form: Form = React.forwardRef(
           })
           .then(nextErrors => {
             if (nextErrors !== errors) {
-              maybeWarn(debug, errors, 'field validation')
+              maybeWarn(debug, errors, 'field validation');
 
-              notify(onError, [nextErrors])
+              notify(onError, [nextErrors]);
             }
           })
-          .catch(done)
-      }, delay)
-    }
+          .catch(done);
+      }, delay);
+    };
 
     useEffect(() => {
-      flush()
-    })
+      flush();
+    });
 
     function enqueue(fields: string[]) {
-      queueRef.current.push(...fields)
+      queueRef.current.push(...fields);
     }
 
     const getSchemaForPath = (path: string): Yup.Schema<any> | undefined => {
-      return schema && path && reach(schema, path, value, context)
-    }
+      return schema && path && reach(schema, path, value, context);
+    };
 
     const handleChange = useEventCallback((model, paths) => {
-      let nextTouched = touched
+      let nextTouched = touched;
 
-      onChange(model, paths)
+      onChange(model, paths);
       paths.forEach(path => {
-        if (touched && touched[path]) return
-        if (nextTouched === touched) nextTouched = { ...touched, [path]: true }
-        else nextTouched[path] = true
-      })
+        if (touched && touched[path]) return;
+        if (nextTouched === touched) nextTouched = { ...touched, [path]: true };
+        else nextTouched[path] = true;
+      });
 
-      if (nextTouched !== touched) onTouch(nextTouched!, paths)
-    })
+      if (nextTouched !== touched) onTouch(nextTouched!, paths);
+    });
 
     const handleValidationRequest = (
       fields: string | string[],
       type: string,
       args: any[],
     ) => {
-      if (noValidate) return
+      if (noValidate) return;
 
-      fields = toArray(fields)
+      fields = toArray(fields);
 
-      notify(onValidate, [{ type, fields, args }])
-      enqueue(fields)
-      if (type !== 'onChange') flush()
-    }
+      notify(onValidate, [{ type, fields, args }]);
+      enqueue(fields);
+      if (type !== 'onChange') flush();
+    };
 
     const handleFieldError = (name: string, fieldErrors: Errors) => {
-      handleError(Object.assign(ErrorUtils.remove(errors, name), fieldErrors))
-    }
+      handleError(Object.assign(ErrorUtils.remove(errors, name), fieldErrors));
+    };
 
     const handleError = (errors: Errors) => {
-      notify(onError, [errors])
-    }
+      notify(onError, [errors]);
+    };
 
     const handleSubmitSuccess = (validatedValue: Yup.InferType<T>) => {
-      notify(onSubmit, [validatedValue])
+      notify(onSubmit, [validatedValue]);
 
       return Promise.resolve(submitForm && submitForm(validatedValue)).then(
         () => {
-          setSubmitting(false)
+          setSubmitting(false);
           setSubmitState(s => ({
             submitCount: s.submitCount + 1,
             submitAttempts: s.submitAttempts + 1,
-          }))
-          notify(onSubmitFinished)
+          }));
+          notify(onSubmitFinished);
         },
         err => {
-          setSubmitting(false)
-          notify(onSubmitFinished, [err])
-          throw err
+          setSubmitting(false);
+          notify(onSubmitFinished, [err]);
+          throw err;
         },
-      )
-    }
+      );
+    };
 
     const handleSubmitError = (err: any) => {
-      if (!isValidationError(err)) throw err
+      if (!isValidationError(err)) throw err;
 
-      const errors = errToJSON(err)
+      const errors = errToJSON(err);
 
-      maybeWarn(debug, errors, 'onSubmit')
+      maybeWarn(debug, errors, 'onSubmit');
 
       setSubmitState(s => ({
         submitAttempts: s.submitAttempts + 1,
-      }))
+      }));
 
-      notify(onError, [errors])
-      notify(onInvalidSubmit, [errors])
-      setSubmitting(false)
+      notify(onError, [errors]);
+      notify(onInvalidSubmit, [errors]);
+      setSubmitting(false);
 
-      notify(onSubmitFinished, [err])
-    }
+      notify(onSubmitFinished, [err]);
+    };
 
     const handleSubmit = (e?: React.SyntheticEvent) => {
-      if (e && e.preventDefault) e.preventDefault()
-      submitTimeout.set(() => submit().catch(done))
-    }
+      if (e && e.preventDefault) e.preventDefault();
+      submitTimeout.set(() => submit().catch(done));
+    };
 
     const submit = (): Promise<false | void> => {
       if (isSubmittingRef.current) {
-        return Promise.resolve(false)
+        return Promise.resolve(false);
       }
-      notify(onBeforeSubmit, [{ value: value!, errors }])
+      notify(onBeforeSubmit, [{ value: value!, errors }]);
 
-      setSubmitting(true)
+      setSubmitting(true);
 
       return (
         (noValidate
@@ -359,15 +359,15 @@ const _Form: Form = React.forwardRef(
         )
           // no catch, we aren't interested in errors from onSubmit handlers
           .then(handleSubmitSuccess, handleSubmitError)
-      )
-    }
+      );
+    };
 
     useImperativeHandle(ref, () => ({
       submit,
       validate(fields) {
-        errorManager.collect(fields, errors, { schema, value, ...yupOptions })
+        errorManager.collect(fields, errors, { schema, value, ...yupOptions });
       },
-    }))
+    }));
 
     const formActions = Object.assign(useRef({}).current, {
       getSchemaForPath,
@@ -375,13 +375,13 @@ const _Form: Form = React.forwardRef(
       onSubmit: handleSubmit,
       onValidate: handleValidationRequest,
       onFieldError: handleFieldError,
-    })
+    });
 
     if (Element === 'form') {
-      elementProps.noValidate = true // disable html5 validation
+      elementProps.noValidate = true; // disable html5 validation
     }
 
-    elementProps.onSubmit = handleSubmit
+    elementProps.onSubmit = handleSubmit;
 
     return (
       <BindingContext
@@ -407,19 +407,19 @@ const _Form: Form = React.forwardRef(
           </FormTouchedContext.Provider>
         </FormActionsContext.Provider>
       </BindingContext>
-    )
+    );
   },
-)
+);
 
 function maybeWarn(debug, errors, target) {
-  if (!debug) return
+  if (!debug) return;
 
   if (process.env.NODE_ENV !== 'production') {
-    let keys = Object.keys(errors)
+    let keys = Object.keys(errors);
     warning(
       !keys.length,
       `[react-formal] (${target}) invalid fields: ${keys.join(', ')}`,
-    )
+    );
   }
 }
 
@@ -468,33 +468,36 @@ _Form.propTypes = {
   /**
    * Callback that is called when a validation error occurs. It is called with an `errors` object
    *
-   * ```jsx
-   * class Example extends React.Component {
-   *   constructor(props) {
-   *     this.state = { errors: {} }
-   *   }
-   *   render() {
-   *     return (
-   *       <Form
-   *         schema={modelSchema}
-   *         defaultValue={modelSchema.default()}
-   *         errors={this.state.errors}
-   *         onError={errors => {
-   *           if( errors.dateOfBirth )
-   *             errors.dateOfBirth = 'hijacked!'
-   *           this.setState({ errors })
-   *       }}>
+   * ```jsx renderAsComponent
+   * import Form from 'react-formal'
+   * import * as yup from 'yup'
    *
-   *         <Form.Field name='dateOfBirth'/>
-   *         <Form.Message for='dateOfBirth'/>
+   * const schema = yup.object({
+   *   name: yup.string().required().min(15)
+   * })
    *
-   *         <Form.Submit type='submit'>Submit</Form.Submit>
-   *       </Form>
-   *     )
-   *   }
-   * }
+   * const [errors, setErrors] = useState({});
    *
-   * render(<Example />)
+   * <Form
+   *   schema={schema}
+   *   errors={errors}
+   *   onError={errors => {
+   *     if (errors.name) {
+   *       errors.name = 'hijacked!'
+   *     }
+   *
+   *     setErrors(errors)
+   * }}>
+   *    <label>
+   *      Name
+   *      <Form.Field name='name'/>
+   *    </label>
+   *   <Form.Message for='name' className="error" />
+   *
+   *   <Form.Submit type='submit'>Submit</Form.Submit>
+   *
+   *   <pre >{JSON.stringify({ errors }, null, 2)}</pre>
+   * </Form>
    * ```
    */
   onError: PropTypes.func,
@@ -520,7 +523,7 @@ _Form.propTypes = {
   onValidate: PropTypes.func,
 
   /**
-   * Callback that is fired in response to a submit, _before validation runs.
+   * Callback that is fired in response to a submit, _before_ validation runs.
    *
    * ```js static
    * function onSubmit(formValue){
@@ -581,9 +584,9 @@ _Form.propTypes = {
    * ```ts static
    * function(
    *  path: string,
-   *  formValue: object,
+   *  formValue: any,
    *  pathValue: any
-   * ) -> object
+   * ): Object
    * ```
    */
   setter: PropTypes.func,
@@ -615,22 +618,22 @@ _Form.propTypes = {
   /**
    * A Yup schema  that validates the Form `value` prop. Used to validate the form input values
    * For more information about the yup api check out: https://github.com/jquense/yup/blob/master/README.md
-   * @type {YupSchema}
+   * @type {Schema}
    */
   schema(props, name, componentName, loc, secret) {
     let err = !props.noValidate
       ? PropTypes.any.isRequired(props, name, componentName, loc, secret)
-      : null
+      : null;
 
     if (props[name]) {
-      let schema = props[name]
+      let schema = props[name];
       if (!schema.__isYupSchema__ && !(schema.resolve && schema.validate))
         err = new Error(
           '`schema` must be a proper yup schema: (' + componentName + ')',
-        )
+        );
     }
 
-    return err
+    return err;
   },
 
   /**
@@ -642,9 +645,9 @@ _Form.propTypes = {
    * toggle debug mode, which `console.warn`s validation errors
    */
   debug: PropTypes.bool,
-}
+};
 
-_Form.displayName = 'Form'
+_Form.displayName = 'Form';
 
 // _Form.setter = formGetter
 // _Form.getter = formSetter
@@ -653,4 +656,4 @@ _Form.displayName = 'Form'
 export default Object.assign(_Form, {
   getter: formGetter,
   setter: formGetter,
-})
+});

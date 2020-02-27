@@ -1,7 +1,7 @@
-import PropTypes from 'prop-types'
-import elementType from 'prop-types-extra/lib/elementType'
-import React from 'react'
-import Message, { MessageProps } from './Message'
+import PropTypes from 'prop-types';
+import elementType from 'prop-types-extra/lib/elementType';
+import React from 'react';
+import Message, { MessageProps } from './Message';
 
 /**
  * Display all Form validation `errors` in a single summary list.
@@ -23,19 +23,19 @@ import Message, { MessageProps } from './Message'
  */
 class Summary extends React.PureComponent<
   MessageProps & {
-    formatMessage: (err: any, idx: number, errors: any[]) => React.ReactNode
+    formatMessage: (err: any, idx: number, errors: any[]) => React.ReactNode;
   },
   any
 > {
   static propTypes = {
     /**
      * An error message renderer, Should return a `ReactElement`
-     * ```
+     * ```ts static
      * function(
      *   message: string,
      *   idx: number,
      *   errors: array
-     * ) -> ReactElement
+     * ): ReactElement
      * ```
      */
     formatMessage: PropTypes.func.isRequired,
@@ -54,18 +54,18 @@ class Summary extends React.PureComponent<
      * Specify a group to show errors for, if empty all form errors will be shown in the Summary.
      */
     group: PropTypes.string,
-  }
+  };
 
   static defaultProps = {
     as: 'ul',
     formatMessage: (message, idx) => <li key={idx}>{message}</li>,
-  }
+  };
 
   render() {
-    let { formatMessage, ...props } = this.props
+    let { formatMessage, ...props } = this.props;
 
-    return <Message {...props}>{errors => errors.map(formatMessage)}</Message>
+    return <Message {...props}>{errors => errors.map(formatMessage)}</Message>;
   }
 }
 
-export default Summary
+export default Summary;

@@ -1,3 +1,5 @@
+## Overview
+
 Form component renders a `value` to be updated and validated by child Fields.
 Forms can be thought of as `<input/>`s for complex values, or models. A Form aggregates
 a bunch of smaller inputs, each in charge of updating a small part of the overall model.
@@ -25,24 +27,28 @@ const customerSchema = yup.object({
     .required("Please select a dank color")
 });
 
-render(
-  <Form schema={customerSchema} defaultValue={customerSchema.default()}>
-    <div>
-      {/* 'grandchildren' are no problem */}
-      <label>Name</label>
+<Form schema={customerSchema} defaultValue={customerSchema.default()}>
+  <fieldset>
+    <legend className="sr-only">name</legend>
+    <label>
+      Name
       <Form.Field name="name.first" placeholder="First name" />
+    </label>
+    <label>
+      Surname
       <Form.Field name="name.last" placeholder="Surname" />
-      <Form.Message
-        for={["name.first", "name.last"]}
-        className="validation-error"
-      />
-    </div>
+    </label>
+    <Form.Message for={["name.first", "name.last"]} className="error" />
+  </fieldset>
 
-    <label>Date of Birth</label>
+  <label>
+    Date of Birth
     <Form.Field name="dateOfBirth" />
-    <Form.Message for="dateOfBirth" className="validation-error" />
+  </label>
+  <Form.Message for="dateOfBirth" className="error" />
 
-    <label>Favorite Color</label>
+  <label>
+    Favorite Color
     <Form.Field name="colorId" as="select">
       <option value={null}>Select a color...</option>
       <option value={0}>Red</option>
@@ -50,9 +56,52 @@ render(
       <option value={2}>Blue</option>
       <option value={3}>other</option>
     </Form.Field>
-    <Form.Message for="colorId" className="validation-error" />
+  </label>
+  <Form.Message for="colorId" className="error" />
 
-    <Form.Submit type="submit">Submit</Form.Submit>
-  </Form>
-);
+  <Form.Submit type="submit">Submit</Form.Submit>
+</Form>;
+```
+
+## Schema
+
+`Form` components expect a `schema` to be provided unless the `noValidate` prop
+is provided. Validation is done almost entirely through a yup schema. If you want to
+tweak the error output can do it via the [onError](#onError) prop.
+
+Beyond validation the yup schema also do data sanitiation and transformation.
+When a `Form` is submitted the current value is passed through
+the schema a final time as a whole, the _transformed_ value is what is passed back
+to the [`onSubmit`](#onSubmit) handlers (you can override this behavior with `strict`).
+
+```tsx renderAsComponent
+import Form from "react-formal";
+import * as yup from "yup";
+
+const [submittedValue, setSubmittedValue] = useState(null);
+const schema = yup.object({
+  slug: yup
+    .string()
+    .lowercase()
+    .transform(value =>
+      value
+        .replace(/not/g, "")
+        .trim()
+        .replace(/\s+/g, "-")
+    )
+});
+
+<Form
+  schema={schema}
+  defaultValue={{ slug: "Not a Good Slug" }}
+  onSubmit={setSubmittedValue}
+>
+  <label>
+    Slug (submit to see result)
+    <Form.Field name="slug" readOnly />
+  </label>
+  <Form.Submit type="submit">Submit</Form.Submit>
+
+  {submittedValue && <pre>{JSON.stringify(submittedValue, null, 2)}</pre>}
+</Form>;
 ```

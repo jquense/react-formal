@@ -7,17 +7,17 @@
     "build": "gatsby build"
   },
   "dependencies": {
-    "@docpocalypse/code-live": "^0.3.8",
-    "@docpocalypse/gatsby-theme": "^0.9.4",
-    "@docpocalypse/props-table": "^0.3.4",
+    "@docpocalypse/code-live": "^0.4.2",
+    "@docpocalypse/gatsby-theme": "^0.9.12",
+    "@docpocalypse/props-table": "^0.3.5",
     "astroturf": "^0.10.2",
-    "gatsby": "^2.19.17",
+    "gatsby": "^2.19.22",
     "gatsby-plugin-astroturf": "^0.2.1",
     "gatsby-plugin-web-font-loader": "^1.0.4",
     "gatsby-plugin-webfonts": "^1.1.2",
     "polished": "^3.4.4",
-    "react": "^16.12.0",
-    "react-dom": "^16.12.0",
+    "react": "^16.13.0",
+    "react-dom": "^16.13.0",
     "tailwindcss": "^1.2.0"
   }
 }
