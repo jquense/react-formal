@@ -1,8 +1,8 @@
-import { mount } from 'enzyme'
-import React from 'react'
-import * as yup from 'yup'
-import Form from '../src'
-import NestedForm from '../src/NestedForm'
+import { mount } from 'enzyme';
+import React from 'react';
+import * as yup from 'yup';
+import Form from '../src';
+import NestedForm from '../src/NestedForm';
 
 describe('NestedForm', () => {
   let schema = yup.object({
@@ -10,11 +10,11 @@ describe('NestedForm', () => {
       first: yup.string().default(''),
       last: yup.string().default(''),
     }),
-  })
+  });
 
   it('should work', () => {
-    let value, last
-    let change = sinon.spy(v => (value = v))
+    let value, last;
+    let change = jest.fn(v => (value = v));
 
     let wrapper = mount(
       <Form schema={schema} defaultValue={schema.default()} onChange={change}>
@@ -25,36 +25,36 @@ describe('NestedForm', () => {
           </NestedForm>
         </div>
       </Form>,
-    )
+    );
 
     wrapper
       .find('.field')
       .first()
-      .simulate('change', { target: { value: 'Jill' } })
+      .simulate('change', { target: { value: 'Jill' } });
 
-    expect(change).have.been.calledOnce()
+    expect(change).toHaveBeenCalledTimes(1);
 
     expect(value).toEqual({
       name: {
         first: 'Jill',
         last: '',
       },
-    })
+    });
 
-    last = value
+    last = value;
 
     wrapper
       .find('.field')
       .last()
-      .simulate('change', { target: { value: 'Smith' } })
+      .simulate('change', { target: { value: 'Smith' } });
 
     expect(value).toEqual({
       name: {
         first: 'Jill',
         last: 'Smith',
       },
-    })
+    });
 
-    expect(value).not.toBe(last)
-  })
-})
+    expect(value).not.toBe(last);
+  });
+});

@@ -10,6 +10,7 @@ import useField, {
 } from './useField';
 import { useMergedHandlers } from './utils/useEventHandlers';
 
+const noop = () => {};
 /**
  * When Field renders an Element, it injects a few props.
  * In the case none DOM elements it also injects `meta`
@@ -296,6 +297,7 @@ const Field: Field = React.forwardRef((props: FieldProps, ref) => {
   }
 
   if (injectMeta) fieldProps.meta = meta;
+
   return (
     <Input {...rest} {...fieldProps} type={meta.nativeType}>
       {children}

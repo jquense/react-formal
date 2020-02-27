@@ -620,10 +620,11 @@ _Form.propTypes = {
    * For more information about the yup api check out: https://github.com/jquense/yup/blob/master/README.md
    * @type {Schema}
    */
-  schema(props, name, componentName, loc, secret) {
-    let err = !props.noValidate
-      ? PropTypes.any.isRequired(props, name, componentName, loc, secret)
-      : null;
+  schema(props, name, componentName, ...rest: any[]) {
+    let err: null | Error = null;
+    if (!props.noValidate)
+      // @ts-ignore
+      err = PropTypes.any.isRequired(props, name, componentName, ...rest);
 
     if (props[name]) {
       let schema = props[name];
@@ -655,5 +656,5 @@ _Form.displayName = 'Form';
 
 export default Object.assign(_Form, {
   getter: formGetter,
-  setter: formGetter,
+  setter: formSetter,
 });

@@ -28,14 +28,15 @@ describe('Field', () => {
   }
 
   it('should pass props to inner type', () => {
-    expect(mount(
-      <Form schema={schema} defaultValue={{}}>
-        <Form.Field name="name" as={TestInput} className="test" />
-      </Form>,
-    )
-      .find(TestInput)
-      .instance()
-      .props.className).toEqual(expect.arrayContaining(['test'])); // test invalid-field
+    expect(
+      mount(
+        <Form schema={schema} defaultValue={{}}>
+          <Form.Field name="name" as={TestInput} className="test" />
+        </Form>,
+      )
+        .find(TestInput)
+        .instance().props.className,
+    ).toEqual('test'); // test invalid-field
   });
 
   it('should fall back to using schema types', () => {
@@ -97,7 +98,7 @@ describe('Field', () => {
   });
 
   it('should pull value from event target', () => {
-    let spy = sinon.spy();
+    let spy = jest.fn();
 
     mount(
       <Form schema={schema} defaultValue={{}} onChange={spy}>
@@ -108,11 +109,11 @@ describe('Field', () => {
       .assertSingle('input')
       .simulate('change', { target: { value: 'foo' } });
 
-    expect(spy).have.been.calledWith({ name: 'foo' });
+    expect(spy).toHaveBeenCalledWith({ name: 'foo' }, ['name']);
   });
 
   it('should coerce value to number', () => {
-    let spy = sinon.spy();
+    let spy = jest.fn();
 
     let form = mount(
       <Form schema={schema} defaultValue={{}} onChange={spy}>
@@ -125,17 +126,17 @@ describe('Field', () => {
       .find('input[type="number"]')
       .simulate('change', { target: { value: '3.56', type: 'number' } });
 
-    expect(spy).have.been.calledWith({ age: 3.56 });
+    expect(spy).toHaveBeenCalledWith({ age: 3.56 }, expect.anything());
 
     form
       .find('input[type="range"]')
       .simulate('change', { target: { value: '42', type: 'range' } });
 
-    expect(spy).have.been.calledWith({ age: 42 });
+    expect(spy).toHaveBeenCalledWith({ age: 42 }, expect.anything());
   });
 
   it('should update touched value', () => {
-    let spy = sinon.spy();
+    let spy = jest.fn();
 
     mount(
       <Form schema={schema} defaultValue={{}} onTouch={spy}>
@@ -145,11 +146,11 @@ describe('Field', () => {
       .assertSingle('input')
       .simulate('change', 'foo');
 
-    expect(spy).have.been.calledWith({ name: true }, ['name']);
+    expect(spy).toHaveBeenCalledWith({ name: true }, ['name']);
   });
 
   it('should update touched once per field', () => {
-    let spy = sinon.spy();
+    let spy = jest.fn();
 
     mount(
       <Form schema={schema} defaultValue={{}} onTouch={spy}>
@@ -160,7 +161,7 @@ describe('Field', () => {
       .simulate('change', 'foo')
       .simulate('change', 'bar');
 
-    expect(spy.callCount).toBe(1);
+    expect(spy).toHaveBeenCalledTimes(1);
   });
 
   it('ensures values are never undefined', () => {
@@ -174,7 +175,7 @@ describe('Field', () => {
   });
 
   it('maps value from string', () => {
-    let spy = sinon.spy();
+    let spy = jest.fn();
     mount(
       <Form schema={schema} defaultValue={{}} onChange={spy}>
         <Form.Field name="name" as={TestInput} mapFromValue="value" />
@@ -183,11 +184,11 @@ describe('Field', () => {
       .assertSingle('input')
       .simulate('change', { value: 'john' });
 
-    expect(spy).have.been.calledOnce.and.calledWith({ name: 'john' });
+    expect(spy).toHaveBeenCalledWith({ name: 'john' }, expect.anything());
   });
 
   it('maps value from function', () => {
-    let spy = sinon.spy();
+    let spy = jest.fn();
     mount(
       <Form schema={schema} defaultValue={{}} onChange={spy}>
         <Form.Field name="name" as={TestInput} mapFromValue={e => e.value} />
@@ -196,11 +197,11 @@ describe('Field', () => {
       .assertSingle('input')
       .simulate('change', { value: 'john' });
 
-    expect(spy).have.been.calledOnce.and.calledWith({ name: 'john' });
+    expect(spy).toHaveBeenCalledWith({ name: 'john' }, expect.anything());
   });
 
   it('gets value from accessor', () => {
-    let spy = sinon.spy(model => model.other);
+    let spy = jest.fn(model => model.other);
     let wrapper = mount(
       <Form schema={schema} defaultValue={{}} onChange={spy}>
         <Form.Field
@@ -214,15 +215,15 @@ describe('Field', () => {
       </Form>,
     );
 
-    expect(spy).have.been.and.calledWith({});
+    expect(spy).toHaveBeenCalledWith({}, expect.anything());
 
     wrapper.assertSingle('input').simulate('change', { value: 'john' });
 
-    expect(spy).have.been.and.calledWith({ other: 'john' });
+    expect(spy).toHaveBeenCalledWith({ other: 'john' }, expect.anything());
   });
 
   it('maps values from hash', () => {
-    let spy = sinon.spy();
+    let spy = jest.fn();
     mount(
       <Form schema={schema} defaultValue={{}} onChange={spy}>
         <Form.Field
@@ -237,15 +238,18 @@ describe('Field', () => {
     )
       .assertSingle('input')
       .simulate('change', { value: 'john', text: 'hi' });
-
-    expect(spy).have.been.calledOnce.and.calledWith({
-      name: 'john',
-      text: 'hi',
-    });
+    expect(spy).toHaveBeenCalledTimes(1);
+    expect(spy).toHaveBeenCalledWith(
+      {
+        name: 'john',
+        text: 'hi',
+      },
+      expect.anything(),
+    );
   });
 
   it('should pass all args to mapFromValue', function(done) {
-    let spy = sinon.spy();
+    let spy = jest.fn();
     mount(
       <Form schema={schema} defaultValue={{}} onChange={spy}>
         <Form.Field
@@ -280,7 +284,7 @@ describe('Field', () => {
   });
 
   it('should work with conditional schema', () => {
-    const spy = sinon.stub(console, 'warn').callsFake(() => {});
+    const spy = jest.spyOn(console, 'warn').mockImplementation(() => {});
 
     let render = name => {
       mount(
@@ -291,7 +295,7 @@ describe('Field', () => {
     };
 
     render('john');
-    expect(spy).to.have.been.called();
+    expect(spy).toHaveBeenCalled();
   });
 
   describe('meta', () => {
@@ -305,7 +309,7 @@ describe('Field', () => {
 
         expect(meta.touched).toBe(true);
 
-        expect(meta.errors).eqls({
+        expect(meta.errors).toEqual({
           name: 'foo',
         });
         done();
@@ -328,7 +332,7 @@ describe('Field', () => {
       let Input = ({ meta }) => {
         expect(meta.invalid).toBe(true);
         expect(meta.valid).toBe(false);
-        expect(meta.errors).eqls({
+        expect(meta.errors).toEqual({
           name: 'foo',
         });
         done();
@@ -343,7 +347,7 @@ describe('Field', () => {
     });
 
     it('should field onError should remove existing errors', () => {
-      let errorSpy = sinon.spy();
+      let errorSpy = jest.fn();
       act(() => {
         mount(
           <Form
@@ -360,11 +364,11 @@ describe('Field', () => {
           .meta.onError({});
       });
 
-      expect(errorSpy).have.been.calledOnce.and.calledWith({ bar: 'baz' });
+      expect(errorSpy).toHaveBeenCalledWith({ bar: 'baz' });
     });
 
     it('should field onError should update field errors', () => {
-      let errorSpy = sinon.spy();
+      let errorSpy = jest.fn();
       act(() => {
         mount(
           <Form
@@ -381,7 +385,7 @@ describe('Field', () => {
           .meta.onError({ 'name': 'foo', 'name.first': 'baz' });
       });
 
-      expect(errorSpy).have.been.calledOnce.and.calledWith({
+      expect(errorSpy).toHaveBeenCalledWith({
         'name': 'foo',
         'name.first': 'baz',
         'bar': 'baz',
@@ -392,7 +396,7 @@ describe('Field', () => {
       let schema = yup.object({
         number: yup.number().min(5),
       });
-      let spy = sinon.spy();
+      let spy = jest.fn();
       let wrapper = mount(
         <Form
           delay={0}
@@ -403,7 +407,10 @@ describe('Field', () => {
           <Form.Field
             name="number"
             events={({ valid }) => (valid ? ['onBlur'] : ['onChange'])}
-          />
+          >
+            {/* noop prevents a readonly console warning */}
+            {props => <input onChange={() => {}} {...props} />}
+          </Form.Field>
         </Form>,
       );
       // Field is valid only; `onBlur`
@@ -411,24 +418,25 @@ describe('Field', () => {
         wrapper.find('input').simulate('change', { target: { value: '4' } });
         wrapper.find('input').simulate('blur', { target: { value: '4' } });
       });
+
       setTimeout(() => {
         act(() => {
-          expect(spy.callCount).toBe(1);
+          expect(spy).toHaveBeenCalledTimes(1);
           // field is invalid now: `onChange`
           wrapper.find('input').simulate('blur', { target: { value: '4' } });
 
-          expect(spy.callCount).toBe(1);
+          expect(spy).toHaveBeenCalledTimes(1);
 
           wrapper.find('input').simulate('change', { target: { value: '6' } });
 
-          expect(spy.callCount).toBe(2);
+          expect(spy).toHaveBeenCalledTimes(2);
         });
         done();
       }, 100);
     });
 
     it('should field onError should replace field errors', () => {
-      let errorSpy = sinon.spy();
+      let errorSpy = jest.fn();
 
       act(() => {
         mount(
@@ -446,7 +454,7 @@ describe('Field', () => {
           .meta.onError({ 'name.first': 'baz' });
       });
 
-      expect(errorSpy).have.been.calledOnce.and.calledWith({
+      expect(errorSpy).toHaveBeenCalledWith({
         'name.first': 'baz',
         'bar': 'baz',
       });
@@ -497,28 +505,32 @@ describe('Field', () => {
 
   xdescribe('form fields', () => {
     it('should inject onError', () => {
-      expect(mount(
-        <Form schema={schema} defaultValue={{}}>
-          <Form.Field name="name" />
-        </Form>,
-      )
-        .find('input')
-        .prop('onError')).toBeInstanceOf(Function);
+      expect(
+        mount(
+          <Form schema={schema} defaultValue={{}}>
+            <Form.Field name="name" />
+          </Form>,
+        )
+          .find('input')
+          .prop('onError'),
+      ).toBeInstanceOf(Function);
     });
 
     // skip for now since name is still required.
     xit('should not inject onError for nameless fields', () => {
-      expect(mount(
-        <Form schema={schema} defaultValue={{}}>
-          <Form.Field />
-        </Form>,
-      )
-        .find('input')
-        .prop('onError')).toBeInstanceOf(Function);
+      expect(
+        mount(
+          <Form schema={schema} defaultValue={{}}>
+            <Form.Field />
+          </Form>,
+        )
+          .find('input')
+          .prop('onError'),
+      ).toBeInstanceOf(Function);
     });
 
     it('should propagate onError to form', () => {
-      let spy = sinon.spy();
+      let spy = jest.fn();
 
       mount(
         <Form schema={schema} defaultValue={{}} onError={spy}>
@@ -528,7 +540,7 @@ describe('Field', () => {
         .find('input')
         .prop('onError')({ foo: 'bar' });
 
-      expect(spy).have.been.calledOnce.and.calledWith({
+      expect(spy).toHaveBeenCalledWith({
         'name.foo': 'bar',
       });
     });

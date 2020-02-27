@@ -1,10 +1,10 @@
-import { mount } from 'enzyme'
-import React from 'react'
-import { act } from 'react-dom/test-utils'
-import { array, object, string } from 'yup'
-import Form from '../src'
+import { mount } from 'enzyme';
+import React from 'react';
+import { act } from 'react-dom/test-utils';
+import { array, object, string } from 'yup';
+import Form from '../src';
 
-const wait = ms => new Promise(resolve => setTimeout(resolve, ms))
+const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
 
 describe('FieldArray', () => {
   let schema = object({
@@ -16,15 +16,15 @@ describe('FieldArray', () => {
         }),
       )
       .default(() => [{ name: 'red', hexCode: '#ff0000' }]),
-  })
+  });
 
   class ColorList extends React.Component {
     remove(index) {
-      this.props.arrayHelpers.remove(this.props.value[index])
+      this.props.arrayHelpers.remove(this.props.value[index]);
     }
 
     render() {
-      const { value, name } = this.props
+      const { value, name } = this.props;
       // console.log('color list', value)
       return (
         <ul>
@@ -35,13 +35,13 @@ describe('FieldArray', () => {
             </li>
           ))}
         </ul>
-      )
+      );
     }
   }
 
   const renderColorList = (props, meta, arrayHelpers) => (
     <ColorList {...props} arrayHelpers={arrayHelpers} />
-  )
+  );
 
   it('should render forms correctly', () => {
     mount(
@@ -66,12 +66,12 @@ describe('FieldArray', () => {
           )}
         </Form.FieldArray>
       </Form>,
-    ).assertSingle('input.invalid')
-  })
+    ).assertSingle('input.invalid');
+  });
 
   it('should update the form value correctly', async () => {
-    let value, last
-    let changeSpy = sinon.spy(v => (value = v))
+    let value, last;
+    let changeSpy = jest.fn(v => (value = v));
 
     let wrapper = mount(
       <Form
@@ -96,18 +96,18 @@ describe('FieldArray', () => {
           )}
         </Form.FieldArray>
       </Form>,
-    )
+    );
 
     await act(() => {
       wrapper
         .find('.field')
         .first()
-        .simulate('change', { target: { value: 'beige' } })
+        .simulate('change', { target: { value: 'beige' } });
 
-      return wait()
-    })
+      return wait();
+    });
 
-    expect(changeSpy).have.been.calledOnce()
+    expect(changeSpy).toHaveBeenCalledTimes(1);
 
     expect(value).toEqual({
       colors: [
@@ -116,16 +116,16 @@ describe('FieldArray', () => {
           hexCode: '#ff0000',
         },
       ],
-    })
+    });
 
-    last = value
+    last = value;
     await act(() => {
       wrapper
         .find('.field2')
         .last()
-        .simulate('change', { target: { value: 'LULZ' } })
-      return wait()
-    })
+        .simulate('change', { target: { value: 'LULZ' } });
+      return wait();
+    });
     expect(value).toEqual({
       colors: [
         {
@@ -133,20 +133,20 @@ describe('FieldArray', () => {
           hexCode: 'LULZ',
         },
       ],
-    })
+    });
 
-    expect(value).not.toBe(last)
-  })
+    expect(value).not.toBe(last);
+  });
 
   it('should handle removing array items', async () => {
-    let value
-    let changeSpy = sinon.spy(v => (value = v))
+    let value;
+    let changeSpy = jest.fn(v => (value = v));
     let defaultValue = {
       colors: [
         { name: 'red', hexCode: '#ff0000' },
         { name: 'other red', hexCode: '#ff0000' },
       ],
-    }
+    };
 
     let wrapper = mount(
       <Form
@@ -157,17 +157,17 @@ describe('FieldArray', () => {
       >
         <Form.FieldArray name="colors">{renderColorList}</Form.FieldArray>
       </Form>,
-    )
+    );
 
-    let list = wrapper.find(ColorList)
+    let list = wrapper.find(ColorList);
 
-    expect(list.prop('value')).toHaveLength(2)
+    expect(list.prop('value')).toHaveLength(2);
 
     await act(() => {
-      list.instance().remove(1)
+      list.instance().remove(1);
 
-      return wait()
-    })
+      return wait();
+    });
 
     expect(value).toEqual({
       colors: [
@@ -176,20 +176,20 @@ describe('FieldArray', () => {
           hexCode: '#ff0000',
         },
       ],
-    })
-  })
+    });
+  });
 
   it('should shift errors for removed fields', async () => {
-    let value, errors
-    let errorSpy = sinon.spy(v => (errors = v))
-    let changeSpy = sinon.spy(v => (value = v))
+    let value, errors;
+    let errorSpy = jest.fn(v => (errors = v));
+    let changeSpy = jest.fn(v => (value = v));
     let defaultValue = {
       colors: [
         { name: '', hexCode: '#ff0000' },
         { name: 'other red', hexCode: '#ff0000' },
       ],
-    }
-    const ref = React.createRef()
+    };
+    const ref = React.createRef();
     let wrapper = mount(
       <div>
         <Form
@@ -202,26 +202,26 @@ describe('FieldArray', () => {
           <Form.FieldArray name="colors">{renderColorList}</Form.FieldArray>
         </Form>
       </div>,
-    )
-    let list = wrapper.find(ColorList)
-    expect(list.prop('value')).toHaveLength(2)
+    );
+    let list = wrapper.find(ColorList);
+    expect(list.prop('value')).toHaveLength(2);
 
-    await act(() => ref.current.submit())
+    await act(() => ref.current.submit());
 
     // First color has an error
-    expect(errors).toHaveProperty('colors[0].name')
+    expect(errors['colors[0].name']).toBeDefined();
 
     await act(() => {
       // remove the first color
-      list.instance().remove(0)
-      return wait()
-    })
+      list.instance().remove(0);
+      return wait();
+    });
     // The error for the first color should be gone
-    expect(errorSpy).have.been.calledTwice()
-    expect(errors).not.toHaveProperty('colors[0].name')
+    expect(errorSpy).toHaveBeenCalledTimes(2);
+    expect(errors['colors[0].name']).not.toBeDefined();
 
     expect(value).toEqual({
       colors: [{ name: 'other red', hexCode: '#ff0000' }],
-    })
-  })
-})
+    });
+  });
+});
