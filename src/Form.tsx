@@ -3,18 +3,17 @@ import PropTypes from 'prop-types';
 import elementType from 'prop-types-extra/lib/elementType';
 import expr from 'property-expr';
 import React, {
-  SyntheticEvent,
   useEffect,
   useImperativeHandle,
   useMemo,
   useRef,
+  SyntheticEvent,
 } from 'react';
 import shallowequal from 'shallowequal';
 import { BindingContext } from 'topeka';
 import { useUncontrolledProp } from 'uncontrollable';
 import warning from 'warning';
-import * as Yup from 'yup';
-import reach from 'yup/lib/util/reach';
+import { reach, isSchema, ObjectSchema, Schema, InferType } from 'yup';
 import useEventCallback from '@restart/hooks/useEventCallback';
 import useMergeState from '@restart/hooks/useMergeState';
 import useMounted from '@restart/hooks/useMounted';
@@ -25,16 +24,18 @@ import {
   FormSubmitsContext,
   FormTouchedContext,
 } from './Contexts';
-import createErrorManager, { isValidationError } from './errorManager';
+import createErrorManager, {
+  isValidationError,
+  ValidationPathSpec,
+} from './errorManager';
 import { BeforeSubmitData, Errors, Touched, ValidateData } from './types';
 import * as ErrorUtils from './utils/ErrorUtils';
 import errToJSON from './utils/errToJSON';
-import { toArray } from './utils/paths';
 import { notify } from './utils/useEventHandlers';
 
 export interface FormProps<
-  TSchema extends Yup.ObjectSchema,
-  TValue = Yup.InferType<TSchema>
+  TSchema extends ObjectSchema,
+  TValue = InferType<TSchema>
 > {
   as?: React.ElementType | null | false;
   className?: string;
@@ -50,6 +51,7 @@ export interface FormProps<
   defaultTouched?: Touched;
 
   noValidate?: boolean;
+
   onChange?: (input: TValue, changedPaths: string[]) => void;
   onError?: (errors: Errors) => void;
   onTouch?: (touched: Touched, changedPaths: string[]) => void;
@@ -67,7 +69,13 @@ export interface FormProps<
   delay?: number;
 
   stripUnknown?: boolean;
+  /**
+   * Controls how errors are dealt with for field level validation. When
+   * set, the first validation error a field throws is returned instead of waiting
+   * for all validations to finish
+   */
   abortEarly?: boolean;
+
   strict?: boolean;
 
   /** Adds some additional runtime console warnings */
@@ -98,8 +106,83 @@ function useErrorContext(errors?: Errors) {
   return ref.current;
 }
 
-function validatePath(
+const isEvent = (e): e is SyntheticEvent =>
+  typeof e == 'object' && e != null && 'target' in e;
+
+type Setter = (
   path: string,
+  formData: unknown,
+  fieldValue: any,
+  setter: any,
+) => unknown;
+
+const createFormSetter = (
+  setter: Setter,
+  schema?: Schema<any>,
+  context?: any,
+) => {
+  function parseValueFromEvent(
+    target: HTMLInputElement & HTMLSelectElement,
+    fieldValue: any,
+    fieldSchema?: any,
+  ) {
+    const { type, value, checked, options, multiple, files } = target;
+
+    if (type === 'file') return multiple ? files : files && files[0];
+    if (multiple) {
+      // @ts-ignore
+      const innerType = fieldSchema?._subType?._type;
+
+      return Array.from(options)
+        .filter(opt => opt.selected)
+        .map(({ value }) =>
+          innerType == 'number' ? parseFloat(value) : value,
+        );
+    }
+
+    if (/number|range/.test(type)) {
+      let parsed = parseFloat(value);
+      return isNaN(parsed) ? null : parsed;
+    }
+    if (type === 'checkbox') {
+      // @ts-ignore
+      const schemaType = fieldSchema?._type ?? 'boolean';
+
+      if (schemaType === 'boolean') return checked;
+
+      const nextValue = Array.isArray(fieldValue) ? [...fieldValue] : [];
+      const idx = nextValue.indexOf(value);
+
+      if (idx !== -1) {
+        if (checked) nextValue.push(value);
+        else nextValue.splice(idx, 1);
+      }
+
+      return nextValue;
+    }
+
+    return value;
+  }
+
+  return (
+    path: string,
+    formData: any,
+    fieldValue: any,
+    defaultSetter: any,
+  ): any => {
+    if (isEvent(fieldValue))
+      fieldValue = parseValueFromEvent(
+        fieldValue.target as any,
+        formGetter(path, formData),
+        schema && path && reach(schema, path, formData, context),
+      );
+
+    return setter(path, formData, fieldValue, defaultSetter);
+  };
+};
+
+function validatePath(
+  { path }: ValidationPathSpec,
   { value, schema, ...rest },
 ): Promise<Error | void> {
   return schema
@@ -116,7 +199,7 @@ export interface FormHandle {
 }
 
 export declare interface Form {
-  <T extends Yup.ObjectSchema>(
+  <T extends ObjectSchema>(
     props: FormProps<T> & React.RefAttributes<FormHandle>,
   ): React.ReactElement | null;
 
@@ -129,7 +212,7 @@ export declare interface Form {
 
 /** @alias Form */
 const _Form: Form = React.forwardRef(
-  <T extends Yup.ObjectSchema>(
+  <T extends ObjectSchema>(
     {
       children,
 
@@ -182,6 +265,7 @@ const _Form: Form = React.forwardRef(
       propOnTouch,
     );
 
+    const shouldValidate = !!schema && !noValidate;
     const flushTimeout = useTimeout();
     const submitTimeout = useTimeout();
     const isMounted = useMounted();
@@ -189,6 +273,11 @@ const _Form: Form = React.forwardRef(
     const queueRef = useRef<string[]>([]);
 
     const errorManager = useMemo(() => createErrorManager(validatePath), []);
+
+    const updateFormValue = useMemo(
+      () => createFormSetter(setter, schema, context),
+      [context, schema, setter],
+    );
 
     const yupOptions = {
       strict,
@@ -224,6 +313,7 @@ const _Form: Form = React.forwardRef(
       if (errors) {
         enqueue(Object.keys(errors));
       }
+      // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [schema]);
 
     const flush = () => {
@@ -258,8 +348,8 @@ const _Form: Form = React.forwardRef(
       queueRef.current.push(...fields);
     }
 
-    const getSchemaForPath = (path: string): Yup.Schema<any> | undefined => {
-      return schema && path && reach(schema, path, value, context);
+    const getSchemaForPath = (path: string): Schema<any> | undefined => {
+      if (schema && path) return reach(schema, path, value, context);
     };
 
     const handleChange = useEventCallback((model, paths) => {
@@ -276,13 +366,11 @@ const _Form: Form = React.forwardRef(
     });
 
     const handleValidationRequest = (
-      fields: string | string[],
+      fields: string[],
       type: string,
       args?: any[],
     ) => {
-      if (noValidate) return;
-
-      fields = toArray(fields);
+      if (!shouldValidate) return;
 
       notify(onValidate, [{ type, fields, args }]);
       enqueue(fields);
@@ -297,7 +385,7 @@ const _Form: Form = React.forwardRef(
       notify(onError, [errors]);
     };
 
-    const handleSubmitSuccess = (validatedValue: Yup.InferType<T>) => {
+    const handleSubmitSuccess = (validatedValue: InferType<T>) => {
       notify(onSubmit, [validatedValue]);
 
       return Promise.resolve(submitForm && submitForm(validatedValue)).then(
@@ -355,7 +443,7 @@ const _Form: Form = React.forwardRef(
       setSubmitting(true);
 
       return (
-        (noValidate
+        (!shouldValidate
           ? Promise.resolve(value as object)
           : schema!.validate(value, {
               ...yupOptions,
@@ -381,6 +469,7 @@ const _Form: Form = React.forwardRef(
       onSubmit: handleSubmit,
       onValidate: handleValidationRequest,
       onFieldError: handleFieldError,
+      formHasValidation: () => shouldValidate,
     });
 
     if (Element === 'form') {
@@ -393,7 +482,7 @@ const _Form: Form = React.forwardRef(
       <BindingContext
         value={value}
         getter={getter}
-        setter={setter}
+        setter={updateFormValue}
         onChange={handleChange}
       >
         <FormActionsContext.Provider value={formActions}>
@@ -440,9 +529,9 @@ _Form.propTypes = {
    * Callback that is called when the `value` prop changes.
    *
    * ```ts static
-   * function(
-   *   value: object,
-   *   updatedPaths: array<string>
+   * function (
+   *   value: any,
+   *   updatedPaths: string[]
    * )
    * ```
    */
@@ -521,7 +610,7 @@ _Form.propTypes = {
    * It is called _before_ the validation is actually run.
    *
    * ```js static
-   * function onValidate(event){
+   * function onValidate(event) {
    *   let { type, fields, args } = event
    * }
    * ```
@@ -532,7 +621,7 @@ _Form.propTypes = {
    * Callback that is fired in response to a submit, _before_ validation runs.
    *
    * ```js static
-   * function onSubmit(formValue){
+   * function onSubmit(formValue) {
    *   // do something with valid value
    * }
    * ```
@@ -543,7 +632,7 @@ _Form.propTypes = {
    * Callback that is fired in response to a submit, after validation runs for the entire form.
    *
    * ```js static
-   * function onSubmit(formValue){
+   * function onSubmit(formValue) {
    *   // do something with valid value
    * }
    * ```
@@ -626,15 +715,11 @@ _Form.propTypes = {
    * For more information about the yup api check out: https://github.com/jquense/yup/blob/master/README.md
    * @type {Schema}
    */
-  schema(props, name, componentName, ...rest: any[]) {
+  schema(props, name, componentName) {
     let err: null | Error = null;
-    if (!props.noValidate)
-      // @ts-ignore
-      err = PropTypes.any.isRequired(props, name, componentName, ...rest);
 
     if (props[name]) {
-      let schema = props[name];
-      if (!schema.__isYupSchema__ && !(schema.resolve && schema.validate))
+      if (!isSchema(props[name]))
         err = new Error(
           '`schema` must be a proper yup schema: (' + componentName + ')',
         );
