@@ -22,11 +22,11 @@ function Navbar({ className, bg = 'bg-primary' }) {
         </Link>
 
         <nav className="ml-auto">
-          <Link to="/api/Form" className="px-2 mr-3 hover:text-subtle-on-dark">
-            Documentation
+          <Link to="/api/Form" className="px-2 mr-3 hover:text-gray-400">
+            Docs
           </Link>
           <a
-            className="px-2 -mr-2 hover:text-subtle-on-dark"
+            className="px-2 -mr-2 hover:text-gray-400"
             href="https://github.com/jquense/react-formal"
           >
             Github

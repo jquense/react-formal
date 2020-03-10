@@ -55,44 +55,44 @@ function SplashPageLayout(props) {
               <span className="flex-1">Formal</span>
             </h1>
             <p className="text-2xl">Classy HTML form management</p>
-            <div>
+            <div className="flex whitespace-no-wrap  mt-3">
+              <Link
+                to="/getting-started/"
+                className="px-3 font-bold tracking-wide text-white hover:text-gray-400 flex-1"
+              >
+                Get started
+              </Link>
               <Link
                 to="/api/Form"
-                className="pr-2 text-white hover:text-gray-300"
+                className="px-3 font-bold tracking-wide text-white hover:text-gray-400 flex-1"
               >
-                Documentation
+                API docs
               </Link>
-              <a
-                href="https://github.com/jquense/react-formal"
-                className="text-white hover:text-gray-50"
-              >
-                Github
-              </a>
             </div>
           </div>
         </div>
         <div className="bg-gray-50">
-          <div className="mx-auto container text-center grid-flow-row grid md:grid-cols-3 w-128 md:w-auto gap-12 py-16">
+          <div className="mx-auto px-4 container text-center grid-flow-row grid md:grid-cols-3 w-128 md:w-auto gap-12 py-16">
             <div className="mb-0 flex flex-col">
-              <h2>Minimal</h2>
+              <h2>Sophisticated</h2>
               <p className="flex-1">
-                Requires about as much boilerplate as a single input. No
-                managing tons of values and onChange handlers.
+                An API that can deftly handle every use case; from the simple
+                forms to exceedly complex ones.
               </p>
             </div>
             <div className="flex flex-col">
-              <h2>Typed</h2>
+              <h2>Eloquent</h2>
               <p className="flex-1">
-                Schema based forms to handle all the frustrating parsing and
-                serializing of strings to objects automatically.
+                An expressive API for modeling simple to complex transformations
+                and validations with ease.
               </p>
             </div>
 
             <div className="flex flex-col">
-              <h2>Flexible</h2>
+              <h2>Deferential</h2>
               <p className="flex-1">
-                You have complete control how each field renders. Use any
-                components you want!
+                Gives you complete control of how your forms look. Use any
+                components or ui framework you wish.
               </p>
             </div>
           </div>

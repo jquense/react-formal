@@ -48,6 +48,22 @@ describe('Field', () => {
     ).toEqual('test'); // test invalid-field
   });
 
+  it('should provide an onChange handler even without validation', () => {
+    const spy = jest.fn();
+
+    expect(
+      mount(
+        <Form schema={schema} onValidate={spy} defaultValue={{}}>
+          <Form.Field name="name" as={TestInput} events={null} />
+        </Form>,
+      )
+        .find(TestInput)
+        .instance().props.onChange,
+    ).toBeDefined();
+
+    expect(spy).not.toBeCalled();
+  });
+
   it('should fall back to using schema types', () => {
     let schema = yup.object({
       string: yup.string(),
@@ -405,7 +421,7 @@ describe('Field', () => {
       });
     });
 
-    it('should set events via a function', done => {
+    it('should set events via a function', async () => {
       let schema = yup.object({
         number: yup.number().min(5),
       });
@@ -427,25 +443,28 @@ describe('Field', () => {
         </Form>,
       );
       // Field is valid only; `onBlur`
-      act(() => {
+      await act(() => {
         wrapper.find('input').simulate('change', { target: { value: '4' } });
         wrapper.find('input').simulate('blur', { target: { value: '4' } });
-      });
 
-      setTimeout(() => {
-        act(() => {
-          expect(spy).toHaveBeenCalledTimes(1);
-          // field is invalid now: `onChange`
-          wrapper.find('input').simulate('blur', { target: { value: '4' } });
+        return new Promise(resolve => {
+          setTimeout(() => {
+            expect(spy).toHaveBeenCalledTimes(1);
+            // field is invalid now: `onChange`
+            wrapper.find('input').simulate('blur', { target: { value: '4' } });
 
-          expect(spy).toHaveBeenCalledTimes(1);
+            expect(spy).toHaveBeenCalledTimes(1);
 
-          wrapper.find('input').simulate('change', { target: { value: '6' } });
+            wrapper
+              .find('input')
+              .simulate('change', { target: { value: '6' } });
 
-          expect(spy).toHaveBeenCalledTimes(2);
+            expect(spy).toHaveBeenCalledTimes(2);
+
+            resolve();
+          }, 100);
         });
-        done();
-      }, 100);
+      });
     });
 
     it('should field onError should replace field errors', () => {

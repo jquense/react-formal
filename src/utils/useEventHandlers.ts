@@ -16,7 +16,8 @@ export default function useEventHandlers(
   handleEvent: (event: string, args: any[]) => any,
 ) {
   const events = toArray(maybeEvents);
-  const eventMap = useMemo(() => ({}), [handleEvent]);
+
+  const eventMap = useMemo(() => ({}), [handleEvent]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return useMemo(() => {
     const result: Record<string, (...args: any[]) => any> = {};
@@ -32,6 +33,7 @@ export default function useEventHandlers(
       });
     }
     return result;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [events && events.join(','), eventMap]);
 }
 

@@ -7,11 +7,11 @@
     "build": "gatsby build"
   },
   "dependencies": {
-    "@docpocalypse/code-live": "^0.4.2",
-    "@docpocalypse/gatsby-theme": "^0.9.12",
+    "@docpocalypse/code-live": "^0.4.5",
+    "@docpocalypse/gatsby-theme": "^0.10.2",
     "@docpocalypse/props-table": "^0.3.5",
     "astroturf": "^0.10.2",
-    "gatsby": "^2.19.22",
+    "gatsby": "^2.19.31",
     "gatsby-plugin-astroturf": "^0.2.1",
     "gatsby-plugin-web-font-loader": "^1.0.4",
     "gatsby-plugin-webfonts": "^1.1.2",

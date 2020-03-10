@@ -2,24 +2,6 @@
 title: Getting started
 ---
 
-// // import Editor from '../components/Playground'
-// // import IntroExample from '../demos/intro'
-
-React Formal is a library for quickly and painlessly handling HTML form
-validation and serialization. It tries to strike a balance between
-prescriptive form generators and libraries that require you to manually
-handle ever input and manage them in state. React Formal, lets you build your
-form however you want with no restrictions on form markup, or unnecessary boilerplate.
-React Formal leverages a schema validation system, which offers helpful benefits
-over the traditional "validate the state DOM" approach.
-
-- Forms can be handled the "React Way", with controlled or uncontrolled values,
-  completely decoupled from DOM state.
-
-- Working against javascript objects instead of HTML representations of an objects,
-  means no need for `<input type='hidden'/>`; only render inputs that a user actually needs to change!
-- Schema based validation, lets you reuse your parsing and model validation logic
-
 ## Getting Started
 
 Lets install both `react-formal` and `yup`.
@@ -31,16 +13,184 @@ npm install react-formal yup
 > For older browsers without the `Promise` as well as `Set` and `Map` global object, you'll need to include
 > a polyfill such as `es6-promise`, or `core-js`.
 
-If you'd like more robust inputs such as, date and number pickers, multiselect,
-and comboboxes (like in the documentation) you might want to also install `react-formal-inputs` which
-is swaps out the native input types for [react-widgets](http://jquense.github.io/react-widgets/) (read the docs for complete installation instructions).
+## Creating a form
 
-```sh
-npm install react-formal-inputs
+React Formal, consolidates and tracks your form's state, input values are mapped
+to a form value via their `name` and works very similar to how you might serialize
+a native HTML form.
+
+```jsx live
+import Form from 'react-formal';
+import Result from '../components/Result';
+
+<Form noValidate defaultValue={{ age: 25, name: 'Jane Doe' }}>
+  <label>
+    Who are you?
+    <Form.Field name="name" />
+  </label>
+  <label>
+    How old are you?
+    <Form.Field name="age" type="number" />
+  </label>
+  <Result />
+</Form>;
 ```
 
-Lets first define the object schema that our form will provide input too.
-react-formal uses `yup`, a small schema library for writing expresive validations, as it's main validation engine.
-Check out the [quick start guide to `yup`](https://runkit.com/jquense/yup#) for schema basics,
-as well as [yup documentation site](https://github.com/jquense/yup/blob/master/README.md) for
-a full run down of the features.
+Forms are made up of `<Field>`s, and you can use almost any component as
+a field. The only expectation React Formal has it that fields accept a `value`
+and report changes by calling an injected `onChange` callback. It's the same
+contract as plain controlled inputs in React.
+
+The example below is a single form `Field` made up of an input and button.
+
+```jsx live
+import Form, { useField } from 'react-formal';
+import Result from '../components/Result';
+
+const currentYear = new Date().getFullYear();
+
+const AgeInput = ({ name, meta, value, ...props }) => {
+  const handleClear = () => {
+    meta.onChange(null);
+  };
+
+  return (
+    <>
+      <input
+        {...props}
+        value={value}
+        type="number"
+        min="1900"
+        max={currentYear}
+      />
+      {value && (
+        <p>
+          born: {currentYear - value}{' '}
+          <button type="button" onClick={handleClear}>
+            clear
+          </button>
+        </p>
+      )}
+    </>
+  );
+};
+
+<Form noValidate defaultValue={{ age: 64 }}>
+  <label>
+    Enter your age:
+    <Form.Field as={AgeInput} name="age" />
+  </label>
+  <Result />
+</Form>;
+```
+
+## Adding Validation
+
+Most forms need some sort of value validation. Sometimes is simple, but often it
+can get very complex. In order to handle all the cases React Formal relies on `yup`,
+a small, schema-based. validation library. For more infomation about how schema
+affect forms see: [Form Schema](/api/Form#schema).
+
+A schema, tells each form how and where to validate it's inputs, hit submit to
+see the issue here:
+
+```jsx live
+import Form from 'react-formal';
+import Result from '../components/Result';
+import * as yup from 'yup';
+
+const schema = yup.object({
+  name: yup.string().required(),
+});
+
+<Form schema={schema}>
+  <label>
+    Enter your name:
+    <Form.Field name="name" />
+  </label>
+  <Form.Message name="name" className="error" />
+  <Form.Submit>Submit</Form.Submit>
+  <Result />
+</Form>;
+```
+
+You can easily control how and and when fields trigger validation as well. Consult
+the `FormSubmit` and `Field` API docs for more infomation.
+
+## Submitting a form
+
+Once a form is complete it's time to submit it, collect the form data and maybe
+save it to a server. You've already seen the `<Form.Submit>` component above, which
+triggers a form wide validation.
+
+```jsx live
+import Form from 'react-formal';
+import * as yup from 'yup';
+
+const schema = yup.object({
+  name: yup.string().required(),
+});
+
+const handleSubmit = formData => {
+  alert(JSON.stringify(formData, null, 2));
+};
+
+<Form schema={schema} onSubmit={handleSubmit}>
+  <label>
+    Enter your name:
+    <Form.Field name="name" />
+  </label>
+  <Form.Message name="name" className="error" />
+  <Form.Submit>Submit</Form.Submit>
+</Form>;
+```
+
+When you click `Submit` the form enters a "submitting" phase while it runs validation
+again. Once it passes an `onSubmit` callback will fire. After which React Formal
+considers the submission finished and is ready to continue accepting input.
+
+React Formal gives you additional hooks to control how submission works. For instance
+you may want your Submit buttons to provide feadback while saving data to the server.
+`submitForm` allows you do do async work while the Form waits for you to finish.
+In this example we change the button text to "submitting…" while we are saving
+off the form data to the server.
+
+```jsx live
+import Form, { useFormSubmit } from 'react-formal';
+import fakeSaveToServer from '../fakeSaveToServer';
+import * as yup from 'yup';
+
+const schema = yup.object({
+  name: yup.string().required(),
+});
+
+const submitForm = async formData => {
+  await fakeSaveToServer(formData);
+};
+
+const Submit = () => {
+  const [submit, submitMeta] = useFormSubmit();
+
+  return (
+    <button type="submit" onClick={submit}>
+      {submitMeta.submitting ? 'Submitting…' : 'Submit'}
+    </button>
+  );
+};
+
+<Form
+  schema={schema}
+  submitForm={submitForm}
+  defaultValue={{ name: 'Jane Doe' }}
+>
+  <label>
+    Enter your name:
+    <Form.Field name="name" />
+  </label>
+  <Form.Message name="name" className="error" />
+  <Submit>Submit</Submit>
+</Form>;
+```
+
+And that's the basics of how React Formal works. Consult the [API](/api/Form) documentation
+for more tips and tricks.

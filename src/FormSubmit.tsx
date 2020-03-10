@@ -20,10 +20,7 @@ const defaultEvents = ['onClick'];
  */
 function FormSubmit<TAs extends ElementType = 'button'>(
   props: FormSubmitProps<TAs> &
-    Omit<
-      React.ComponentPropsWithoutRef<TAs>,
-      'triggers' | 'events' | 'as' | 'type'
-    >,
+    Omit<React.ComponentPropsWithoutRef<TAs>, 'triggers' | 'events' | 'as'>,
 ) {
   const propsRef = useCommittedRef<any>(props);
   const {

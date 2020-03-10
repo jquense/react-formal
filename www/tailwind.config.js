@@ -88,9 +88,10 @@ module.exports = {
     // }),
 
     InlineCode: t => ({
-      color: 'inherit',
-      padding: `0 ${t('padding.1')}`,
-      backgroundColor: transparentize(0.75, t('colors.info')),
+      '@apply rounded rounded-sm': true,
+      'color': 'inherit',
+      'padding': `0 ${t('padding.1')}`,
+      'backgroundColor': transparentize(0.92, t('colors.info')),
     }),
 
     CodeBlock: {
@@ -108,6 +109,10 @@ module.exports = {
 
         '& fieldset': {
           '@apply mb-4': '',
+        },
+
+        '& :global(.error)': {
+          '@apply text-danger block text-sm py-1': '',
         },
 
         '& input, & select': {
@@ -128,20 +133,20 @@ module.exports = {
           },
         },
 
+        '& select[multiple]': {
+          height: 'auto',
+          maxHeight: 130,
+        },
         '& label': {
           '@apply text-gray-800 block': '',
 
           '& + :global(.error)': {
-            '@apply text-danger -mt-2 block text-sm py-1': '',
+            '@apply -mt-2': '',
           },
         },
 
         '& label > input, & label > select': {
           '@apply mt-1': '',
-        },
-
-        '& pre': {
-          '@apply pt-3': '',
         },
 
         '& button': {

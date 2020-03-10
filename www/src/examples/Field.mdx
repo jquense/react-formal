@@ -1,39 +1,48 @@
 The Field Component renders a form control and handles input value updates and validations.
-Changes to the Field value are automatically propagated back up to the containing Form
+Changes to the `<Field>` value are automatically propagated back up to the containing Form
 Component.
 
-Fields provide a light abstraction over normal input components where values and onChange handlers
-are take care of for you. Beyond that they just render the input for their type, Fields whille pass along
-any props and children to the input so you can easily configure new input types.
+## Overview
+
+In the simplest cases `<Field>`s provide a light abstraction over normal input components. Fields
+shouls provide a `name` mapping the input to a branch of the central form data.
+Providing values and onChange handlers is taken take care of, as well as basic
+value coalescing for multiple selects and checkbox groups.
 
 ```jsx
 import Form from "react-formal";
-import schema from "../schema";
+import Result from "../components/Result";
 
 <Form
-  noValidate
-  schema={schema}
   defaultValue={{
     name: { first: "Sally" },
-    colorID: 0
+    colors: ["red"]
   }}
 >
-  <label htmlFor="example-firstName">Name</label>
-  <Form.Field
-    name="name.first"
-    placeholder="First name"
-    id="example-firstName"
-  />
-  <label htmlFor="example-color">Favorite Color</label>
-  <Form.Field as="select" name="colorId" id="example-color">
-    <option value={0}>Red</option>
-    <option value={1}>Yellow</option>
-    <option value={2}>Blue</option>
-    <option value={3}>other</option>
-  </Form.Field>
-  <Form.Submit type="submit">Submit</Form.Submit>
+  <label>
+    Name
+    <Form.Field
+      name="name.first"
+      placeholder="First name"
+      id="example-firstName"
+    />
+  </label>
+  <label>
+    Favorite Colors <small>(ctrl/cmd click to select multiple)</small>
+    <Form.Field as="select" multiple name="colors">
+      <option value="red">Red</option>
+      <option value="yellow">Yellow</option>
+      <option value="blue">Blue</option>
+      <option value="">Other</option>
+    </Form.Field>
+  </label>
+  <Result />
 </Form>;
 ```
+
+You can manually control the type and sort of input via the `as` prop (for textareas and selects),
+and the `type` prop for `inputs` same as with plain HTML inputs. Fields always
+provide `value` and `onChange` props to their inputs.
 
 In addition to injecting Field components with events and the field `value`, a
 special prop called `meta` is also provided to all Field renderer components. `meta`

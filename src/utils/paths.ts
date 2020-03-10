@@ -41,13 +41,15 @@ export function reduce(paths: string[]) {
 
 export function trim(
   rootPath: string,
-  pathHash: Record<string, string>,
+  pathHash: Record<string, any>,
   exact = false,
 ) {
   let workDone = false;
   let result = {};
 
-  let matches = exact ? p => p === rootPath : p => inPath(rootPath, p);
+  let matches = exact
+    ? (p: string) => p === rootPath
+    : (p: string) => inPath(rootPath, p);
 
   Object.keys(pathHash).forEach(path => {
     if (matches(path)) {

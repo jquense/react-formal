@@ -416,10 +416,10 @@ describe('Form', () => {
     });
 
     it('should deduplicate validation paths', () => {
-      let paths = [];
+      let paths = [] as string[];
 
-      return errorManager(path => {
-        paths.push(path);
+      return errorManager(spec => {
+        paths.push(spec.path);
       })
         .collect(['name', 'name.meta', 'name.first'])
         .then(() => {
@@ -436,7 +436,7 @@ describe('Form', () => {
       };
 
       return errorManager(() => {})
-        .collect('name', errors)
+        .collect(['name'], errors)
         .then(errors => {
           expect(errors).toEqual({
             id: ['invalid'],
@@ -453,7 +453,7 @@ describe('Form', () => {
       };
 
       return errorManager(() => {})
-        .collect('foo', errors)
+        .collect(['foo'], errors)
         .then(newErrors => {
           expect(errors).toBe(newErrors);
         });

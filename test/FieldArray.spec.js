@@ -1,8 +1,8 @@
 import { mount } from 'enzyme';
-import React from 'react';
+import React, { useImperativeHandle } from 'react';
 import { act } from 'react-dom/test-utils';
 import { array, object, string } from 'yup';
-import Form from '../src';
+import Form, { useFieldArray } from '../src';
 
 const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -18,30 +18,30 @@ describe('FieldArray', () => {
       .default(() => [{ name: 'red', hexCode: '#ff0000' }]),
   });
 
-  class ColorList extends React.Component {
-    remove(index) {
-      this.props.arrayHelpers.remove(this.props.value[index]);
-    }
+  const ColorList = React.forwardRef(({ name }, ref) => {
+    const [values, arrayHelpers] = useFieldArray(name);
 
-    render() {
-      const { value, name } = this.props;
-      // console.log('color list', value)
-      return (
-        <ul>
-          {value.map((value, idx) => (
-            <li key={`${value.hexCode}-${value.name}`}>
-              <Form.Field name={`${name}[${idx}].name`} />
-              <Form.Field name={`${name}[${idx}].hexCode`} />
-            </li>
-          ))}
-        </ul>
-      );
-    }
-  }
+    useImperativeHandle(
+      ref,
+      () => ({
+        remove: index => {
+          arrayHelpers.remove(values[index]);
+        },
+      }),
+      [arrayHelpers, values],
+    );
 
-  const renderColorList = (props, meta, arrayHelpers) => (
-    <ColorList {...props} arrayHelpers={arrayHelpers} />
-  );
+    return (
+      <ul>
+        {values.map((value, idx) => (
+          <li key={`${value.hexCode}-${value.name}`}>
+            <Form.Field name={`${name}[${idx}].name`} />
+            <Form.Field name={`${name}[${idx}].hexCode`} />
+          </li>
+        ))}
+      </ul>
+    );
+  });
 
   it('should render forms correctly', () => {
     mount(
@@ -51,9 +51,9 @@ describe('FieldArray', () => {
         defaultErrors={{ 'colors[0].name': 'foo' }}
       >
         <Form.FieldArray name="colors">
-          {({ value }) => (
+          {values => (
             <ul>
-              {value.map((value, idx) => (
+              {values.map((value, idx) => (
                 <li key={idx}>
                   <Form.Field
                     name={`colors[${idx}].name`}
@@ -81,9 +81,9 @@ describe('FieldArray', () => {
         defaultErrors={{ 'colors[0].name': 'foo' }}
       >
         <Form.FieldArray name="colors">
-          {({ value }) => (
+          {values => (
             <ul>
-              {value.map((value, idx) => (
+              {values.map((value, idx) => (
                 <li key={idx}>
                   <Form.Field name={`colors[${idx}].name`} className="field" />
                   <Form.Field
@@ -147,7 +147,7 @@ describe('FieldArray', () => {
         { name: 'other red', hexCode: '#ff0000' },
       ],
     };
-
+    let ref = React.createRef();
     let wrapper = mount(
       <Form
         schema={schema}
@@ -155,16 +155,16 @@ describe('FieldArray', () => {
         defaultValue={defaultValue}
         defaultErrors={{ 'colors[0].name': 'foo' }}
       >
-        <Form.FieldArray name="colors">{renderColorList}</Form.FieldArray>
+        <ColorList name="colors" ref={ref} />
       </Form>,
     );
 
-    let list = wrapper.find(ColorList);
+    let list = wrapper.find('ul');
 
-    expect(list.prop('value')).toHaveLength(2);
+    expect(list.find('li')).toHaveLength(2);
 
     await act(() => {
-      list.instance().remove(1);
+      ref.current.remove(1);
 
       return wait();
     });
@@ -190,6 +190,7 @@ describe('FieldArray', () => {
       ],
     };
     const ref = React.createRef();
+    const ref2 = React.createRef();
     let wrapper = mount(
       <div>
         <Form
@@ -199,12 +200,12 @@ describe('FieldArray', () => {
           onError={errorSpy}
           defaultValue={defaultValue}
         >
-          <Form.FieldArray name="colors">{renderColorList}</Form.FieldArray>
+          <ColorList name="colors" ref={ref2} />
         </Form>
       </div>,
     );
-    let list = wrapper.find(ColorList);
-    expect(list.prop('value')).toHaveLength(2);
+
+    expect(wrapper.find('ul > li')).toHaveLength(2);
 
     await act(() => ref.current.submit());
 
@@ -213,7 +214,7 @@ describe('FieldArray', () => {
 
     await act(() => {
       // remove the first color
-      list.instance().remove(0);
+      ref2.current.remove(0);
       return wait();
     });
     // The error for the first color should be gone

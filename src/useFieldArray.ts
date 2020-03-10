@@ -1,136 +1,149 @@
-import invariant from 'invariant'
-import { useRef } from 'react'
-import { Errors } from './types'
-import useField, { FieldMeta, UseFieldOptions } from './useField'
-import { move, remove, shift, unshift } from './utils/ErrorUtils'
+import invariant from 'invariant';
+import { useRef, useMemo, useContext } from 'react';
+import { Errors } from './types';
+import { FieldMeta, UseFieldMetaOptions, useFieldMeta } from './useField';
+import { move, remove, shift, unshift } from './utils/ErrorUtils';
+import { ValidationPathSpec } from './errorManager';
+import { FormActionsContext } from './Contexts';
 
-export type FieldArrayMeta = FieldMeta
+export type FieldArrayMeta = FieldMeta;
 
 export interface FieldArrayHelpers<T = any> {
-  update(item: T, oldItem: T): void
+  /** Add an item to the beginning of the array */
+  unshift(item: T): void;
 
-  add(item: T): void
+  /**
+   * Add an item to the end of the array
+   * @deprecated use `push`
+   */
+  add(item: T): void;
 
-  insert(item: T, index: number): void
+  /** Add an item to the end of the array */
+  push(item: T): void;
 
-  move(item: T, toIndex: number): void
+  /** Insert an item at the provided index */
+  insert(item: T, index: number): void;
 
-  remove(item: T): void
+  /** Move an item to a new index */
+  move(item: T, toIndex: number): void;
 
-  items(): Array<{
-    value: T
-    name: string
-    onChange: (T) => void
-    meta: FieldArrayMeta
-  }>
+  /** Remove an item from the list */
+  remove(item: T): void;
 
-  onItemError(name: string, errors: Errors): void
+  /**
+   * update or replace an item with a new one.
+   */
+  update(item: T, oldItem: T): void;
+
+  onItemError(name: string, errors: Errors): void;
 }
 
-function filter(errors, baseName) {
-  const paths = Object.keys(errors || {})
-  const result = {}
+export type UseFieldArrayOptions = UseFieldMetaOptions;
 
-  paths.forEach(path => {
-    if (path.indexOf(baseName) !== 0) return
-    result[path] = errors[path]
-  })
+/**
+ * Retrieve the values at a given path as well as a setr of array helpers
+ * for manipulating list values.
+ *
+ * @param name A field path
+ */
+function useFieldArray<T = any>(
+  name: string,
+): [T[], FieldArrayHelpers<T>, FieldMeta];
+function useFieldArray<T = any>(
+  options: UseFieldArrayOptions,
+): [T[], FieldArrayHelpers<T>, FieldMeta];
+function useFieldArray<T = any>(
+  optionsOrName: string | UseFieldArrayOptions,
+): [T[], FieldArrayHelpers<T>, FieldMeta] {
+  let options =
+    typeof optionsOrName === 'string' ? { name: optionsOrName } : optionsOrName;
 
-  return result
-}
+  let { name } = options;
 
-export type UseFieldArrayOptions = UseFieldOptions
+  const actions = useContext(FormActionsContext);
 
-export function useFieldArray<T = any>(props: UseFieldArrayOptions) {
-  const [fieldProps, meta] = useField(props)
+  // TODO: doesn't shallow validate validates
+  const fieldsToValidate = useMemo<ValidationPathSpec[]>(
+    () => [{ path: name, shallow: true }],
+    [name],
+  );
 
-  const { errors, onError, value, onChange } = meta
+  const meta = useFieldMeta({ ...options, validates: fieldsToValidate });
+
+  const { errors, onError, value, onChange, update } = meta;
 
   const sendErrors = (fn: (e: Errors, n: string) => Errors) => {
-    onError(fn(errors || {}, props.name))
-  }
+    onError(fn(errors || {}, options.name));
+  };
 
-  const helpersRef = useRef<FieldArrayHelpers<T>>({
-    add: item => {
-      const { value } = fieldProps
-      helpersRef.current.insert(item, value ? value.length : 0)
+  const helpers: FieldArrayHelpers<T> = {
+    unshift: (item: T) => helpers.insert(item, 0),
+
+    add: (item: T) => helpers.push(item),
+
+    push: (item: T) => helpers.insert(item, value ? value.length : 0),
+
+    insert: (item: T, index: number) => {
+      const newValue = value == null ? [] : [...value];
+
+      newValue.splice(index, 0, item);
+
+      onChange(newValue);
+      sendErrors((errors, name) => unshift(errors, name, index));
     },
 
-    onItemError: (name, errors) => {
-      sendErrors(fieldErrors => ({
-        ...remove(fieldErrors, name),
-        ...errors,
-      }))
-    },
-
-    update: (updatedItem, oldItem) => {
-      const index = value.indexOf(oldItem)
-      const newValue = value == null ? [] : [...value]
-
-      newValue.splice(index, 1, updatedItem)
-
-      onChange(newValue)
-    },
-
-    insert: (item, index) => {
-      const newValue = value == null ? [] : [...value]
-
-      newValue.splice(index, 0, item)
-
-      onChange(newValue)
-      sendErrors((errors, name) => unshift(errors, name, index))
-    },
-
-    move: (item, toIndex) => {
-      const fromIndex = value.indexOf(item)
-      const newValue = value == null ? [] : [...value]
+    move: (item: T, toIndex: number) => {
+      const fromIndex = value.indexOf(item);
+      const newValue = value == null ? [] : [...value];
 
       invariant(
         fromIndex !== -1,
         '`onMove` must be called with an item in the array',
-      )
+      );
 
-      newValue.splice(toIndex, 0, ...newValue.splice(fromIndex, 1))
+      newValue.splice(toIndex, 0, ...newValue.splice(fromIndex, 1));
 
       // FIXME: doesn't handle syncing error state. , { action: 'move', toIndex, fromIndex }
-      onChange(newValue)
+      onChange(newValue);
 
-      sendErrors((errors, name) => move(errors, name, fromIndex, toIndex))
+      sendErrors((errors, name) => move(errors, name, fromIndex, toIndex));
     },
 
-    remove: item => {
-      if (value == null) return
+    remove: (item: T) => {
+      if (value == null) return;
 
-      const index = value.indexOf(item)
-      onChange(value.filter(v => v !== item))
+      const index = value.indexOf(item);
+      onChange(value.filter(v => v !== item));
 
-      sendErrors((errors, name) => shift(errors, name, index))
+      sendErrors((errors, name) => shift(errors, name, index));
     },
 
-    items: () => {
-      const values = value
-      return !values
-        ? []
-        : values.map((value, index) => {
-            const itemName = `${props.name}[${index}]`
-            const itemErrors = filter(meta.errors, itemName)
-
-            return {
-              value,
-              name: itemName,
-              onChange: item => helpersRef.current.update(item, values[index]),
-              meta: {
-                ...meta,
-                errors: itemErrors,
-                valid: !Object.keys(itemErrors).length,
-                invalid: !!Object.keys(itemErrors).length,
-                onError: errors =>
-                  helpersRef.current.onItemError(itemName, errors),
-              },
-            }
-          })
+    onItemError: (name: string, errors: Errors) => {
+      sendErrors(fieldErrors => ({
+        ...remove(fieldErrors, name),
+        ...errors,
+      }));
     },
-  })
 
-  return [fieldProps, meta, helpersRef.current] as const
+    update: (updatedItem: T, oldItem: T) => {
+      const index = value.indexOf(oldItem);
+      const newValue = value == null ? [] : [...value];
+
+      newValue.splice(index, 1, updatedItem);
+
+      update(newValue);
+      // @ts-ignore
+      if (options.noValidate) return;
+
+      actions?.onValidate([`${name}[${index}]`], 'onChange', []);
+    },
+  };
+
+  return [
+    value as T[],
+    Object.assign(useRef({} as any).current, helpers),
+    meta,
+  ];
 }
+
+export default useFieldArray;

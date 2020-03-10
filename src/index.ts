@@ -8,10 +8,13 @@ import Message from './Message';
 import Summary from './Summary';
 import config from './config';
 import useField from './useField';
-import { useFieldArray } from './useFieldArray';
+import useFormValues from './useFormValues';
+import useFieldArray from './useFieldArray';
 import errToJSON from './utils/errToJSON';
 import useEventHandlers, { useMergedHandlers } from './utils/useEventHandlers';
 import { useFormSubmit } from './useFormSubmit';
+import useErrors from './useErrors';
+import useTouched from './useTouched';
 
 export type Form = typeof FormComponent;
 
@@ -67,6 +70,9 @@ export {
   useField,
   useFieldArray,
   useFormSubmit,
+  useFormValues,
+  useErrors,
+  useTouched,
 };
 
 export type ReactFormal = typeof FormComponent &

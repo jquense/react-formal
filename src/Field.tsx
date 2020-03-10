@@ -29,7 +29,7 @@ export type FieldProps<TAs extends React.ElementType = any> = {
    * ```jsx
    * import Form from 'react-formal';
    *
-   * <Form noValidate schema={modelSchema}>
+   * <Form>
    *   Use the schema to determine type
    *   <Form.Field
    *     name='dateOfBirth'
@@ -76,7 +76,7 @@ export type FieldProps<TAs extends React.ElementType = any> = {
    *
    * ```
    */
-  name: string;
+  name: string | string;
 
   /**
    * Event name or array of event names that the Field should trigger a validation.
@@ -173,8 +173,8 @@ export type FieldProps<TAs extends React.ElementType = any> = {
   validates?: string | string[];
 
   /**
-   * Indicates whether child fields of the named field
-   * affect the active state ofthe field.
+   * Indicates whether child paths of the current Field
+   * affect the active state of the field.
    *
    * ```
    * -> 'names'
@@ -182,7 +182,9 @@ export type FieldProps<TAs extends React.ElementType = any> = {
    * -> 'names.last'
    * ```
    *
-   * Are all considered "part" of a field named `'names'` by default.
+   * Are all considered "part" of a field named `'names'` by default. Does not
+   * affect which paths are validated, only whether `meta.valid` considers child
+   * paths for its state.
    */
   exclusive?: boolean;
 
@@ -322,6 +324,7 @@ _Field.displayName = 'Field';
 
 _Field.propTypes = {
   name: PropTypes.string.isRequired,
+
   as: PropTypes.oneOfType([elementType, PropTypes.string]),
   events: PropTypes.oneOfType([
     PropTypes.string,

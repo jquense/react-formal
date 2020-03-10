@@ -22,7 +22,8 @@ function mapKeys(
 
     if (isChildPath(baseName, path)) {
       const matches = path.slice(baseName.length).match(/\[(\d+)\](.*)$/);
-      newKey = fn(+matches![1], matches![2] || '', path);
+      newKey = fn(+matches![1], matches![2] || '', path) ?? path;
+
       if (!workDone && newKey !== path) workDone = true;
     }
 
@@ -95,11 +96,11 @@ export function remove(errors: Errors, ...basePaths: string[]) {
   return omitBy(errors, (_, path) => basePaths.some(b => inPath(b, path)));
 }
 
-export function shift(errors: Errors, baseName: string, atIndex: number) {
+export function shift(errors: Errors, baseName: string, atIndex = 0) {
   const current = `${baseName}[${atIndex}]`;
 
   return mapKeys(remove(errors, current), baseName, (index, tail) => {
-    if (index > atIndex) {
+    if (index >= atIndex) {
       return `${baseName}[${index - 1}]${tail}`;
     }
 
@@ -107,9 +108,9 @@ export function shift(errors: Errors, baseName: string, atIndex: number) {
   });
 }
 
-export function unshift(errors: Errors, baseName: string, atIndex: number) {
+export function unshift(errors: Errors, baseName: string, atIndex = 0) {
   return mapKeys(errors, baseName, (index, tail) => {
-    if (index > atIndex) {
+    if (index >= atIndex) {
       return `${baseName}[${index + 1}]${tail}`;
     }
 

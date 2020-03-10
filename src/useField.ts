@@ -1,43 +1,35 @@
 import cn from 'classnames';
-import memoize from 'memoize-one';
-import { useCallback, useContext, useMemo } from 'react';
-import shallowequal from 'shallowequal';
+import { useCallback, useContext, useMemo, useRef } from 'react';
 import { useBinding } from 'topeka';
 import { Schema } from 'yup';
 import {
-  FormActions,
   FormActionsContext,
-  FormErrorContext,
   FormSubmitsContext,
   FormTouchedContext,
 } from './Contexts';
 import config from './config';
 import { Errors } from './types';
-import { filterAndMapErrors, inclusiveMapErrors } from './utils/ErrorUtils';
 import isNativeType from './utils/isNativeType';
 import { toArray } from './utils/paths';
 import useEventHandlers, { notify } from './utils/useEventHandlers';
+import useErrors from './useErrors';
+import { ValidationPathSpec } from './errorManager';
 
 function resolveToNativeType(type: unknown) {
   if (type === 'boolean') return 'checkbox';
+  if (type === 'array') return 'select';
   return isNativeType(type) ? type : 'text';
 }
 
-function isFilterErrorsEqual([a], [b]) {
-  let isEqual =
-    (a.errors === b.errors || shallowequal(a.errors, b.errors)) &&
-    a.names === b.names &&
-    a.mapErrors === b.mapErrors;
-
-  return isEqual;
-}
-
-interface UseFieldMetaOptions {
+export interface UseFieldMetaOptions {
   name: string;
   type?: string;
   exclusive?: boolean;
   noValidate?: boolean;
   errorClass?: string;
+  mapToValue?: MapToValue;
+  mapFromValue?: MapFromValue;
+  validates: Array<string | ValidationPathSpec>;
 }
 
 export interface FieldMeta {
@@ -59,59 +51,87 @@ export interface FieldMeta {
   onError: (errors: Errors) => void;
 
   value: any;
-  onChange: (nextFieldValue: unknown) => void;
+
+  /** Updates the field value in formData, does not trigger any Validation */
+  update: (nextFieldValue: unknown, ...args: any[]) => void;
+
+  /**
+   * Handle a change event for a field, updates the field value and triggers
+   * validation if applicable.
+   */
+  onChange: (nextFieldValue: unknown, ...args: any[]) => void;
 
   events: string[];
 }
 
-function useFieldMeta(opts: UseFieldMetaOptions, actions: FormActions) {
+const passThrough = v => v;
+
+export function useFieldMeta(opts: UseFieldMetaOptions) {
   let {
     name,
     type,
+    validates,
     exclusive,
     noValidate,
+    mapToValue,
+    mapFromValue = passThrough,
     errorClass = config.errorClass,
   } = opts;
 
+  const [value, onChange] = useBinding(mapToValue || name, mapFromValue);
+
+  const warned = useRef(false);
+  const actions = useContext(FormActionsContext);
   const submits = useContext(FormSubmitsContext);
   const touched = useContext(FormTouchedContext);
-  const errors = useContext(FormErrorContext);
+  const filteredErrors = useErrors(name, { inclusive: !exclusive });
 
-  // this is so we get a memoized function that is instance specific
-  const memoizedFilter = useMemo(
-    () => memoize(filterAndMapErrors, isFilterErrorsEqual),
-    [],
-  );
-
-  let handleFieldError = (errors: Errors) => actions.onFieldError(name, errors);
+  let handleFieldError = (errors: Errors) =>
+    actions!.onFieldError(name, errors);
 
   let schema: Schema<any> | undefined;
   try {
-    if (name) schema = actions.getSchemaForPath?.(name)
+    if (name) schema = actions!.getSchemaForPath(name)
   } catch (err) { /* ignore */ } // prettier-ignore
 
   if (process.env.NODE_ENV !== 'production') {
-    if (!(!actions || noValidate || !name || schema))
+    const shouldWarn =
+      warned.current === false &&
+      !schema &&
+      !noValidate &&
+      actions?.formHasValidation();
+
+    if (shouldWarn) {
+      warned.current = true;
       console.warn(
         `There is no corresponding schema defined for this field: "${name}" ` +
           "Each Field's `name` prop must be a valid path defined by the parent Form schema",
       );
+    }
   }
+
+  const onValidate = actions?.onValidate;
 
   let meta: Partial<FieldMeta> = {
     schema,
     errorClass,
-    context: actions.yupContext,
+    context: actions?.yupContext,
     touched: touched[name],
     onError: handleFieldError,
+    value,
+    update: onChange,
+    // Add an onChange handler to `meta` so that custom inputs
+    // don't need to infer the events configured for a Field
+    onChange: useCallback(
+      (...args) => {
+        onChange(...args);
+        if (noValidate || !onValidate) return;
+        onValidate(validates, 'onChange', args);
+      },
+      [onChange, validates, noValidate, onValidate],
+    ),
     ...submits,
   };
-
-  const filteredErrors = memoizedFilter({
-    errors,
-    names: name,
-    mapErrors: !exclusive ? inclusiveMapErrors : undefined,
-  });
 
   meta.errors = filteredErrors;
   meta.invalid = !!Object.keys(filteredErrors!).length;
@@ -126,6 +146,7 @@ function useFieldMeta(opts: UseFieldMetaOptions, actions: FormActions) {
 }
 
 export type TriggerEvents =
+  | null
   | string[]
   | string
   | ((meta: FieldMeta) => string[] | string);
@@ -139,7 +160,8 @@ export type MapFromValue =
 
 export type MapToValue = (formValue: {}) => any;
 
-export interface UseFieldOptions extends UseFieldMetaOptions {
+export interface UseFieldOptions
+  extends Omit<UseFieldMetaOptions, 'validates'> {
   name: string;
   value?: any;
   mapToValue?: MapToValue;
@@ -154,6 +176,7 @@ export type RenderFieldProps<TValue = any> = Record<
   (...args: any[]) => any
 > & {
   value: TValue;
+  onChange: (nextFieldValue: unknown, ...args: any[]) => any;
   checked?: boolean;
 };
 
@@ -169,7 +192,33 @@ export type RenderFieldProps<TValue = any> = Record<
  *
  * ```jsx
  * function MyNameField(props) {
- *   const [fieldProps, meta] = useFieldProps({ name: 'firstName })
+ *   const [fieldProps, meta] = useFieldProps('firstName')
+ *
+ *   return (
+ *      <input
+ *        {...fieldProps}
+ *        className={meta.invalid ? 'field-error' : ''}
+ *      />
+ *   )
+ * }
+ * ```
+ *
+ * @param {string} name The Field name, which should be path corresponding to a specific form `value` path.
+ */
+function useField(name: string): [RenderFieldProps, FieldMeta];
+/**
+ * @callback MapToValue
+ * @param {Object} formValue The root value for the entire _Form_.
+ * @returns {any}
+ */
+
+/**
+ * Create a new form field for the provided name, takes the same options
+ * as `Field` props.
+ *
+ * ```jsx
+ * function MyNameField(props) {
+ *   const [fieldProps, meta] = useFieldProps({ name: 'firstName' })
  *
  *   return (
  *      <input
@@ -188,58 +237,69 @@ export type RenderFieldProps<TValue = any> = Record<
  * @param {(string|string[]|null)=} options.validates Triggers validation for additional field paths
  * @param {(string|string[]|EventMapper)=} options.events A set of event names to generate field handlers for.
  */
-export default function useField(options: UseFieldOptions) {
-  let { mapToValue, mapFromValue, name, validates, noValidate } = options;
+function useField(
+  optionsOrName: UseFieldOptions,
+): [RenderFieldProps, FieldMeta];
+function useField(
+  optionsOrName: UseFieldOptions | string,
+): [RenderFieldProps, FieldMeta] {
+  let options =
+    typeof optionsOrName === 'string' ? { name: optionsOrName } : optionsOrName;
 
-  const formActions = useContext(FormActionsContext);
-
-  const [value, onChange] = useBinding(mapToValue || name, mapFromValue);
+  let { name, validates, noValidate } = options;
 
   const fieldsToValidate = useMemo<string[]>(
     () => (validates != null ? toArray(validates) : [name]),
     [name, validates],
   );
+  const formActions = useContext(FormActionsContext);
 
-  const meta = useFieldMeta(options, formActions!);
+  const meta = useFieldMeta({ ...options, validates: fieldsToValidate });
 
-  // put the original value on meta in case the coerced one differs
-  meta.value = value;
+  let events = options.events === undefined ? config.events : options.events;
 
-  let events = options.events || config.events;
   events = typeof events === 'function' ? events(meta) : events;
 
   meta.events = events;
 
-  // Add an onChange handler to `meta` so that custom inputs
-  // don't need to infer the events configured for a Field
-  meta.onChange = useCallback(
-    (value: any) => {
-      onChange(value);
-      if (noValidate || !formActions) return;
-      formActions.onValidate(fieldsToValidate, 'onChange', [value]);
-    },
-    [onChange, fieldsToValidate, formActions && formActions.onValidate],
-  );
+  const { update } = meta;
+  const validate = formActions?.onValidate;
 
   const fieldProps: any = useEventHandlers(
     events,
     useCallback(
       (event, args) => {
-        notify(onChange, args);
-        if (noValidate || !formActions) return;
-        formActions.onValidate(fieldsToValidate, event, args);
+        if (event === 'onChange') {
+          notify(update, args as any);
+        }
+        if (noValidate || !validate) return;
+
+        validate(fieldsToValidate, event, args);
       },
-      [onChange, fieldsToValidate, formActions && formActions.onValidate],
+      [update, fieldsToValidate, noValidate, validate],
     ),
   );
+
+  // always include an onChange
+  if (!fieldProps.onChange) {
+    fieldProps.onChange = update;
+  }
+
   fieldProps.name = name;
-  fieldProps.value = value == null ? '' : value;
+  fieldProps.value = meta.value == null ? '' : meta.value;
 
   if (/checkbox|radio/.test(meta.nativeType)) {
     fieldProps.checked = fieldProps.value;
     fieldProps.value = options.value;
   } else if (meta.nativeType === 'file') {
     fieldProps.value = '';
+  } else if (
+    meta.nativeType === 'select' &&
+    meta.resolvedType === 'array' &&
+    meta.value == null
+  ) {
+    fieldProps.value = [];
+    fieldProps.multiple = true;
   }
 
   if (!noValidate) {
@@ -249,5 +309,7 @@ export default function useField(options: UseFieldOptions) {
     );
   }
 
-  return [fieldProps, meta] as [RenderFieldProps, FieldMeta];
+  return [fieldProps, meta];
 }
+
+export default useField;

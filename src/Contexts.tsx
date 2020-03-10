@@ -1,9 +1,10 @@
-import React from 'react'
-import { Schema } from 'yup'
-import { Errors } from './types'
-import { EMPTY_ERRORS } from './utils/ErrorUtils'
+import React from 'react';
+import { Schema } from 'yup';
+import { Errors } from './types';
+import { EMPTY_ERRORS } from './utils/ErrorUtils';
+import { ValidationPathSpec } from './errorManager';
 
-export const DEFAULT_CHANNEL = '@@parent'
+export const DEFAULT_CHANNEL = '@@parent';
 
 // const isEqualOrNullish = (a, b) => a === b || (a == null && b == null)
 
@@ -27,23 +28,28 @@ export const DEFAULT_CHANNEL = '@@parent'
 // }
 
 export interface FormActions {
-  getSchemaForPath: (name?: string) => Schema<any> | undefined
-  yupContext: any
-  onSubmit: () => void
-  onValidate: (fields: string[], event: string, args: any[]) => void
-  onFieldError: (name: string, errors: Errors) => void
+  getSchemaForPath: (name?: string) => Schema<any> | undefined;
+  yupContext: any;
+  onSubmit: () => void;
+  onValidate: (
+    fields: Array<ValidationPathSpec | string>,
+    event: string,
+    args: any[],
+  ) => void;
+  onFieldError: (name: string, errors: Errors) => void;
+  formHasValidation: () => boolean;
 }
 
-export const FormActionsContext = React.createContext<FormActions | null>(null)
+export const FormActionsContext = React.createContext<FormActions | null>(null);
 
-export const FormErrorContext = React.createContext(EMPTY_ERRORS)
+export const FormErrorContext = React.createContext(EMPTY_ERRORS);
 
 export const FormTouchedContext = React.createContext<Record<string, boolean>>(
   {},
-)
+);
 
 export const FormSubmitsContext = React.createContext({
   submitCount: 0,
   submitAttempts: 0,
   submitting: false,
-})
+});
