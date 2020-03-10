@@ -1,22 +1,22 @@
 import { useContext, useCallback, useMemo } from 'react';
 import warning from 'warning';
-import {
-  FormActionsContext,
-  FormSubmitsContext,
-  FormErrorContext,
-} from './Contexts';
-import memoize from 'memoize-one';
-import { filterAndMapErrors } from './utils/ErrorUtils';
+import { FormActionsContext, FormSubmitsContext } from './Contexts';
+import useErrors from './useErrors';
 
 export interface UseFormSubmitOptions {
   triggers?: string[];
 }
 
-export function useFormSubmit({ triggers }: UseFormSubmitOptions) {
+/**
+ *
+ * @param options
+ * @param {string[]} options.trigger A set of paths to trigger validation for
+ */
+export function useFormSubmit({ triggers }: UseFormSubmitOptions = {}) {
   const actions = useContext(FormActionsContext);
   const submits = useContext(FormSubmitsContext);
-  let errors = useContext(FormErrorContext);
-  debugger;
+  const errors = useErrors(triggers);
+
   const handleSubmit = useCallback(
     (...args: any[]) => {
       if (!actions) {
@@ -32,23 +32,9 @@ export function useFormSubmit({ triggers }: UseFormSubmitOptions) {
         actions.onValidate(triggers, 'submit', args);
       } else actions.onSubmit();
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [actions, triggers && triggers.join(',')],
   );
-
-  const memoFilterAndMapErrors = useMemo(
-    () =>
-      memoize(
-        filterAndMapErrors,
-        ([a], [b]) =>
-          a.errors === b.errors &&
-          a.names === b.names &&
-          a.maperrors === b.maperrors,
-      ),
-    [],
-  );
-
-  const partial = triggers && triggers.length;
-  if (partial) errors = memoFilterAndMapErrors({ errors, names: triggers! });
 
   return [
     handleSubmit,
