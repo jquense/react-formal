@@ -43,7 +43,7 @@ function SplashPageLayout(props) {
             <path
               d="M349.884 874.72L-.003.006h699.772L349.884 874.72z"
               // fill="#fff"
-              className="fill-current text-accent"
+              className="fill-current text-subtle"
               // fillOpacity=".07"
             />
           </svg>
@@ -110,7 +110,7 @@ function SplashPageLayout(props) {
         >
           <path
             d="M349.884 874.72L-.003.006h699.772L349.884 874.72z"
-            className="fill-current text-accent"
+            className="fill-current text-subtle"
           />
         </svg>
         <div className="mx-auto container text-center grid grid-cols-3 gap-12 z-10 relative pt-12 pb-8">

@@ -8,6 +8,7 @@ module.exports = {
     author: 'Jason Quense',
   },
   plugins: [
+    'gatsby-plugin-sass',
     {
       resolve: 'gatsby-plugin-astroturf',
       options: { enableCssProp: true },
@@ -37,6 +38,7 @@ module.exports = {
         sources: [src],
 
         theming: 'full',
+        propsLayout: 'list',
         tailwindConfig: require.resolve('./tailwind.config'),
 
         getImportName(docNode) {

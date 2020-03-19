@@ -40,7 +40,9 @@ module.exports = {
       'danger-dark': '#652222',
 
       'primary': '#1f222b',
-      'accent': '#33363d',
+      'accent': 'white',
+      'subtle': '#33363d',
+
       'note': '#ffe564',
       'subtle-on-dark': '#33363d',
       'error': '#ff6464',
@@ -49,11 +51,14 @@ module.exports = {
       'white': '#fff',
     },
     body: t => ({
-      'color': t('colors.accent'),
+      'color': t('colors.subtle'),
       'bg-color': t('colors.gray.50'),
     }),
 
     extend: {
+      flex: {
+        '2': '2 2 0%',
+      },
       fontFamily: {
         brand: 'Abril Fatface, cursive',
         default:
@@ -67,6 +72,15 @@ module.exports = {
         '@apply tracking-wider': '',
         'fontFamily': t('fontFamily.brand'),
       }),
+      PropsListName: {
+        '@apply tracking-wider': '',
+      },
+      PropListTypeDefinition: {
+        '@apply text-info-dark !important': '',
+      },
+      PropListDefaultValue: {
+        '@apply text-info-dark !important': '',
+      },
     },
 
     // prism: t => ({
@@ -115,7 +129,7 @@ module.exports = {
           '@apply text-danger block text-sm py-1': '',
         },
 
-        '& input, & select': {
+        '&:not(:global(.reset)) input, & select': {
           '@apply rounded bg-gray-50 leading-normal outline-none w-full mb-2 py-1 px-3 block border border-gray-50 text-primary': true,
           'height': '40px',
           'transition':
@@ -149,7 +163,7 @@ module.exports = {
           '@apply mt-1': '',
         },
 
-        '& button': {
+        '&:not(:global(.reset)) button': {
           '@apply border border-cta text-cta rounded px-8 mt-4 appearance-none text-center whitespace-no-wrap outline-none': true,
           'height': '40px',
           'transition': `

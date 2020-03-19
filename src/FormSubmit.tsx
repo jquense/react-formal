@@ -4,7 +4,7 @@ import React, { useCallback, ElementType } from 'react';
 import useCommittedRef from '@restart/hooks/useCommittedRef';
 
 import useEventHandlers, { notify } from './utils/useEventHandlers';
-import { useFormSubmit } from './useFormSubmit';
+import useFormSubmit from './useFormSubmit';
 
 export interface FormSubmitProps<TAs extends ElementType = any> {
   as?: TAs;

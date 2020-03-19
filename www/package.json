@@ -8,20 +8,23 @@
   },
   "dependencies": {
     "@docpocalypse/code-live": "^0.4.5",
-    "@docpocalypse/gatsby-theme": "^0.10.2",
+    "@docpocalypse/gatsby-theme": "^0.10.5",
     "@docpocalypse/props-table": "^0.3.5",
     "astroturf": "^0.10.2",
-    "gatsby": "^2.19.31",
+    "gatsby": "^2.19.45",
     "gatsby-plugin-astroturf": "^0.2.1",
+    "gatsby-plugin-sass": "^2.1.31",
     "gatsby-plugin-web-font-loader": "^1.0.4",
     "gatsby-plugin-webfonts": "^1.1.2",
     "polished": "^3.4.4",
     "react": "^16.13.0",
     "react-dom": "^16.13.0",
+    "react-widgets": "^5.0.0-beta.9",
     "tailwindcss": "^1.2.0"
   },
   "devDependencies": {
-    "@types/jest": "^25.1.3",
-    "@types/sinon": "^7.5.2"
+    "@types/jest": "^25.1.4",
+    "@types/sinon": "^7.5.2",
+    "sass": "^1.26.3"
   }
 }

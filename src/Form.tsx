@@ -564,7 +564,7 @@ _Form.propTypes = {
    * Callback that is called when a validation error occurs. It is called with an `errors` object
    *
    * ```jsx renderAsComponent
-   * import Form from 'react-formal'
+   * import Form from '@docs/components/FormWithResult';
    * import * as yup from 'yup'
    *
    * const schema = yup.object({
@@ -590,8 +590,6 @@ _Form.propTypes = {
    *   <Form.Message for='name' className="error" />
    *
    *   <Form.Submit type='submit'>Submit</Form.Submit>
-   *
-   *   <pre >{JSON.stringify({ errors }, null, 2)}</pre>
    * </Form>
    * ```
    */

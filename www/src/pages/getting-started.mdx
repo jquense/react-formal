@@ -13,15 +13,14 @@ npm install react-formal yup
 > For older browsers without the `Promise` as well as `Set` and `Map` global object, you'll need to include
 > a polyfill such as `es6-promise`, or `core-js`.
 
-## Creating a form
+## Creating a Form
 
 React Formal, consolidates and tracks your form's state, input values are mapped
 to a form value via their `name` and works very similar to how you might serialize
 a native HTML form.
 
 ```jsx live
-import Form from 'react-formal';
-import Result from '../components/Result';
+import Form from '@docs/components/FormWithResult';
 
 <Form noValidate defaultValue={{ age: 25, name: 'Jane Doe' }}>
   <label>
@@ -32,7 +31,6 @@ import Result from '../components/Result';
     How old are you?
     <Form.Field name="age" type="number" />
   </label>
-  <Result />
 </Form>;
 ```
 
@@ -44,8 +42,7 @@ contract as plain controlled inputs in React.
 The example below is a single form `Field` made up of an input and button.
 
 ```jsx live
-import Form, { useField } from 'react-formal';
-import Result from '../components/Result';
+import Form from '@docs/components/FormWithResult';
 
 const currentYear = new Date().getFullYear();
 
@@ -80,7 +77,6 @@ const AgeInput = ({ name, meta, value, ...props }) => {
     Enter your age:
     <Form.Field as={AgeInput} name="age" />
   </label>
-  <Result />
 </Form>;
 ```
 
@@ -95,8 +91,7 @@ A schema, tells each form how and where to validate it's inputs, hit submit to
 see the issue here:
 
 ```jsx live
-import Form from 'react-formal';
-import Result from '../components/Result';
+import Form from '@docs/components/FormWithErrors';
 import * as yup from 'yup';
 
 const schema = yup.object({
@@ -110,7 +105,6 @@ const schema = yup.object({
   </label>
   <Form.Message name="name" className="error" />
   <Form.Submit>Submit</Form.Submit>
-  <Result />
 </Form>;
 ```
 

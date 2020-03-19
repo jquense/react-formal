@@ -15,12 +15,6 @@ body {
   font-family: theme('fontFamily.default');
 }
 
-// .token {
-//   @apply font-mono;
-
-//   font-size: 90%;
-// }
-
 @media (min-width: 1400px) {
   .container {
     width: 970px;
@@ -59,43 +53,7 @@ p {
 input::placeholder {
   @apply text-gray-500;
 }
-// code {
-//   font-family: source-code-pro, Menlo, Monaco, Consolas, Courier New, monospace;
-//   background-color: theme('code.bg-color');
-//   color: theme('body.color');
-//   padding: 0.1rem;
-// }
 
-.side-nav {
-  padding-top: 30px;
-}
-
-.headlines {
-  margin-bottom: 30px;
-
-  p {
-    color: #7e7e7e;
-  }
-}
-
-.side-nav .nav > li > a {
-  border-left: 3px;
-  padding: 10px 10px;
-  font-size: 12px;
-
-  &:hover,
-  &:active,
-  &:focus {
-    background-color: transparent;
-  }
-
-  &.active {
-    border-left: 3px solid #ccc;
-  }
-}
-
-.side-heading {
-  position: relative;
-  display: block;
-  padding: 10px 15px;
+pre {
+  white-space: pre-wrap;
 }

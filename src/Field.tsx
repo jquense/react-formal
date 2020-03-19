@@ -90,7 +90,7 @@ export type FieldProps<TAs extends React.ElementType = any> = {
    * `mapFromValue` can be a a string property name or a function that returns a
    * value for `name`'d path, allowing you to set commuted values from the Field.
    *
-   * ```js static
+   * ```jsx static
    * <Form.Field
    *   name='name'
    *   mapFromValue={fieldValue => `${fieldValue.first} {fieldValue.last}`}
@@ -100,12 +100,20 @@ export type FieldProps<TAs extends React.ElementType = any> = {
    * You can also provide an object hash, mapping paths of the Form `value`
    * to fields in the field value using a string field name, or a function accessor.
    *
-   * ```js
-   * import Form from 'react-formal';
+   * ```jsx
+   * import Form from '@docs/components/FormWithResult';
+   * import * as yup from 'yup';
+   *
+   * const getYear = () => (new Date()).getFullYear()
+   *
+   * const schema = yup.object({
+   *   name: yup.string().required('Required'),
+   *   dateOfBirth: yup.date().required('Required')
+   * });
    *
    * <Form
-   *   schema={modelSchema}
-   *   defaultValue={modelSchema.default()}
+   *   schema={schema}
+   *   defaultValue={schema.default()}
    * >
    *   <label>
    *     Name
@@ -122,10 +130,9 @@ export type FieldProps<TAs extends React.ElementType = any> = {
    *       mapFromValue={{
    *          'dateOfBirth': date => date,
    *          'age': date =>
-   *            (new Date()).getFullYear() - date.getFullYear()
+   *            getYear() - date.getFullYear()
    *      }}/>
    *   </label>
-   *
    *   <label>
    *     Age
    *     <Form.Field name='age' />
@@ -177,9 +184,9 @@ export type FieldProps<TAs extends React.ElementType = any> = {
    * affect the active state of the field.
    *
    * ```
-   * -> 'names'
-   * -> 'names.first'
-   * -> 'names.last'
+   * 'names'
+   *   - 'first'
+   *   - 'last'
    * ```
    *
    * Are all considered "part" of a field named `'names'` by default. Does not

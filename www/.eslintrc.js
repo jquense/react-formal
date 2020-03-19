@@ -1,5 +1,6 @@
 const path = require('path');
 
+console.log(path.resolve('../src'));
 module.exports = {
   extends: '../.eslintrc.yml',
   rules: {
@@ -8,6 +9,7 @@ module.exports = {
   settings: {
     'import/extensions': ['.js', '.ts', '.tsx'],
     'import/resolver': {
+      node: {},
       webpack: {
         config: {
           resolve: {

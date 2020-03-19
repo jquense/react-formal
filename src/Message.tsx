@@ -73,7 +73,7 @@ Message.propTypes = {
    * A function that maps an array of message strings
    * and returns a renderable string or ReactElement.
    *
-   * ```js
+   * ```jsx static
    * <Message>
    *  {errors => errors.join(', ')}
    * </Message>

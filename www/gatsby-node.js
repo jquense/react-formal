@@ -16,6 +16,7 @@ exports.onCreateWebpackConfig = function onCreateWebpackConfig({ actions }) {
         'react': path.resolve('./node_modules/react'),
         'react-dom': path.resolve('./node_modules/react-dom'),
         'react-formal': path.resolve('../src'),
+        '@docs': path.resolve('./src'),
       },
     },
   });

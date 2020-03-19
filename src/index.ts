@@ -12,7 +12,7 @@ import useFormValues from './useFormValues';
 import useFieldArray from './useFieldArray';
 import errToJSON from './utils/errToJSON';
 import useEventHandlers, { useMergedHandlers } from './utils/useEventHandlers';
-import { useFormSubmit } from './useFormSubmit';
+import useFormSubmit from './useFormSubmit';
 import useErrors from './useErrors';
 import useTouched from './useTouched';
 

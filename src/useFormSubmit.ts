@@ -12,7 +12,7 @@ export interface UseFormSubmitOptions {
  * @param options
  * @param {string[]} options.trigger A set of paths to trigger validation for
  */
-export function useFormSubmit({ triggers }: UseFormSubmitOptions = {}) {
+export default function useFormSubmit({ triggers }: UseFormSubmitOptions = {}) {
   const actions = useContext(FormActionsContext);
   const submits = useContext(FormSubmitsContext);
   const errors = useErrors(triggers);

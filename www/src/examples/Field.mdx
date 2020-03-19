@@ -10,8 +10,7 @@ Providing values and onChange handlers is taken take care of, as well as basic
 value coalescing for multiple selects and checkbox groups.
 
 ```jsx
-import Form from "react-formal";
-import Result from "../components/Result";
+import Form from "@docs/components/FormWithResult";
 
 <Form
   defaultValue={{
@@ -21,11 +20,7 @@ import Result from "../components/Result";
 >
   <label>
     Name
-    <Form.Field
-      name="name.first"
-      placeholder="First name"
-      id="example-firstName"
-    />
+    <Form.Field name="name.first" placeholder="First name" />
   </label>
   <label>
     Favorite Colors <small>(ctrl/cmd click to select multiple)</small>
@@ -36,7 +31,6 @@ import Result from "../components/Result";
       <option value="">Other</option>
     </Form.Field>
   </label>
-  <Result />
 </Form>;
 ```
 
@@ -44,21 +38,61 @@ You can manually control the type and sort of input via the `as` prop (for texta
 and the `type` prop for `inputs` same as with plain HTML inputs. Fields always
 provide `value` and `onChange` props to their inputs.
 
-In addition to injecting Field components with events and the field `value`, a
-special prop called `meta` is also provided to all Field renderer components. `meta`
-contains a bunch of helpful context as well some methods for doing advanced field operations.
+## Custom components
 
-<!-- ```ts
-interface Meta {
-  value: any;                // the Field Value
-  valid: boolean;            // Whether the field is currently valid
-  invalid: boolean;          // inverse of valid
-  touched: boolean:          // whether the field has been touched yet
-  errors: ErrorObjectMap;    // the errors for this field and any neted fields
-  schema?: YupSchema;        // The schema for this field
-  context: YupSchemaContext; // the yup context object
+Fields are not limited to native input components. You can pass _any_ component
+type to `as`. The only required interface a component needs to respect is the
+`value`/`onChange` pattern for controlled fields.
+
+For a better typed experience with TypeScript, consider using the
+[render prop API instead](#children).
+
+```jsx previewClassName=reset
+import Form from "react-formal";
+import Result from "../components/Result";
+
+import DropdownList from "react-widgets/lib/DropdownList";
+
+<Form
+  defaultValue={{
+    name: { first: "Sally" },
+    colors: ["red"]
+  }}
+  className="lg:flex"
+>
+  <div className="lg:flex-2">
+    <label>
+      Favorite Colors
+      <Form.Field
+        name="colors"
+        as={DropdownList}
+        data={["Red", "Yellow", "Blue", "Other"]}
+      />
+    </label>
+  </div>
+  <Result className="lg:ml-4 lg:mt-0" />
+</Form>;
+```
+
+In addition to injecting `<Field>` components with events and the field `value`, a
+special prop called `meta` is also provided to all Field renderer components. `meta`
+contains helpful context and methods for doing manual field operations.
+
+```ts static
+interface FieldMeta {
+  value:    any;              // the Field Value
+  valid:    boolean;          // Whether the field is currently valid
+  invalid:  boolean;          // inverse of valid
+  touched:  boolean:          // whether the field has been touched yet
+  errors:   Errors;           // the errors for this field
+  schema?:  YupSchema;        // the schema for this field
+  context?: Record<string, any>; // a yup context object
+
   // onError allows manually _replacing_ errors for the Field `name`
   // any existing errors for this path will be removed first
-  onError(errors: ErrorObjectMap): void
+  onError(errors: Errors): void
+  // The same callback passed to field components
+  // for updating (and validating) a field value
+  onChange(nextFieldValue: any): void
 }
-``` -->
+```

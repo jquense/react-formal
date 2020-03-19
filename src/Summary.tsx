@@ -6,7 +6,7 @@ import Message, { MessageProps } from './Message';
 /**
  * Display all Form validation `errors` in a single summary list.
  *
- * ```jsx { "editable": true }
+ * ```jsx static
  * <Form
  *   schema={modelSchema}
  *   defaultValue={modelSchema.default()}
