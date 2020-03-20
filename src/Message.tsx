@@ -2,7 +2,7 @@ import PropTypes from 'prop-types';
 import React, { useContext, useMemo } from 'react';
 import { FormErrorContext } from './Contexts';
 import { Errors } from './types';
-import { filterAndMapErrors } from './utils/ErrorUtils';
+import { filterAndMapErrors } from './Errors';
 import uniq from './utils/uniqMessage';
 
 let flatten = (arr, next) => arr.concat(next);
@@ -66,8 +66,6 @@ Message.propTypes = {
     PropTypes.string,
     PropTypes.arrayOf(PropTypes.string),
   ]),
-
-  formKey: PropTypes.string,
 
   /**
    * A function that maps an array of message strings

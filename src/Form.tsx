@@ -29,7 +29,7 @@ import createErrorManager, {
   ValidationPathSpec,
 } from './errorManager';
 import { BeforeSubmitData, Errors, Touched, ValidateData } from './types';
-import * as ErrorUtils from './utils/ErrorUtils';
+import * as ErrorUtils from './Errors';
 import errToJSON from './utils/errToJSON';
 import { notify } from './utils/useEventHandlers';
 
@@ -145,18 +145,18 @@ const createFormSetter = (
       return isNaN(parsed) ? null : parsed;
     }
     if (type === 'checkbox') {
-      // @ts-ignore
-      const schemaType = fieldSchema?._type ?? 'boolean';
+      const isArray = Array.isArray(fieldValue);
 
-      if (schemaType === 'boolean') return checked;
+      const isBool = !isArray && (fieldSchema as any)?._type === 'boolean';
 
-      const nextValue = Array.isArray(fieldValue) ? [...fieldValue] : [];
+      if (isBool) return checked;
+
+      const nextValue = isArray ? [...fieldValue] : [];
       const idx = nextValue.indexOf(value);
 
-      if (idx !== -1) {
-        if (checked) nextValue.push(value);
-        else nextValue.splice(idx, 1);
-      }
+      if (checked) {
+        if (idx === -1) nextValue.push(value);
+      } else nextValue.splice(idx, 1);
 
       return nextValue;
     }

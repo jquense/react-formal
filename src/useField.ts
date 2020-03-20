@@ -15,11 +15,34 @@ import useEventHandlers, { notify } from './utils/useEventHandlers';
 import useErrors from './useErrors';
 import { ValidationPathSpec } from './errorManager';
 
-function resolveToNativeType(type: unknown) {
-  if (type === 'boolean') return 'checkbox';
-  if (type === 'array') return 'select';
-  return isNativeType(type) ? type : 'text';
+function resolveNativeInputConfig(type: unknown) {
+  let tagName: 'input' | 'select' | 'textarea' = 'input';
+
+  if (type === 'boolean') type = 'checkbox';
+  if (type === 'array') {
+    tagName = 'select';
+  }
+
+  return tagName === 'input'
+    ? { tagName, type: isNativeType(type) ? type : 'text' }
+    : { tagName };
 }
+
+const onChange: FieldEvents = ['onChange'];
+
+const onBlur: FieldEvents = ['onBlur'];
+
+const onChangeAndBlur: FieldEvents = ['onChange', 'onBlur'];
+
+const onBlurThenChangeAndBlur: FieldEvents = meta =>
+  meta.valid ? ['onBlur'] : ['onChange', 'onBlur'];
+
+export const EventStrategies = {
+  onChange,
+  onBlur,
+  onChangeAndBlur,
+  onBlurThenChangeAndBlur,
+};
 
 export interface UseFieldMetaOptions {
   name: string;
@@ -46,8 +69,13 @@ export interface FieldMeta {
    * or derived from the field's schema, e.g. number
    */
   resolvedType: string;
-  /** A valid HTML input type */
+
+  /** A valid HTML input type, only set if `nativeTagName` is 'input' */
   nativeType: string;
+
+  /** The infered native HTML element. */
+  nativeTagName: 'input' | 'select' | 'textarea';
+
   onError: (errors: Errors) => void;
 
   value: any;
@@ -61,7 +89,7 @@ export interface FieldMeta {
    */
   onChange: (nextFieldValue: unknown, ...args: any[]) => void;
 
-  events: string[];
+  events: string[] | null;
 }
 
 const passThrough = v => v;
@@ -140,7 +168,9 @@ export function useFieldMeta(opts: UseFieldMetaOptions) {
   // @ts-ignore
   let resolvedType: string = type || (meta.schema && meta.schema._type);
   meta.resolvedType = resolvedType;
-  meta.nativeType = resolveToNativeType(resolvedType);
+  let nativeConfig = resolveNativeInputConfig(resolvedType);
+  meta.nativeType = nativeConfig.type;
+  meta.nativeTagName = nativeConfig.tagName;
 
   return meta as FieldMeta;
 }
@@ -160,6 +190,12 @@ export type MapFromValue =
 
 export type MapToValue = (formValue: {}) => any;
 
+export type FieldEvents =
+  | string[]
+  | string
+  | null
+  | ((meta: FieldMeta) => string[] | string | null);
+
 export interface UseFieldOptions
   extends Omit<UseFieldMetaOptions, 'validates'> {
   name: string;
@@ -168,7 +204,7 @@ export interface UseFieldOptions
   mapFromValue?: MapFromValue;
   className?: string;
   validates?: string | string[] | null;
-  events?: string[] | string | ((meta: FieldMeta) => string[] | string) | null;
+  events?: FieldEvents;
 }
 
 export type RenderFieldProps<TValue = any> = Record<
@@ -258,9 +294,9 @@ function useField(
 
   let events = options.events === undefined ? config.events : options.events;
 
-  events = typeof events === 'function' ? events(meta) : events;
+  events = toArray(typeof events === 'function' ? events(meta) : events);
 
-  meta.events = events;
+  meta.events = events as string[];
 
   const { update } = meta;
   const validate = formActions?.onValidate;
@@ -289,12 +325,21 @@ function useField(
   fieldProps.value = meta.value == null ? '' : meta.value;
 
   if (/checkbox|radio/.test(meta.nativeType)) {
-    fieldProps.checked = fieldProps.value;
+    if (options.value === undefined) {
+      fieldProps.checked = !!fieldProps.value;
+    } else {
+      fieldProps.checked =
+        meta.nativeType === 'radio'
+          ? fieldProps.value === options.value
+          : Array.isArray(fieldProps.value) &&
+            fieldProps.value.includes(options.value);
+    }
+
     fieldProps.value = options.value;
   } else if (meta.nativeType === 'file') {
     fieldProps.value = '';
   } else if (
-    meta.nativeType === 'select' &&
+    meta.nativeTagName === 'select' &&
     meta.resolvedType === 'array' &&
     meta.value == null
   ) {

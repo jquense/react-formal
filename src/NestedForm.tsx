@@ -1,9 +1,9 @@
-import PropTypes from 'prop-types'
-import React from 'react'
-import * as Yup from 'yup'
-import Form, { FormProps } from './Form'
-import useField from './useField'
-import { prefix } from './utils/ErrorUtils'
+import PropTypes from 'prop-types';
+import React from 'react';
+import * as Yup from 'yup';
+import Form, { FormProps } from './Form';
+import useField from './useField';
+import { prefix } from './Errors';
 
 const propTypes = {
   name: PropTypes.string.isRequired,
@@ -14,14 +14,14 @@ const propTypes = {
     errors: PropTypes.object.isRequired,
     onError: PropTypes.func.isRequired,
   }),
-}
+};
 
 export interface NestedFormProps<TSchema extends Yup.ObjectSchema>
   extends Omit<
     FormProps<TSchema>,
     'onError' | 'onChange' | 'value' | 'defaultValue' | 'defaultErrors'
   > {
-  name: string
+  name: string;
 }
 
 /**
@@ -42,7 +42,7 @@ function NestedForm<T extends Yup.ObjectSchema>({
     name,
     noValidate: true,
     events: null,
-  })
+  });
 
   return (
     <Form
@@ -54,9 +54,9 @@ function NestedForm<T extends Yup.ObjectSchema>({
       schema={schema || (meta.schema as T)}
       context={name ? { ...meta.context, ...props.context } : props.context}
     />
-  )
+  );
 }
 
-NestedForm.propTypes = propTypes
+NestedForm.propTypes = propTypes;
 
-export default NestedForm
+export default NestedForm;

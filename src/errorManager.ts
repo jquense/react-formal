@@ -1,4 +1,4 @@
-import { EMPTY_ERRORS } from './utils/ErrorUtils';
+import { EMPTY_ERRORS } from './Errors';
 import errToJSON from './utils/errToJSON';
 import { trim, inPath } from './utils/paths';
 import { ValidationError } from 'yup';

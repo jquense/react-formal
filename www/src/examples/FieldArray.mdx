@@ -1,12 +1,12 @@
 `<FieldArray` is a specialized `<Field>` that helps with list manipulations.
 Fields representing arrays have an additional layer of complexity, since array items may
 be reordered, added, or removed as well as updated. `<FieldArray>` helps ensure
-that error's and other metadata move with the data during list manipulations.
+that errors and other metadata move with the data during list manipulations.
 
 ## Overview
 
-Provide a `name`, like normal, to the field with the array and `<FieldArray>` will
-inject a set of special `arrayHelpers` for handling removing, reordering,
+Provide a `name` mapping to an array property of the form data and `<FieldArray>` will
+inject a set of `arrayHelpers` for handling removing, reordering,
 editing and adding new items, as well as any error handling quirks that come with those
 operations.
 
@@ -141,6 +141,8 @@ item is valid.
 
 <!-- ## Encapsulating logic
 
-Generally `FieldArray`s will render some set of child `Field`s that handle their
+Generally it's recommended that `FieldArray` as a "controller" for a set of
+child `<Field>` components. This pattern is lightweight and neatly composable, however, it
+ will render some set of child `Field`s that handle their
 own updates and validation. However, this isn't always a convenient. Sometimes, it's
 more helpful to define common list manipulation logic apart from the specific  -->

@@ -21,22 +21,20 @@ export type InjectedFieldProps<TValue = any> = RenderFieldProps<TValue> & {
 
 export type FieldProps<TAs extends React.ElementType = any> = {
   /**
-   * The Component Input the form should render. You can sepcify a native element such as 'textbox' or 'select'
+   * The Component Input the form should render. You can sepcify a native element such as 'input' or 'select'
    * or provide a Component type class directly. When no type is provided the Field will attempt determine
    * the correct input from the Field's schema. A Field corresponding to a `yup.number()`
-   * will render a `type='number'` input by default.
+   * will render a `type='number'` etc.
    *
    * ```jsx
    * import Form from 'react-formal';
    *
-   * <Form>
-   *   Use the schema to determine type
-   *   <Form.Field
-   *     name='dateOfBirth'
-   *     placeholder='date'
-   *   />
+   * function MyDateInput({ meta: _, ...props }) {
+   *   return <input {...props} type='datetime-local' />
+   * }
    *
-   *   Override it!
+   * <Form>
+   *   Provide a type directly
    *   <Form.Field
    *     name='dateOfBirth'
    *     type='time'
@@ -272,11 +270,11 @@ export declare interface Field {
  * @alias Field
  */
 const _Field: Field = React.forwardRef((props: FieldProps, ref) => {
-  const {
+  let {
     children,
     type,
-    as: Input = 'input',
-    injectMeta = typeof Input !== 'string',
+    as: asProp,
+    injectMeta,
     name,
     mapFromValue,
     mapToValue,
@@ -318,7 +316,11 @@ const _Field: Field = React.forwardRef((props: FieldProps, ref) => {
     return children(fieldProps, meta);
   }
 
-  if (injectMeta) fieldProps.meta = meta;
+  let Input = asProp || meta.nativeTagName;
+
+  if (injectMeta ?? typeof Input !== 'string') {
+    fieldProps.meta = meta;
+  }
 
   return (
     <Input {...rest} {...fieldProps} type={meta.nativeType}>

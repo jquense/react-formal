@@ -7,7 +7,7 @@ import Submit from './FormSubmit';
 import Message from './Message';
 import Summary from './Summary';
 import config from './config';
-import useField from './useField';
+import useField, { EventStrategies } from './useField';
 import useFormValues from './useFormValues';
 import useFieldArray from './useFieldArray';
 import errToJSON from './utils/errToJSON';
@@ -43,6 +43,7 @@ interface Statics {
   Submit: typeof Submit;
   setDefaults: (defaults: any) => void;
   toErrors: (err: ValidationError) => ReturnType<typeof errToJSON>;
+  EventStrategies: typeof EventStrategies;
 }
 
 const statics: Statics = {
@@ -51,6 +52,7 @@ const statics: Statics = {
   Message,
   Summary,
   Submit,
+  EventStrategies,
   setDefaults(defaults = {}) {
     Object.assign(config, defaults);
   },
@@ -73,6 +75,7 @@ export {
   useFormValues,
   useErrors,
   useTouched,
+  EventStrategies,
 };
 
 export type ReactFormal = typeof FormComponent &

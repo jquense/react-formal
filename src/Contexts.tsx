@@ -1,7 +1,7 @@
 import React from 'react';
 import { Schema } from 'yup';
 import { Errors } from './types';
-import { EMPTY_ERRORS } from './utils/ErrorUtils';
+import { EMPTY_ERRORS } from './Errors';
 import { ValidationPathSpec } from './errorManager';
 
 export const DEFAULT_CHANNEL = '@@parent';

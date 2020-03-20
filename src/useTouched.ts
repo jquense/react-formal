@@ -1,7 +1,7 @@
 import { useContext, useMemo } from 'react';
 import { FormTouchedContext } from './Contexts';
 import memoize from 'memoize-one';
-import { filterAndMapErrors } from './utils/ErrorUtils';
+import { filterAndMapErrors } from './Errors';
 import { Errors, Touched } from './types';
 
 /**

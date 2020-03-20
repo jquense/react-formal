@@ -1,4 +1,5 @@
-import * as Utils from '../src/utils/ErrorUtils';
+import * as Utils from '../src/Errors';
+
 describe('PATH utils', () => {
   describe('shift', () => {
     it('should shift', () => {

@@ -3,6 +3,7 @@ const path = require('path');
 const src = path.resolve(__dirname, '../src');
 
 module.exports = {
+  pathPrefix: '/react-formal',
   siteMetadata: {
     title: 'documentation',
     author: 'Jason Quense',

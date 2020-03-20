@@ -129,7 +129,7 @@ module.exports = {
           '@apply text-danger block text-sm py-1': '',
         },
 
-        '&:not(:global(.reset)) input, & select': {
+        '&:not(:global(.reset)) input:not([type="checkbox"]):not([type="radio"]), & select': {
           '@apply rounded bg-gray-50 leading-normal outline-none w-full mb-2 py-1 px-3 block border border-gray-50 text-primary': true,
           'height': '40px',
           'transition':

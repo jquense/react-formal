@@ -2,7 +2,7 @@ import invariant from 'invariant';
 import { useRef, useMemo, useContext } from 'react';
 import { Errors } from './types';
 import { FieldMeta, UseFieldMetaOptions, useFieldMeta } from './useField';
-import { move, remove, shift, unshift } from './utils/ErrorUtils';
+import { move, remove, shift, unshift } from './Errors';
 import { ValidationPathSpec } from './errorManager';
 import { FormActionsContext } from './Contexts';
 

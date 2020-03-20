@@ -38,6 +38,63 @@ You can manually control the type and sort of input via the `as` prop (for texta
 and the `type` prop for `inputs` same as with plain HTML inputs. Fields always
 provide `value` and `onChange` props to their inputs.
 
+## Checkbox and Radios
+
+Create a unified set of checkbox/radio input's that map to a single form field
+by using multiple `<Field>`s with the same `name`.
+
+```jsx
+import Form from "@docs/components/FormWithResult";
+
+<Form defaultValue={{ color: "red" }}>
+  <fieldset>
+    <legend>Favorite Color</legend>
+    <label>
+      <Form.Field type="radio" name="color" value="red" /> Red
+    </label>
+    <label>
+      <Form.Field type="radio" name="color" value="blue" /> Blue
+    </label>
+    <label>
+      <Form.Field type="radio" name="color" value="yellow" /> Yellow
+    </label>
+    <label>
+      <Form.Field type="radio" name="color" value="orange" /> Orange
+    </label>
+  </fieldset>
+</Form>;
+```
+
+Use groups of checkboxes to represent list values. React Formal will intelligently
+insert or remove items if the current field value is an `array` or, absent a
+value, the schema for the field is a `yup.array()`.
+
+```jsx
+import Form from "@docs/components/FormWithResult";
+
+<Form
+  defaultValue={{
+    colors: ["red"]
+  }}
+>
+  <fieldset>
+    <legend>Favorite Colors</legend>
+    <label>
+      <Form.Field type="checkbox" name="colors" value="red" /> Red
+    </label>
+    <label>
+      <Form.Field type="checkbox" name="colors" value="blue" /> Blue
+    </label>
+    <label>
+      <Form.Field type="checkbox" name="colors" value="yellow" /> Yellow
+    </label>
+    <label>
+      <Form.Field type="checkbox" name="colors" value="orange" /> Orange
+    </label>
+  </fieldset>
+</Form>;
+```
+
 ## Custom components
 
 Fields are not limited to native input components. You can pass _any_ component
@@ -48,29 +105,19 @@ For a better typed experience with TypeScript, consider using the
 [render prop API instead](#children).
 
 ```jsx previewClassName=reset
-import Form from "react-formal";
-import Result from "../components/Result";
+import Form from "../components/FormWithResult";
 
 import DropdownList from "react-widgets/lib/DropdownList";
 
-<Form
-  defaultValue={{
-    name: { first: "Sally" },
-    colors: ["red"]
-  }}
-  className="lg:flex"
->
-  <div className="lg:flex-2">
-    <label>
-      Favorite Colors
-      <Form.Field
-        name="colors"
-        as={DropdownList}
-        data={["Red", "Yellow", "Blue", "Other"]}
-      />
-    </label>
-  </div>
-  <Result className="lg:ml-4 lg:mt-0" />
+<Form defaultValue={{ color: "red" }}>
+  <label>
+    Favorite Colors
+    <Form.Field
+      name="color"
+      as={DropdownList}
+      data={["Red", "Yellow", "Blue", "Other"]}
+    />
+  </label>
 </Form>;
 ```
 
@@ -95,4 +142,98 @@ interface FieldMeta {
   // for updating (and validating) a field value
   onChange(nextFieldValue: any): void
 }
+```
+
+## Validation
+
+Field validation is automatically enabled for Fields with cooresponding Form schema.
+Fields inject `onChange` and `onBlur` handlers to fire a validation.
+Field validation is debounced (see [Form delay]('/api/Form#delay')) to reduce unnecessary
+checks while the user is still engaging with the input. Validation can be
+disabled per field with the `noValidate` prop.
+
+### Trigger Events
+
+Validation events can be controlled finely via the [`events`](#events) prop. Events
+control which handlers `<Field>` passes to the input it renders. Multiple event
+handlers can be configured with an array of handler names.
+
+```tsx
+import * as yup from "yup";
+import Form from "react-formal";
+
+const schema = yup.object({
+  name: yup
+    .string()
+    .required()
+    .min(4)
+});
+
+<>
+  <Form schema={schema}>
+    <label>
+      Validates onBlur
+      <Form.Field name="name" events="onBlur" />
+    </label>
+    <Form.Message for="name" className="error" />
+  </Form>
+  <Form schema={schema}>
+    <label>
+      Validates onBlur and onChange
+      <Form.Field name="name" events={["onBlur", "onChange"]} />
+    </label>
+    <Form.Message for="name" className="error" />
+  </Form>
+</>;
+```
+
+For more complex situations `events` accepts a function that is based the `meta` for the field
+and can conditionally return events based on context.
+
+```tsx
+import * as yup from "yup";
+import Form from "react-formal";
+
+const schema = yup.object({
+  email: yup
+    .string()
+    .email("Emails must contain an @ and a domain")
+    .required("Required")
+});
+
+// Only run validation onChange when the form is invalid
+const onBlurThenChangeAndBlur = meta =>
+  meta.valid ? "onBlur" : ["onChange", "onBlur"];
+
+<Form schema={schema}>
+  <label>
+    Enter an Email
+    <Form.Field name="email" events={onBlurThenChangeAndBlur} />
+  </label>
+  <Form.Message for="email" className="error" />
+</Form>;
+```
+
+### Preset Strategies
+
+As a convenience React Formal exports a few common event configurations
+you can mix and match if that is helpful.
+
+```jsx static
+import { EventStrategies } from "react-formal";
+
+const {
+  onChange,
+  onBlur,
+  onChangeAndBlur,
+  onBlurThenChangeAndBlur
+} = EventStrategies;
+
+<Form schema={schema}>
+  <label>
+    Email
+    <Form.Field name="email" events={EventStrategies.onBlur} />
+  </label>
+  <Form.Message for="email" className="error" />
+</Form>;
 ```

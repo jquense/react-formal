@@ -1,7 +1,7 @@
 import omitBy from 'lodash/omitBy';
 import pick from 'lodash/pick';
-import { Errors } from '../types';
-import { inPath, toArray } from './paths';
+import { Errors } from './types';
+import { inPath, toArray } from './utils/paths';
 
 export const EMPTY_ERRORS: Errors = Object.freeze({});
 

@@ -2,7 +2,7 @@ import { useContext, useMemo } from 'react';
 import { FormErrorContext } from './Contexts';
 import memoize from 'memoize-one';
 import shallowequal from 'shallowequal';
-import { filterAndMapErrors, inclusiveMapErrors } from './utils/ErrorUtils';
+import { filterAndMapErrors, inclusiveMapErrors } from './Errors';
 import { Errors } from './types';
 
 type UseErrorOptions = { inclusive?: boolean };
