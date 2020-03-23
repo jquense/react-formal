@@ -1,0 +1,148 @@
+`<FieldArray` is a specialized `<Field>` that helps with list manipulations.
+Fields representing arrays have an additional layer of complexity, since array items may
+be reordered, added, or removed as well as updated. `<FieldArray>` helps ensure
+that errors and other metadata move with the data during list manipulations.
+
+## Overview
+
+Provide a `name` mapping to an array property of the form data and `<FieldArray>` will
+inject a set of `arrayHelpers` for handling removing, reordering,
+editing and adding new items, as well as any error handling quirks that come with those
+operations.
+
+```jsx
+import * as yup from "yup";
+import Form from "react-formal";
+import IconButton from "../components/IconButton";
+
+let cid = 0;
+const schema = yup.object({
+  friends: yup.array().of(
+    yup.object({
+      name: yup.string().required("Required")
+    })
+  )
+});
+
+<Form
+  debug
+  schema={schema}
+  defaultValue={{
+    friends: [
+      { id: ++cid, name: "Sally" },
+      { id: ++cid, name: undefined }
+    ]
+  }}
+>
+  <p className="font-bold text-sm">
+    Add or remove items, with and without errors to see how they are correctly
+    moved or removed along with their field
+  </p>
+  <Form.FieldArray name="friends">
+    {(values, arrayHelpers, meta) => (
+      <ul>
+        {values.map((value, idx) => (
+          <li key={value.id}>
+            <div className="flex items-start">
+              <Form.Field name={`friends[${idx}].name`} />
+              <IconButton
+                aria-label="Remove item"
+                onClick={() => arrayHelpers.remove(value)}
+              >
+                -
+              </IconButton>
+              <IconButton
+                aria-label="Insert item"
+                onClick={() =>
+                  arrayHelpers.insert({ id: ++cid, name: undefined }, idx + 1)
+                }
+              >
+                +
+              </IconButton>
+            </div>
+            <Form.Message
+              for={`friends[${idx}].name`}
+              className="error -mt-2"
+            />
+          </li>
+        ))}
+      </ul>
+    )}
+  </Form.FieldArray>
+</Form>;
+```
+
+## Array helpers
+
+FieldArray injects a set of `ArrayHelpers` that contain the following methods:
+
+```ts static
+interface FieldArrayHelpers<T = any> {
+  /** Add an item to the beginning of the array */
+  unshift(item: T): void;
+
+  /** Add an item to the end of the array */
+  push(item: T): void;
+
+  /** Insert an item at the provided index */
+  insert(item: T, index: number): void;
+
+  /** Move an item to a new index */
+  move(item: T, toIndex: number): void;
+
+  /** Remove an item from the list */
+  remove(item: T): void;
+
+  /**
+   * update or replace an item with a new one,
+   * should generally be avoided in favor of using a inner Field
+   * for the item to handle updates.
+   *
+   * Does not trigger validation for the new item, only the list.
+   */
+  update(item: T, oldItem: T): void;
+}
+```
+
+Each method is similar to a Field's onChange handler, updating and validating
+the array field.
+
+## Validation
+
+Validation works a bit differently for FieldArrays as compared to normal Fields. Normally
+when a field value changes validation is triggered for that path _as well as any nested paths:_
+
+```js static
+import { object, string, array } from "yup";
+
+const schema = object({
+  friends: array()
+    .of(
+      object({
+        name: string().required("Required")
+      })
+    )
+    .min(1, "You need at least one friend")
+});
+```
+
+As a normal Field triggering validation for `friends` might result in two
+errors: `"Required"` and `"You need at least one friend"`. This makes sense friends
+for object fields, but is a bit confusing when adding a new friend would immediately
+validate it, even though the user hasn't had a chance to input anything.
+
+To address this, `FieldArray` changes, **only report errors for its `name`** . Meaning
+`arrayHelpers.add()` will check if the `min` for fiends is correct, but not if the newly added
+item is valid.
+
+> **Note:** validation via the schema is still run for the entire `friends` branch,
+> but child errors are discarded and not added to form errors. This is only relevant
+> if each field performs some expensive validation.
+
+<!-- ## Encapsulating logic
+
+Generally it's recommended that `FieldArray` as a "controller" for a set of
+child `<Field>` components. This pattern is lightweight and neatly composable, however, it
+ will render some set of child `Field`s that handle their
+own updates and validation. However, this isn't always a convenient. Sometimes, it's
+more helpful to define common list manipulation logic apart from the specific  -->

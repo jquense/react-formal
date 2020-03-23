@@ -1,0 +1,152 @@
+## Overview
+
+Form component renders a `value` to be updated and validated by child Fields.
+Forms can be thought of as `<input/>`s for complex values, or models. A Form aggregates
+a bunch of smaller inputs, each in charge of updating a small part of the overall model.
+The Form will integrate and validate each change and fire a single unified `onChange` with the new `value`.
+
+Validation errors can be displayed anywhere inside a Form with Message Components.
+
+```jsx
+import Form from "@docs/components/FormWithResult";
+import * as yup from "yup";
+
+const defaultStr = yup.string().default("");
+
+const customerSchema = yup.object({
+  name: yup.object({
+    first: defaultStr.required("please enter a first name"),
+    last: defaultStr.required("please enter a surname")
+  }),
+
+  dateOfBirth: yup.date().max(new Date(), "Are you a time traveler?!"),
+
+  colorId: yup
+    .number()
+    .nullable()
+    .required("Please select a dank color")
+});
+
+<Form schema={customerSchema} defaultValue={customerSchema.default()}>
+  <fieldset>
+    <legend className="sr-only">name</legend>
+    <label>
+      Name
+      <Form.Field name="name.first" placeholder="First name" />
+    </label>
+    <label>
+      Surname
+      <Form.Field name="name.last" placeholder="Surname" />
+    </label>
+    <Form.Message for={["name.first", "name.last"]} className="error" />
+  </fieldset>
+
+  <label>
+    Date of Birth
+    <Form.Field name="dateOfBirth" />
+  </label>
+  <Form.Message for="dateOfBirth" className="error" />
+
+  <label>
+    Favorite Color
+    <Form.Field name="colorId" as="select">
+      <option value={null}>Select a color...</option>
+      <option value={0}>Red</option>
+      <option value={1}>Yellow</option>
+      <option value={2}>Blue</option>
+      <option value={3}>other</option>
+    </Form.Field>
+  </label>
+  <Form.Message for="colorId" className="error" />
+
+  <Form.Submit type="submit">Submit</Form.Submit>
+</Form>;
+```
+
+## Schema
+
+A schema is not _strictly_ required, however describing form data with a schema
+offers many benefits that make their use worthwhile.
+
+- Schema provide an expressive language for describing validation at a
+  field level as well as form-wide tests.
+- Schema provide type metadata that React Formal can use to simplify configuration.
+  `yup.array()` fields are automatically render `<select multiple>`, `yup.boolean()`s
+  render checkboxes, and so on
+- Schema allow encapsulating server serialization and business logic apart
+  from your specific UI. Validation and transformations are not strictly tied to form input
+  layout or UI means more maintainable, composable, and testable code.
+
+### Field Inference
+
+A Field's schema provides runtime type information that can be used to help
+reduce boilerplate UI code. Field's will render the most appropriate native input
+for your field type (you can always override it).
+
+```jsx
+import Form from "react-formal";
+import * as yup from "yup";
+
+const schema = yup.object({
+  list: yup.array(),
+  number: yup.number(),
+  date: yup.date()
+});
+
+<Form schema={schema}>
+  <label>
+    A list
+    <Form.Field name="list" />
+  </label>
+  <label>
+    A number picker
+    <Form.Field name="number" />
+  </label>
+  <label>
+    A date picker
+    <Form.Field name="date" />
+  </label>
+</Form>;
+```
+
+### Data Serialization
+
+Schema can also do data sanitiation and transformation. When a `Form` is submitted
+the current value is passed through
+the schema a final time as a whole, the _transformed_ value is what is passed back
+to the [`onSubmit`](#onSubmit) handlers (you can override this behavior with `strict`).
+
+```tsx renderAsComponent
+import * as yup from "yup";
+import Form from "react-formal";
+import Result from "../components/Result";
+
+const [submittedValue, setSubmittedValue] = useState({});
+const schema = yup.object({
+  slug: yup
+    .string()
+    .lowercase()
+    .transform(value =>
+      value
+        .replace(/not/g, "")
+        .trim()
+        .replace(/\s+/g, "-")
+    )
+});
+
+<Form
+  schema={schema}
+  defaultValue={{ slug: "Not a Good Slug" }}
+  onSubmit={setSubmittedValue}
+  className="lg:flex"
+>
+  <div className="lg:flex-2">
+    <label>
+      Slug (submit to see result)
+      <Form.Field name="slug" readOnly />
+    </label>
+    <Form.Submit type="submit">Submit</Form.Submit>
+  </div>
+  <Result value={submittedValue} className="lg:ml-4 lg:mt-0" />
+</Form>;
+```

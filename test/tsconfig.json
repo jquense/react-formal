@@ -1,0 +1,8 @@
+{
+  "extends": "@4c/tsconfig/web",
+  "compilerOptions": {
+    "types": ["jest", "sinon"],
+    "noImplicitAny": false
+  },
+  "include": [".", "../src"]
+}

@@ -1,10 +1,14 @@
-parser: babel-eslint
-extends: jason/react
+extends:
+  - jason/react
+  - 4catalyzer-typescript
 globals:
   Promise: true
 rules:
+  prefer-const: off
+  func-call-spacing: "off"
+  "@typescript-eslint/member-delimiter-style": off
   no-unused-vars:
-    - off
+    - error
     - vars: all
       args: after-used
       varsIgnorePattern: ^_

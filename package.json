@@ -1,9 +1,10 @@
 {
   "name": "react-formal",
-  "version": "1.0.1",
+  "version": "2.0.0-6",
   "description": "Classy HTML form management for React",
-  "main": "lib/index.cjs.js",
-  "modules": "es/index.js",
+  "main": "lib/cjs/index.cjs.js",
+  "types": "lib/cjs/index.d.ts",
+  "module": "lib/esm/index.js",
   "author": {
     "name": "Jason Quense",
     "email": "monastic.panic@gmail.com"
@@ -11,9 +12,10 @@
   "homepage": "http://jquense.github.io/react-formal/",
   "repository": {
     "type": "git",
-    "url": "https://github.com/jquense/react-formal"
+    "url": "git+https://github.com/jquense/react-formal.git"
   },
   "license": "MIT",
+  "sideEffects": false,
   "files": [
     "lib",
     "es"
@@ -44,54 +46,78 @@
     "lint": "eslint src",
     "docs": "yarn --cwd www start",
     "docs:deploy": "yarn --cwd www deploy",
-    "build:esm": " babel src --out-dir es --delete-dir-on-start --env-name esm",
-    "build": "babel src --out-dir lib --delete-dir-on-start --copy-files && npm run build:esm",
+    "build:pick": "cherry-pick --name=@restart/hooks --cwd=lib --input-dir=../src --cjs-dir=cjs --esm-dir=esm",
+    "build": "rimraf lib && 4c build src && yarn build:pick",
     "prepublishOnly": "npm run build",
     "release": "rollout"
+  },
+  "prettier": {
+    "singleQuote": true,
+    "trailingComma": "all",
+    "quoteProps": "consistent"
+  },
+  "publishConfig": {
+    "access": "public",
+    "directory": "lib"
   },
   "peerDependencies": {
     "react": ">=16.4.0"
   },
   "dependencies": {
+    "@restart/hooks": "^0.3.21",
+    "@types/lodash": "^4.14.149",
+    "@types/react": "^16.9.23",
+    "@types/yup": "^0.26.32",
     "chain-function": "^1.0.0",
     "classnames": "^2.2.5",
     "invariant": "^2.2.4",
-    "lodash": "^4.17.11",
-    "memoize-one": "^5.0.0",
-    "prop-types": "^15.6.1",
-    "prop-types-extra": "^1.1.0",
-    "property-expr": "^1.4.0",
+    "lodash": "^4.17.15",
+    "memoize-one": "^5.1.1",
+    "prop-types": "^15.7.2",
+    "prop-types-extra": "^1.1.1",
+    "property-expr": "^2.0.2",
     "react-context-toolbox": "^2.0.2",
+    "react-widgets": "^5.0.0-beta.9",
     "shallowequal": "^1.1.0",
-    "topeka": "^3.3.0",
-    "uncontrollable": "^6.0.0",
-    "warning": "^4.0.1",
-    "yup": "^0.26.10"
+    "topeka": "^4.4.1",
+    "uncontrollable": "^7.1.1",
+    "warning": "^4.0.3",
+    "yup": "^0.28.3"
   },
   "devDependencies": {
-    "@4c/rollout": "^1.2.0",
-    "@babel/cli": "7.2.3",
-    "@babel/core": "7.2.2",
-    "babel-eslint": "^10.0.1",
-    "babel-jest": "^24.0.0",
-    "babel-preset-jason": "^6.0.1",
-    "chai": "^4.2.0",
-    "chai-as-promised": "^7.1.1",
-    "dirty-chai": "^2.0.1",
-    "enzyme": "^3.8.0",
-    "enzyme-adapter-react-16": "^1.8.0",
-    "eslint": "^5.12.1",
-    "eslint-config-jason": "^4.0.1",
-    "eslint-plugin-import": "^2.16.0",
-    "eslint-plugin-react": "^7.12.4",
-    "jest": "^24.0.0",
-    "react": "^16.7.0",
+    "@4c/cli": "^2.0.1",
+    "@4c/rollout": "^2.1.2",
+    "@4c/tsconfig": "^0.3.1",
+    "@babel/cli": "7.8.4",
+    "@babel/core": "7.8.7",
+    "@babel/preset-typescript": "^7.8.3",
+    "@types/jest": "^25.1.4",
+    "@types/sinon": "^7.5.2",
+    "@typescript-eslint/eslint-plugin": "^2.22.0",
+    "babel-eslint": "^10.1.0",
+    "babel-jest": "^25.1.0",
+    "babel-preset-jason": "^6.2.0",
+    "cherry-pick": "^0.5.0",
+    "enzyme": "^3.11.0",
+    "enzyme-adapter-react-16": "^1.15.2",
+    "eslint": "^6.8.0",
+    "eslint-config-4catalyzer-typescript": "^1.1.7",
+    "eslint-config-jason": "^7.0.1",
+    "eslint-import-resolver-webpack": "^0.12.1",
+    "eslint-plugin-import": "^2.20.1",
+    "eslint-plugin-react": "^7.19.0",
+    "eslint-plugin-react-hooks": "^2.5.0",
+    "jest": "^25.1.0",
+    "react": "^16.13.0",
     "react-bootstrap": "^0.32.1",
-    "react-dom": "^16.7.0",
-    "react-formal": "^0.28.2",
+    "react-dom": "^16.13.0",
     "react-tackle-box": "^2.1.0",
-    "rimraf": "^2.6.3",
-    "sinon": "^7.2.3",
-    "sinon-chai": "^3.3.0"
-  }
+    "rimraf": "^3.0.2",
+    "typescript": "^3.8.3"
+  },
+  "bugs": {
+    "url": "https://github.com/jquense/react-formal/issues"
+  },
+  "readme": "ERROR: No README data found!",
+  "_id": "react-formal@2.0.0-5"
 }

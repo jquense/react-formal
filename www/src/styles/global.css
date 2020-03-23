@@ -1,0 +1,59 @@
+@import url('https://fonts.googleapis.com/css?family=Raleway&display=swap');
+
+html {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  @apply antialiased;
+
+  font-size: 1rem;
+  padding: 0;
+  margin: 0;
+  color: theme('body.color');
+  font-family: theme('fontFamily.default');
+}
+
+@media (min-width: 1400px) {
+  .container {
+    width: 970px;
+  }
+}
+
+@media (min-width: 1200px) {
+  .container {
+    width: 970px;
+  }
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  @apply mb-4 mt-6 font-medium font-brand;
+}
+
+h1 {
+  @apply text-4xl;
+}
+
+h2,
+h3,
+h4 {
+  @apply text-3xl tracking-wide;
+}
+
+p {
+  @apply mb-4;
+}
+
+input::placeholder {
+  @apply text-gray-500;
+}
+
+pre {
+  white-space: pre-wrap;
+}

@@ -1,8 +1,6 @@
-import * as yup from 'yup'
 import React from 'react'
-import ReactDOM from 'react-dom'
-
-import Form from '../../src'
+import * as yup from 'yup'
+import * as Formal from '../../src'
 
 let nameSchema = yup
   .string()
@@ -12,7 +10,7 @@ let nameSchema = yup
 let modelSchema = yup.object({
   name: yup.object({
     first: nameSchema,
-    last: nameSchema,
+    last: nameSchema
   }),
   dateOfBirth: yup
     .date()
@@ -25,7 +23,7 @@ let modelSchema = yup.object({
     .number()
     .nullable()
     .required('Please enter an age')
-    .positive('Ages must be a positive number'),
+    .positive('Ages must be a positive number')
 })
 
 let MyDateInput = props => <input {...props} type="datetime-local" />
@@ -33,20 +31,20 @@ let MyDateInput = props => <input {...props} type="datetime-local" />
 let reqMap = {
   'react-formal': 'Form',
   'react-formal-inputs': 'types',
-  react: 'React',
+  react: 'React'
 }
 let scope = {
   // eslint-disable-next-line no-undef
-  ...__SCOPE__,
-  Form,
-  React,
-  ReactDOM,
+  Form: Formal.default,
+  ...Formal,
   yup,
   modelSchema,
   MyDateInput,
   require(name) {
     return scope[reqMap[name] || name]
-  },
+  }
 }
+
+delete scope.default
 
 export default scope

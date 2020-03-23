@@ -1,11 +1,12 @@
 module.exports = api => ({
   presets: [
     [
-      'jason',
+      'babel-preset-jason/esm',
       {
-        runtime: false,
-        modules: api.env() === 'esm' ? false : 'commonjs',
+        modules: api.env() !== 'esm',
+        useBuiltIns: 'usage',
       },
     ],
+    '@babel/typescript',
   ],
-})
+});
