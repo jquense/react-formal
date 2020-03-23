@@ -8,6 +8,7 @@ import React, {
   useMemo,
   useRef,
   SyntheticEvent,
+  Fragment,
 } from 'react';
 import shallowequal from 'shallowequal';
 import { BindingContext } from 'topeka';
@@ -477,6 +478,15 @@ const _Form: Form = React.forwardRef(
     }
 
     elementProps.onSubmit = handleSubmit;
+
+    let useChildren = Element == null || Element === false;
+    // if it's a fragment no props
+    if (
+      Element === Fragment ||
+      (useChildren && React.Children.only(children!).type === Fragment)
+    ) {
+      elementProps = {};
+    }
 
     return (
       <BindingContext
