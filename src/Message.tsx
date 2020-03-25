@@ -12,7 +12,7 @@ export interface MessageProps {
   for: string | string[];
   className?: string;
   filter?: (item: any, i?: number, list?: any[]) => boolean;
-  extract?: (errors: any[], props: any) => any;
+  extract?: (errors: any, props: any) => any;
   children?: (errors: any[], props: any) => React.ReactNode;
 }
 /**

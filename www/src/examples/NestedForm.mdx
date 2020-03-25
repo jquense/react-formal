@@ -1,0 +1,89 @@
+The `<NestedForm>` component is a specialized Form, that allows encapsulating
+complex Fields into isolated resuable Form components of their own that can
+be used independent of a parent Form.
+
+# Overview
+
+`<NestedForm>` is functionally the same a normal `<Form>` when used by itself.
+When used in the context of a larger Form, though it is responsible for managing
+the state of a single branch of the overall form value.
+
+The challange with resuable form fields is that one needs to provide a `name`
+to each Field and names must be an "absolute" path to a piece of form data. This
+makes it hard to reparent a field component elsewhere because any nested field
+will continue to point to the old path. NestedForm, allows you to build Field's
+with relative paths instead.
+
+Consider a common case of shipping and billing addresses. The logic and UI is basically
+the same for each, even tho the data points to different place:
+
+```jsx
+import Form, { NestedForm } from "react-formal";
+import * as yup from "yup";
+import { UsaStates } from "usa-states";
+
+const { states } = new UsaStates();
+
+const addressSchema = yup.object({
+  address: yup.string().required("Required"),
+  city: yup.string().required("Required"),
+  state: yup.string().oneOf(states.map(s => s.abbreviation)),
+  postalCode: yup.string().matches(/\d{5}/, "Must be a valid zip code")
+});
+
+const schema = yup.object({
+  title: yup.string(),
+  shippingAddress: addressSchema,
+  billingAddress: addressSchema
+});
+
+const AddressField = ({ name }) => (
+  <NestedForm name={name}>
+    <label>
+      Address
+      <Form.Field name="address" />
+      <Form.Message for="address" className="error" />
+    </label>
+
+    <div className="flex">
+      <label className="flex-1">
+        City
+        <Form.Field name="city" />
+        <Form.Message for="city" className="error" />
+      </label>
+      <label className="mx-3">
+        Postal Code
+        <Form.Field name="postalCode" />
+        <Form.Message for="postalCode" className="error" />
+      </label>
+      <label>
+        State
+        <Form.Field name="state" as="select">
+          {states.map(state => (
+            <option value={state.abbreviation} key={state.abbreviation}>
+              {state.name}
+            </option>
+          ))}
+        </Form.Field>
+        <Form.Message for="state" className="error" />
+      </label>
+    </div>
+  </NestedForm>
+);
+
+<>
+  <Form schema={schema}>
+    <fieldset>
+      <legend>Shipping Address</legend>
+      <AddressField name="shippingAddress" />
+    </fieldset>
+    <fieldset>
+      <legend>Billing Address</legend>
+      <AddressField name="billingAddress" />
+    </fieldset>
+  </Form>
+</>;
+```
+
+Unless overridden `<NestedForm>` will inherit configuration from its parent Form,
+so you don't need to provide a schema, but are welcome too if convenient.

@@ -71,7 +71,7 @@ export interface FieldMeta {
   resolvedType: string;
 
   /** A valid HTML input type, only set if `nativeTagName` is 'input' */
-  nativeType: string;
+  nativeType: string | undefined;
 
   /** The infered native HTML element. */
   nativeTagName: 'input' | 'select' | 'textarea';
@@ -207,11 +207,14 @@ export interface UseFieldOptions
   events?: FieldEvents;
 }
 
+export type EventHandlers = Record<string, (...args: any[]) => any>;
+
 export type RenderFieldProps<TValue = any> = Record<
   string,
   (...args: any[]) => any
 > & {
   value: TValue;
+  type?: string;
   onChange: (nextFieldValue: unknown, ...args: any[]) => any;
   checked?: boolean;
 };
@@ -273,9 +276,7 @@ function useField(name: string): [RenderFieldProps, FieldMeta];
  * @param {(string|string[]|null)=} options.validates Triggers validation for additional field paths
  * @param {(string|string[]|EventMapper)=} options.events A set of event names to generate field handlers for.
  */
-function useField(
-  optionsOrName: UseFieldOptions,
-): [RenderFieldProps, FieldMeta];
+function useField(options: UseFieldOptions): [RenderFieldProps, FieldMeta];
 function useField(
   optionsOrName: UseFieldOptions | string,
 ): [RenderFieldProps, FieldMeta] {
@@ -321,10 +322,12 @@ function useField(
     fieldProps.onChange = update;
   }
 
+  fieldProps.type = meta.nativeType || options.type;
+
   fieldProps.name = name;
   fieldProps.value = meta.value == null ? '' : meta.value;
 
-  if (/checkbox|radio/.test(meta.nativeType)) {
+  if (meta.nativeType && /checkbox|radio/.test(meta.nativeType)) {
     if (options.value === undefined) {
       fieldProps.checked = !!fieldProps.value;
     } else {

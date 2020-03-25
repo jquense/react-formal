@@ -46,7 +46,7 @@ function NestedForm<T extends Yup.ObjectSchema>({
 
   return (
     <Form
-    as="div"
+      as="div"
       {...props}
       value={meta.value}
       onChange={meta.onChange}

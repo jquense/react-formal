@@ -252,20 +252,23 @@ export type FieldProps<TAs extends React.ElementType = any> = {
   onBlur?: (...args: any[]) => any;
 };
 
+export type FieldPropsWithAs<TAs extends React.ElementType> = FieldProps<TAs> &
+  React.RefAttributes<any> &
+  Omit<
+    React.ComponentPropsWithoutRef<TAs>,
+    keyof FieldProps | 'meta' | 'value' | 'checked' | 'onChange' | 'onBlur'
+  >;
+
 export declare interface Field {
   <TAs extends React.ElementType = 'input'>(
-    props: FieldProps<TAs> &
-      React.RefAttributes<any> &
-      Omit<
-        React.ComponentPropsWithoutRef<TAs>,
-        keyof FieldProps | 'meta' | 'value' | 'checked' | 'onChange' | 'onBlur'
-      >,
+    props: FieldPropsWithAs<TAs>,
   ): React.ReactElement | null;
 
   displayName?: string;
 
   propTypes?: any;
 }
+
 /**
  * @alias Field
  */

@@ -2,9 +2,10 @@ import invariant from 'invariant';
 import { InferType, ObjectSchema, ValidationError } from 'yup';
 import Field from './Field';
 import FieldArray from './FieldArray';
-import FormComponent from './Form';
-import Submit from './FormSubmit';
+import FormComponent, { getter, setter } from './Form';
+import Submit from './Submit';
 import Message from './Message';
+import NestedForm from './NestedForm';
 import Summary from './Summary';
 import config from './config';
 import useField, { EventStrategies } from './useField';
@@ -35,7 +36,7 @@ export type FormProps<
   TValue = InferType<TSchema>
 > = import('./Form').FormProps<TSchema, TValue>;
 
-interface Statics {
+export interface Statics {
   Field: typeof Field;
   FieldArray: typeof FieldArray;
   Message: typeof Message;
@@ -44,6 +45,8 @@ interface Statics {
   setDefaults: (defaults: any) => void;
   toErrors: (err: ValidationError) => ReturnType<typeof errToJSON>;
   EventStrategies: typeof EventStrategies;
+  getter: typeof getter;
+  setter: typeof setter;
 }
 
 const statics: Statics = {
@@ -52,6 +55,8 @@ const statics: Statics = {
   Message,
   Summary,
   Submit,
+  getter,
+  setter,
   EventStrategies,
   setDefaults(defaults = {}) {
     Object.assign(config, defaults);
@@ -67,6 +72,7 @@ const statics: Statics = {
 
 export {
   statics,
+  NestedForm,
   useEventHandlers,
   useMergedHandlers,
   useField,

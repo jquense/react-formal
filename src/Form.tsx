@@ -749,11 +749,6 @@ _Form.propTypes = {
 
 _Form.displayName = 'Form';
 
-// _Form.setter = formGetter
-// _Form.getter = formSetter
-//
+export default _Form;
 
-export default Object.assign(_Form, {
-  getter: formGetter,
-  setter: formSetter,
-});
+export { formGetter as getter, formSetter as setter };

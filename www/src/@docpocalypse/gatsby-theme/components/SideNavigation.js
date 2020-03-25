@@ -22,6 +22,11 @@ function AppSideNavigation(props) {
             </SideNavigation.Link>
           </SideNavigation.Item>
           <SideNavigation.Item>
+            <SideNavigation.Link to="/migration-v2">
+              Migrating to v2
+            </SideNavigation.Link>
+          </SideNavigation.Item>
+          <SideNavigation.Item>
             <SideNavigation.Header>API</SideNavigation.Header>
             <ul className="mb-4">
               {sortBy(api, 'title').map(page => (

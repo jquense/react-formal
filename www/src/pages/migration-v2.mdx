@@ -1,0 +1,93 @@
+---
+title: Migrate to v2
+---
+
+# Migration to v2
+
+Version 2.0.0 focuses on adding robust hooks support as well as streamlining the public
+API towards simplicity and consistency. It also adds first class TypeScript support!
+
+## Key Features
+
+- New hooks for custom fields and common use-cases makes accessing Form data signifantly easier
+  - `useFormValue`
+  - `useField`
+  - `useFieldArray`
+  - `useFormSubmit`
+  - `useErrors`
+  - `useTouched`
+- Out-of-the-box support for multiple `<select>`s as well as checkbox groups
+- Better FieldArray validation behavior; arrayHelpers only trigger validation on the list itself, not nested fields
+- Library is now written in TypeScript.
+
+## Breaking Changes
+
+There is lot of rewritten code, so there may be subtle changes that i've missed. Please
+test in your apps thoroughly
+
+### Field render prop arguments
+
+Instead of passing a single `props` argument and the resolved Input, Field and FieldArrays
+now pass props and `meta` as seperate arguments (array). The resolved input has been removed
+entirely as it was unnecessary for custom components. For information about how fields
+resolve to _native_ elements field `meta` now contains `nativeTagName` and `nativeType`
+
+```jsx static
+<Form.Field name="birthDate">
+  {(props, meta) => <DatePicker {...props} />}
+</Form.Field>
+```
+
+For very custom `Field` components consider `useField` and friends.
+
+### Field's _always_ inject `onChange`
+
+Previously Fields would only inject handlers for their configured `events`. This
+meant that when set to `null` a Field could not trigger updates. This has been fixed, so
+`events` now refer exclusively to handlers _that trigger validation_ and `onChange` is always
+injected, even when events is `null`. Note: `onChange` can still trigger validation, e.g.
+`events="onChange"` will inject an `onChange` hanlder that triggers an update as well as validation,
+`events={null}` will still inject `onChange` but it will _only_ trigger an update
+to the field value, not validation.
+
+### FieldArray render prop arguments
+
+`<FieldArray>` have switched to be entirely non-presentational components. Meaning,
+they no longer accept an `as` prop or element `children`. It's generally recommended
+that FieldArray be used to compose other `Field`s via the render prop (but not required).
+
+For uses existing renderProp usage the arguments are now:
+
+```jsx static
+<Form.FieldArray>
+  {(values, arrayHelpers, meta) => ... }
+</Form.FieldArray>
+```
+
+`useFieldArray` is also now available as an alternative to render props.
+
+#### Migrating FieldArray Components
+
+This is likely an uncommon pattern, but Field Arrays like the following:
+
+```jsx
+<Form.FieldArray as={MyListComponent} />
+```
+
+Will no longer work, instead switch to the render prop and pass the helpers and values
+in as props to your component, or take ad avantage of `useFieldArray` in MyListComponent.
+
+```jsx
+<Form.FieldArray>
+  {(values, arrayHelpers, meta) => (
+    <MyListComponent values={values} helpers={arrayHelpers} meta={meta} />
+  )}
+</Form.FieldArray>
+```
+
+### FieldArray validation
+
+Previously, `<FieldArray>`s would trigger validation the same as `<Field>`s, validating
+the entire branch below their `name`. Now validation is _only_ triggered for the list itself.
+Practically this means that it's no longer required to set `events={null}` on FieldArrays as a well
+of disabling top level validation.

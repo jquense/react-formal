@@ -43,6 +43,14 @@ module.exports = {
         tailwindConfig: require.resolve('./tailwind.config'),
 
         getImportName(docNode) {
+          if (
+            ['Field', 'FieldArray', 'Message', 'Summary', 'Summary'].includes(
+              docNode.name,
+            )
+          ) {
+            return `import Form from '${docNode.packageName}'`;
+          }
+
           return `import { ${docNode.name} } from '${docNode.packageName}'`;
         },
       },

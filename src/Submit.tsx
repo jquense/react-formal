@@ -18,7 +18,7 @@ const defaultEvents = ['onClick'];
  *
  * @alias Submit
  */
-function FormSubmit<TAs extends ElementType = 'button'>(
+function Submit<TAs extends ElementType = 'button'>(
   props: FormSubmitProps<TAs> &
     Omit<React.ComponentPropsWithoutRef<TAs>, 'triggers' | 'events' | 'as'>,
 ) {
@@ -51,7 +51,7 @@ function FormSubmit<TAs extends ElementType = 'button'>(
   );
 }
 
-FormSubmit.propTypes = {
+Submit.propTypes = {
   /**
    * Specify particular fields to validate in the related form. If empty the entire form will be validated.
    */
@@ -80,4 +80,4 @@ FormSubmit.propTypes = {
   ]),
 };
 
-export default FormSubmit;
+export default Submit;

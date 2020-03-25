@@ -20,7 +20,8 @@
     "react": "^16.13.0",
     "react-dom": "^16.13.0",
     "react-widgets": "^5.0.0-beta.9",
-    "tailwindcss": "^1.2.0"
+    "tailwindcss": "^1.2.0",
+    "usa-states": "^0.0.5"
   },
   "devDependencies": {
     "@types/jest": "^25.1.4",

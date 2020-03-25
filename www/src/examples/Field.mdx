@@ -135,12 +135,17 @@ interface FieldMeta {
   schema?:  YupSchema;        // the schema for this field
   context?: Record<string, any>; // a yup context object
 
+  nativeTagName: 'input' | 'select'; // The inferred native HTML element.
+  nativeType: string; // The inferred HTML input type, only valid for 'input's
+
   // onError allows manually _replacing_ errors for the Field `name`
   // any existing errors for this path will be removed first
   onError(errors: Errors): void
   // The same callback passed to field components
   // for updating (and validating) a field value
   onChange(nextFieldValue: any): void
+
+
 }
 ```
 

@@ -1,0 +1,66 @@
+Form `<Message>` displays error state for a field or set of fields. They
+can be rendered anywhere under a `<Form>` and styled to suit your application.
+
+## Overview
+
+`<Message>`s like `<Field>`s associate and subscribe to paths with the form data.
+Following the api for HTML `<label>` the `for` prop is used instead of `name`.
+Messages only render when there are errors.
+
+```tsx
+import * as yup from "yup";
+import Form from "react-formal";
+
+<Form errors={{ name: "I am an Error" }}>
+  <Form.Message for="name" />
+</Form>;
+```
+
+Messages can be configured to display one, or all errors pertaining to a field
+
+```tsx
+import * as yup from "yup";
+import Form from "react-formal";
+
+<Form errors={{ name: ["I am an Error", "I am a second error!"] }}>
+  <Form.Message for="name" />
+
+  <hr className="my-3" />
+
+  <Form.Message for="name">
+    {errors => <span>{errors.pop()}</span>}
+  </Form.Message>
+</Form>;
+```
+
+Messages are also not limited to a single field:
+
+```tsx
+import * as yup from "yup";
+import Form from "react-formal";
+
+<Form errors={{ name: "Name is required", age: "age is required" }}>
+  <Form.Message for={["name", "age"]} />
+</Form>;
+```
+
+React formal is unopinionated about how errors should be styled. You can easily
+add your own styles to the Message or create a wrapper component for your application.
+
+```tsx
+import * as yup from "yup";
+import Form from "react-formal";
+
+function InfoMessage(props) {
+  return <Form.Message className="text-warning font-bold ml-4" {...props} />;
+}
+
+<Form errors={{ name: "Required" }}>
+  <Form.Message
+    for="name"
+    className="text-danger bg-danger-light px-4 py-3 rounded border border-danger"
+  />
+
+  <InfoMessage for="name" />
+</Form>;
+```

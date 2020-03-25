@@ -56,7 +56,9 @@ function useFieldArray<T = any>(
   optionsOrName: string | UseFieldArrayOptions,
 ): [T[], FieldArrayHelpers<T>, FieldMeta] {
   let options =
-    typeof optionsOrName === 'string' ? { name: optionsOrName } : optionsOrName;
+    typeof optionsOrName === 'string'
+      ? { name: optionsOrName, exclusive: true }
+      : optionsOrName;
 
   let { name } = options;
 
@@ -68,7 +70,11 @@ function useFieldArray<T = any>(
     [name],
   );
 
-  const meta = useFieldMeta({ ...options, validates: fieldsToValidate });
+  const meta = useFieldMeta({
+    ...options,
+    exclusive: options.exclusive ?? true,
+    validates: fieldsToValidate,
+  });
 
   const { errors, onError, value, onChange, update } = meta;
 

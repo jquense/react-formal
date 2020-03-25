@@ -12,16 +12,24 @@ operations.
 
 ```jsx
 import * as yup from "yup";
-import Form from "react-formal";
+import Form from "../components/FormWithResult";
 import IconButton from "../components/IconButton";
 
 let cid = 0;
+const friend = yup.object({
+  id: yup.number().default(() => cid++),
+  name: yup
+    .string()
+    .required("Required")
+    .default("")
+});
+
 const schema = yup.object({
-  friends: yup.array().of(
-    yup.object({
-      name: yup.string().required("Required")
-    })
-  )
+  friends: yup
+    .array()
+    .of(friend)
+    .min(1, "Must have at least one friend")
+    .max(4, "That is too many friends")
 });
 
 <Form
@@ -30,7 +38,7 @@ const schema = yup.object({
   defaultValue={{
     friends: [
       { id: ++cid, name: "Sally" },
-      { id: ++cid, name: undefined }
+      { id: ++cid, name: "" }
     ]
   }}
 >
@@ -38,35 +46,41 @@ const schema = yup.object({
     Add or remove items, with and without errors to see how they are correctly
     moved or removed along with their field
   </p>
+  <Form.Message for={`friends`} className="error" />
   <Form.FieldArray name="friends">
     {(values, arrayHelpers, meta) => (
-      <ul>
-        {values.map((value, idx) => (
-          <li key={value.id}>
-            <div className="flex items-start">
-              <Form.Field name={`friends[${idx}].name`} />
-              <IconButton
-                aria-label="Remove item"
-                onClick={() => arrayHelpers.remove(value)}
-              >
-                -
-              </IconButton>
-              <IconButton
-                aria-label="Insert item"
-                onClick={() =>
-                  arrayHelpers.insert({ id: ++cid, name: undefined }, idx + 1)
-                }
-              >
-                +
-              </IconButton>
-            </div>
-            <Form.Message
-              for={`friends[${idx}].name`}
-              className="error -mt-2"
-            />
-          </li>
-        ))}
-      </ul>
+      <>
+        <ul>
+          {values.map((value, idx) => (
+            <li key={value.id}>
+              <div className="flex items-start">
+                <Form.Field name={`friends[${idx}].name`} />
+                <IconButton
+                  aria-label="Remove item"
+                  onClick={() => arrayHelpers.remove(value)}
+                >
+                  -
+                </IconButton>
+                <IconButton
+                  aria-label="Insert item"
+                  onClick={() => arrayHelpers.insert(friend.default(), idx + 1)}
+                >
+                  +
+                </IconButton>
+              </div>
+              <Form.Message
+                for={`friends[${idx}].name`}
+                className="error -mt-2"
+              />
+            </li>
+          ))}
+        </ul>
+        {!values.length && (
+          <button onClick={() => arrayHelpers.push({ id: ++cid })}>
+            Add Friend
+          </button>
+        )}
+      </>
     )}
   </Form.FieldArray>
 </Form>;
@@ -98,7 +112,7 @@ interface FieldArrayHelpers<T = any> {
    * should generally be avoided in favor of using a inner Field
    * for the item to handle updates.
    *
-   * Does not trigger validation for the new item, only the list.
+   * Also triggers validation for the _item_
    */
   update(item: T, oldItem: T): void;
 }
