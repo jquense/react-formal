@@ -11,9 +11,21 @@ import config from './config';
 import { Errors } from './types';
 import isNativeType from './utils/isNativeType';
 import { toArray } from './utils/paths';
-import useEventHandlers, { notify } from './utils/useEventHandlers';
+import notify from './utils/notify';
 import useErrors from './useErrors';
 import { ValidationPathSpec } from './errorManager';
+
+function useEvents(
+  validateOn: ValidateOnConfig = config.validateOn,
+  meta: FieldMeta,
+) {
+  validateOn = validateOn === undefined ? config.validateOn : validateOn;
+  validateOn = typeof validateOn === 'function' ? validateOn(meta) : validateOn;
+
+  return (
+    (typeof validateOn === 'string' ? { [validateOn]: true } : validateOn) || {}
+  );
+}
 
 function resolveNativeInputConfig(type: unknown) {
   let tagName: 'input' | 'select' | 'textarea' = 'input';
@@ -28,20 +40,22 @@ function resolveNativeInputConfig(type: unknown) {
     : { tagName };
 }
 
-const onChange: FieldEvents = ['onChange'];
+const onChange: ValidateOnConfig = { change: true };
 
-const onBlur: FieldEvents = ['onBlur'];
+const onBlur: ValidateOnConfig = { blur: true };
 
-const onChangeAndBlur: FieldEvents = ['onChange', 'onBlur'];
+const onChangeAndBlur: ValidateOnConfig = { change: true, blur: true };
 
-const onBlurThenChangeAndBlur: FieldEvents = meta =>
-  meta.valid ? ['onBlur'] : ['onChange', 'onBlur'];
+const onBlurThenChangeAndBlur: ValidateOnConfig = meta => ({
+  blur: true,
+  change: !meta.valid,
+});
 
-export const EventStrategies = {
-  onChange,
-  onBlur,
-  onChangeAndBlur,
-  onBlurThenChangeAndBlur,
+export const ValidateStrategies = {
+  Change: onChange,
+  Blur: onBlur,
+  ChangeAndBlur: onChangeAndBlur,
+  BlurThenChangeAndBlur: onBlurThenChangeAndBlur,
 };
 
 export interface UseFieldMetaOptions {
@@ -89,7 +103,7 @@ export interface FieldMeta {
    */
   onChange: (nextFieldValue: unknown, ...args: any[]) => void;
 
-  events: string[] | null;
+  validateOn: TriggerEventConfig;
 }
 
 const passThrough = v => v;
@@ -175,12 +189,6 @@ export function useFieldMeta(opts: UseFieldMetaOptions) {
   return meta as FieldMeta;
 }
 
-export type TriggerEvents =
-  | null
-  | string[]
-  | string
-  | ((meta: FieldMeta) => string[] | string);
-
 export type ValueMapper = (value: unknown, ...args: any[]) => any;
 
 export type MapFromValue =
@@ -190,11 +198,14 @@ export type MapFromValue =
 
 export type MapToValue = (formValue: {}) => any;
 
-export type FieldEvents =
-  | string[]
-  | string
+export type TriggerEvent = 'change' | 'blur';
+export type TriggerEventConfig = { blur?: boolean; change?: boolean };
+
+export type ValidateOnConfig =
   | null
-  | ((meta: FieldMeta) => string[] | string | null);
+  | TriggerEvent
+  | TriggerEventConfig
+  | ((meta: FieldMeta) => TriggerEventConfig | TriggerEvent | null);
 
 export interface UseFieldOptions
   extends Omit<UseFieldMetaOptions, 'validates'> {
@@ -204,34 +215,32 @@ export interface UseFieldOptions
   mapFromValue?: MapFromValue;
   className?: string;
   validates?: string | string[] | null;
-  events?: FieldEvents;
+  validateOn?: ValidateOnConfig;
+  onChange?: (...args: any[]) => any;
+  onBlur?: (...args: any[]) => any;
 }
 
 export type EventHandlers = Record<string, (...args: any[]) => any>;
 
-export type RenderFieldProps<TValue = any> = Record<
-  string,
-  (...args: any[]) => any
-> & {
+export type UseFieldProps<TValue = any> = {
   value: TValue;
   type?: string;
+  name: string;
+  multiple?: boolean;
+  className?: string;
   onChange: (nextFieldValue: unknown, ...args: any[]) => any;
+  onBlur: (...args: any[]) => any;
   checked?: boolean;
 };
-
-/**
- * @callback MapToValue
- * @param {Object} formValue The root value for the entire _Form_.
- * @returns {any}
- */
 
 /**
  * Create a new form field for the provided name, takes the same options
  * as `Field` props.
  *
+ *
  * ```jsx
  * function MyNameField(props) {
- *   const [fieldProps, meta] = useFieldProps('firstName')
+ *   const [fieldProps, meta] = useField('firstName')
  *
  *   return (
  *      <input
@@ -244,12 +253,7 @@ export type RenderFieldProps<TValue = any> = Record<
  *
  * @param {string} name The Field name, which should be path corresponding to a specific form `value` path.
  */
-function useField(name: string): [RenderFieldProps, FieldMeta];
-/**
- * @callback MapToValue
- * @param {Object} formValue The root value for the entire _Form_.
- * @returns {any}
- */
+function useField(name: string): [UseFieldProps, FieldMeta];
 
 /**
  * Create a new form field for the provided name, takes the same options
@@ -257,7 +261,7 @@ function useField(name: string): [RenderFieldProps, FieldMeta];
  *
  * ```jsx
  * function MyNameField(props) {
- *   const [fieldProps, meta] = useFieldProps({ name: 'firstName' })
+ *   const [fieldProps, meta] = useField({ name: 'firstName' })
  *
  *   return (
  *      <input
@@ -274,16 +278,17 @@ function useField(name: string): [RenderFieldProps, FieldMeta];
  * @param {MapToValue=} options.mapToValue A mapper from the form value to fieldProps.value`
  * @param {(string|MapFromValue)=} options.mapFromValue A mapper from the form value to fieldProps.value`
  * @param {(string|string[]|null)=} options.validates Triggers validation for additional field paths
- * @param {(string|string[]|EventMapper)=} options.events A set of event names to generate field handlers for.
+ * @param {('change' | 'blur' | { blur?: boolean; change?: boolean } | (meta: FieldMeta) => { blur?: boolean; change?: boolean })=} options.validateOn configure which events trigger validation.
  */
-function useField(options: UseFieldOptions): [RenderFieldProps, FieldMeta];
+function useField(options: UseFieldOptions): [UseFieldProps, FieldMeta];
+
 function useField(
   optionsOrName: UseFieldOptions | string,
-): [RenderFieldProps, FieldMeta] {
+): [UseFieldProps, FieldMeta] {
   let options =
     typeof optionsOrName === 'string' ? { name: optionsOrName } : optionsOrName;
 
-  let { name, validates, noValidate } = options;
+  let { name, validates, noValidate, onChange, onBlur } = options;
 
   const fieldsToValidate = useMemo<string[]>(
     () => (validates != null ? toArray(validates) : [name]),
@@ -293,29 +298,35 @@ function useField(
 
   const meta = useFieldMeta({ ...options, validates: fieldsToValidate });
 
-  let events = options.events === undefined ? config.events : options.events;
+  meta.validateOn = useEvents(options.validateOn, meta);
 
-  events = toArray(typeof events === 'function' ? events(meta) : events);
-
-  meta.events = events as string[];
+  const { blur, change } = meta.validateOn;
 
   const { update } = meta;
   const validate = formActions?.onValidate;
 
-  const fieldProps: any = useEventHandlers(
-    events,
-    useCallback(
-      (event, args) => {
-        if (event === 'onChange') {
-          notify(update, args as any);
-        }
-        if (noValidate || !validate) return;
+  const fieldProps: Partial<UseFieldProps> = {
+    onChange: useCallback(
+      (...args: any[]) => {
+        notify(onChange, args as any);
+        notify(update, args as any);
 
-        validate(fieldsToValidate, event, args);
+        if (!change || noValidate || !validate) return;
+
+        validate(fieldsToValidate, 'onChange', args);
       },
-      [update, fieldsToValidate, noValidate, validate],
+      [change, fieldsToValidate, noValidate, onChange, update, validate],
     ),
-  );
+    onBlur: useCallback(
+      (...args: any[]) => {
+        notify(onBlur, args as any);
+
+        if (!blur || noValidate || !validate) return;
+        validate(fieldsToValidate, 'onBlur', args);
+      },
+      [blur, fieldsToValidate, noValidate, onBlur, validate],
+    ),
+  };
 
   // always include an onChange
   if (!fieldProps.onChange) {
@@ -357,7 +368,7 @@ function useField(
     );
   }
 
-  return [fieldProps, meta];
+  return [fieldProps as any, meta];
 }
 
 export default useField;

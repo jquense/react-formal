@@ -1,18 +1,15 @@
 import PropTypes from 'prop-types';
-import elementType from 'prop-types-extra/lib/elementType';
 import React, { useCallback, ElementType } from 'react';
-import useCommittedRef from '@restart/hooks/useCommittedRef';
 
-import useEventHandlers, { notify } from './utils/useEventHandlers';
+import notify from './utils/notify';
 import useFormSubmit from './useFormSubmit';
 
 export interface FormSubmitProps<TAs extends ElementType = any> {
   as?: TAs;
-  events?: string[] | string | null;
+  onClick?: (...args: any[]) => any;
   triggers?: string[];
 }
 
-const defaultEvents = ['onClick'];
 /**
  * A Form submit button, for triggering validations for the entire form or specific fields.
  *
@@ -20,32 +17,23 @@ const defaultEvents = ['onClick'];
  */
 function Submit<TAs extends ElementType = 'button'>(
   props: FormSubmitProps<TAs> &
-    Omit<React.ComponentPropsWithoutRef<TAs>, 'triggers' | 'events' | 'as'>,
+    Omit<React.ComponentPropsWithoutRef<TAs>, 'triggers' | 'as'>,
 ) {
-  const propsRef = useCommittedRef<any>(props);
-  const {
-    triggers,
-    events = defaultEvents,
-    as: Component = 'button',
-    ...rest
-  } = props;
+  const { onClick, triggers, as: Component = 'button', ...rest } = props;
   const [submit] = useFormSubmit({ triggers });
 
-  const eventHandlers = useEventHandlers(
-    events,
-    useCallback(
-      (event, args) => {
-        notify(propsRef.current[event], args);
-        submit(args);
-      },
-      [propsRef, submit],
-    ),
+  const handleClick = useCallback(
+    (...args: any[]) => {
+      notify(onClick, args);
+      submit(args);
+    },
+    [onClick, submit],
   );
 
   return (
     <Component
       {...rest}
-      {...eventHandlers}
+      onClick={handleClick}
       type={triggers && triggers.length ? 'button' : 'submit'}
     />
   );
@@ -67,17 +55,14 @@ Submit.propTypes = {
    * </Form.Submit>
    * ```
    */
-  as: elementType,
+  as: PropTypes.elementType,
 
   /**
    * A string or array of event names that trigger validation.
    *
    * @default 'onClick'
    */
-  events: PropTypes.oneOfType([
-    PropTypes.string,
-    PropTypes.arrayOf(PropTypes.string),
-  ]),
+  onClick: PropTypes.func,
 };
 
 export default Submit;

@@ -1,12 +1,8 @@
-const defaultTheme = require('tailwindcss/defaultTheme');
 const { transparentize } = require('polished');
-
-//#8e929e
 
 module.exports = {
   theme: {
     colors: {
-      // gray: defaultTheme.colors.gray
       'gray': {
         50: '#fafafa',
         100: '#ededee',
@@ -81,25 +77,15 @@ module.exports = {
       PropListDefaultValue: {
         '@apply text-info-dark !important': '',
       },
-    },
 
-    // prism: t => ({
-    //   'bg-color': '#282c34',
-    //   'char': '#d8dee9',
-    //   'comment': '#999999',
-    //   'keyword': '#c5a5c5',
-    //   'lineHighlight': '#14161a',
-    //   'primitive': '#5a9bcf',
-    //   'string': '#8dc891',
-    //   'variable': '#d7deea',
-    //   'boolean': '#ff8b50',
-    //   'punctuation': '#5fb3b3',
-    //   'tag': '#fc929e',
-    //   'function': '#79b6f2',
-    //   'className': '#fac863',
-    //   'method': '#6699cc',
-    //   'operator': '#fc929e',
-    // }),
+      JsDocTypeExpression: {
+        '@apply text-subtle !important': '',
+      },
+
+      HookSignature: {
+        '@apply mb-12': '',
+      },
+    },
 
     InlineCode: t => ({
       '@apply rounded rounded-sm': true,
@@ -109,7 +95,7 @@ module.exports = {
     }),
 
     CodeBlock: {
-      '@apply my-6 rounded-lg p-6': true,
+      '@apply my-6 rounded-lg p-6 text-sm': true,
       'backgroundColor': '#282c34',
     },
 

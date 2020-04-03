@@ -19,9 +19,9 @@ function isFilterErrorsEqual([a], [b]) {
 /**
  * Returns the field errors for the form, or a subset of field errors if paths is provided.
  *
- * @param {string|string[]} paths a path or set of paths to retrieve errors for.
- * @param {UseErrorOptions} options
- * @param {UseErrorOptions} options.inclusive By default, only errors with exact matches on each path are returned.
+ * @param paths a path or set of paths to retrieve errors for.
+ * @param options
+ * @param {boolean=} options.inclusive By default, only errors with exact matches on each path are returned.
  *  Set to `false` to also return errors for a path and any nested paths
  *
  * @returns {Errors}

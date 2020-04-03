@@ -216,7 +216,7 @@ describe('Form', () => {
     );
 
     await act(() => {
-      wrapper.assertSingle('FormSubmit').simulate('click');
+      wrapper.assertSingle('Submit').simulate('click');
       return wait(100);
     });
 
@@ -241,7 +241,7 @@ describe('Form', () => {
     );
 
     await act(() => {
-      wrapper.assertSingle('FormSubmit').simulate('click');
+      wrapper.assertSingle('Submit').simulate('click');
       return wait();
     });
 
@@ -275,7 +275,7 @@ describe('Form', () => {
     );
 
     await act(() => {
-      wrapper.assertSingle('FormSubmit').simulate('click');
+      wrapper.assertSingle('Submit').simulate('click');
       return wait();
     });
 
@@ -306,7 +306,7 @@ describe('Form', () => {
 
     await act(async () => {
       wrapper
-        .assertSingle('FormSubmit')
+        .assertSingle('Submit')
         .simulate('click')
         .simulate('click');
 

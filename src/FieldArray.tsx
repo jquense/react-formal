@@ -1,12 +1,13 @@
 import PropTypes from 'prop-types';
 import React from 'react';
-import { RenderFieldProps, MapToValue } from './useField';
+import { UseFieldProps, MapToValue } from './useField';
 import useFieldArray, {
   FieldArrayHelpers,
   FieldArrayMeta,
   UseFieldArrayOptions,
 } from './useFieldArray';
-export type RenderFieldArrayProps = RenderFieldProps & {
+
+export type RenderFieldArrayProps = UseFieldProps & {
   arrayHelpers: FieldArrayHelpers;
   meta: FieldArrayMeta;
   ref: React.Ref<any>;
@@ -38,7 +39,7 @@ export type FieldArrayProps<T = any> = UseFieldArrayOptions & {
    * <Form.Field
    *   name='location'
    *   type="dropdownlist"
-   *   mapToValue={model=> pick(model, 'location', 'locationId')}
+   *   mapToValue={formData=> pick(formData, 'location', 'locationId')}
    * />
    * ```
    */

@@ -41,14 +41,64 @@ export interface FieldArrayHelpers<T = any> {
 export type UseFieldArrayOptions = UseFieldMetaOptions;
 
 /**
- * Retrieve the values at a given path as well as a setr of array helpers
+ * Retrieve the values at a given path as well as a set of array helpers
  * for manipulating list values.
  *
- * @param name A field path
+ * ```jsx
+ * function ContactList() {
+ *   const [values, arrayHelpers, meta] = useFieldArray("contacts")
+ *
+ *   return (
+ *     <ul>
+ *       {values.map((value, idx) => (
+ *          <li key={value.id}>
+ *            <Form.Field name={`contacts[${idx}].name`} />
+ *
+ *            <button onClick={() => arrayHelpers.remove(value)}>
+ *              Remove
+ *            </button>
+ *          </li>
+ *        )}
+ *     </ul>
+ *   )
+ * }
+ * ```
+ *
+ * @param name A field path, should point to an array value in the form data
  */
+
 function useFieldArray<T = any>(
   name: string,
 ): [T[], FieldArrayHelpers<T>, FieldMeta];
+/**
+ * Retrieve the values at a given path as well as a set of array helpers
+ * for manipulating list values.
+ *
+ * ```jsx
+ * function ContactList() {
+ *   const [values, arrayHelpers, meta] = useFieldArray({
+ *     name: 'contacts',
+ *     validates: 'otherField'
+ *   })
+ *
+ *   return (
+ *     <ul>
+ *       {values.map((value, idx) => (
+ *          <li key={value.id}>
+ *            <Form.Field name={`contacts[${idx}].name`} />
+ *
+ *            <button onClick={() => arrayHelpers.remove(value)}>
+ *              Remove
+ *            </button>
+ *          </li>
+ *        )}
+ *     </ul>
+ *   )
+ * }
+ * ```
+ *
+ * @param name A field path, should point to an array value in the form data
+ */
 function useFieldArray<T = any>(
   options: UseFieldArrayOptions,
 ): [T[], FieldArrayHelpers<T>, FieldMeta];

@@ -81,7 +81,7 @@ describe('Submit', () => {
             {props => <input {...props} value={props.value || ''} />}
           </Form.Field>
 
-          <Form.Submit events="onClick" triggers={['fieldA']} />
+          <Form.Submit triggers={['fieldA']} />
         </div>
       </Form>,
     );

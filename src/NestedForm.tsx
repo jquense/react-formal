@@ -41,7 +41,7 @@ function NestedForm<T extends Yup.ObjectSchema>({
   const [_, meta] = useField({
     name,
     noValidate: true,
-    events: null,
+    validateOn: null,
   });
 
   return (

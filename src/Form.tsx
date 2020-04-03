@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-use-before-define */
 import PropTypes from 'prop-types';
-import elementType from 'prop-types-extra/lib/elementType';
 import expr from 'property-expr';
 import React, {
   useEffect,
@@ -32,7 +31,7 @@ import createErrorManager, {
 import { BeforeSubmitData, Errors, Touched, ValidateData } from './types';
 import * as ErrorUtils from './Errors';
 import errToJSON from './utils/errToJSON';
-import { notify } from './utils/useEventHandlers';
+import notify from './utils/notify';
 
 export interface FormProps<
   TSchema extends ObjectSchema,
@@ -716,7 +715,10 @@ _Form.propTypes = {
    * If `null` are `false` the form will simply render it's child. In
    * this instance there must only be one child.
    */
-  as: PropTypes.oneOfType([elementType, PropTypes.oneOf([null, false])]),
+  as: PropTypes.oneOfType([
+    PropTypes.elementType,
+    PropTypes.oneOf([null, false]),
+  ]),
 
   /**
    * A Yup schema  that validates the Form `value` prop. Used to validate the form input values

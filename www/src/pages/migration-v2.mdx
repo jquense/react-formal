@@ -22,14 +22,14 @@ API towards simplicity and consistency. It also adds first class TypeScript supp
 
 ## Breaking Changes
 
-There is lot of rewritten code, so there may be subtle changes that i've missed. Please
-test in your apps thoroughly
+There is lot of rewritten code, so there may be subtle changes that I've missed. Please
+test in your apps thoroughly.
 
 ### Field render prop arguments
 
 Instead of passing a single `props` argument and the resolved Input, Field and FieldArrays
-now pass props and `meta` as seperate arguments (array). The resolved input has been removed
-entirely as it was unnecessary for custom components. For information about how fields
+now pass props and `meta` as seperate arguments. The resolved input has been removed
+entirely as it was unnecessary for custom components. For details about how fields
 resolve to _native_ elements field `meta` now contains `nativeTagName` and `nativeType`
 
 ```jsx static
@@ -40,14 +40,28 @@ resolve to _native_ elements field `meta` now contains `nativeTagName` and `nati
 
 For very custom `Field` components consider `useField` and friends.
 
+### Change: `events` -> `validateOn`
+
+The validation `events` prop has been changed to `validateOn` and limited to only `change` and `blur`.
+Arbitrary events cannot be configured any longer. To support other sorts of event
+handlers use the Field render prop.
+
+```jsx
+<Field>
+  {({ onBlur, ...pros }) => <MyInput onValidate={onBlur} {...props} />}
+</Field>
+```
+
 ### Field's _always_ inject `onChange`
 
 Previously Fields would only inject handlers for their configured `events`. This
 meant that when set to `null` a Field could not trigger updates. This has been fixed, so
-`events` now refer exclusively to handlers _that trigger validation_ and `onChange` is always
-injected, even when events is `null`. Note: `onChange` can still trigger validation, e.g.
-`events="onChange"` will inject an `onChange` hanlder that triggers an update as well as validation,
-`events={null}` will still inject `onChange` but it will _only_ trigger an update
+`events` (now `validateOn`) now refer exclusively to handlers _that trigger validation_ and `onChange` is always
+injected, even when events is `null`.
+
+Note that `onChange` can still trigger validation, e.g.
+`validateOn="change"` will inject an `onChange` handler that triggers an update as well as validation,
+`validateOn={null}` will still inject `onChange` but it will _only_ trigger an update
 to the field value, not validation.
 
 ### FieldArray render prop arguments

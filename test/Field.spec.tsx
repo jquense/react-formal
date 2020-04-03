@@ -54,7 +54,7 @@ describe('Field', () => {
     expect(
       mount(
         <Form schema={schema} onValidate={spy} defaultValue={{}}>
-          <Form.Field name="name" as={TestInput} events={null} />
+          <Form.Field name="name" as={TestInput} validateOn={null} />
         </Form>,
       )
         .find(TestInput)
@@ -421,7 +421,7 @@ describe('Field', () => {
       });
     });
 
-    it('should set events via a function', async () => {
+    it('should set validateOn via a function', async () => {
       let schema = yup.object({
         number: yup.number().min(5),
       });
@@ -435,10 +435,12 @@ describe('Field', () => {
         >
           <Form.Field
             name="number"
-            events={({ valid }) => (valid ? ['onBlur'] : ['onChange'])}
+            validateOn={({ valid }) => ({
+              blur: valid,
+              change: !valid,
+            })}
           >
-            {/* noop prevents a readonly console warning */}
-            {props => <input onChange={() => {}} {...props} />}
+            {props => <input {...props} />}
           </Form.Field>
         </Form>,
       );

@@ -46,7 +46,7 @@
     "lint": "eslint src",
     "docs": "yarn --cwd www start",
     "docs:deploy": "yarn --cwd www deploy",
-    "build:pick": "cherry-pick --name=@restart/hooks --cwd=lib --input-dir=../src --cjs-dir=cjs --esm-dir=esm",
+    "build:pick": "cherry-pick --cwd=lib --input-dir=../src --cjs-dir=cjs --esm-dir=esm",
     "build": "rimraf lib && 4c build src && yarn build:pick",
     "prepublishOnly": "npm run build",
     "release": "rollout"

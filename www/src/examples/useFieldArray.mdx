@@ -1,0 +1,78 @@
+The `useFieldArray` hook is an alternative to the `FieldArray` component. Its
+API if similar and accepts all the same options as the component.
+
+```jsx
+import * as yup from "yup";
+import useFieldArray from "react-formal/useFieldArray";
+import Form from "../components/FormWithResult";
+import IconButton from "../components/IconButton";
+
+let cid = 0;
+const friend = yup.object({
+  id: yup.number().default(() => cid++),
+  name: yup
+    .string()
+    .required("Required")
+    .default("")
+});
+
+const schema = yup.object({
+  friends: yup
+    .array()
+    .of(friend)
+    .min(1, "Must have at least one friend")
+    .max(4, "That is too many friends")
+});
+
+function FriendsList({ name }) {
+  const [values, arrayHelpers, meta] = useFieldArray(name);
+  return (
+    <>
+      <ul>
+        {values.map((value, idx) => (
+          <li key={value.id}>
+            <div className="flex items-start">
+              <Form.Field name={`${name}[${idx}].name`} />
+              <IconButton
+                aria-label="Remove item"
+                onClick={() => arrayHelpers.remove(value)}
+              >
+                -
+              </IconButton>
+              <IconButton
+                aria-label="Insert item"
+                onClick={() => arrayHelpers.insert(friend.default(), idx + 1)}
+              >
+                +
+              </IconButton>
+            </div>
+            <Form.Message
+              for={`${name}[${idx}].name`}
+              className="error -mt-2"
+            />
+          </li>
+        ))}
+      </ul>
+      {!values.length && (
+        <button onClick={() => arrayHelpers.push({ id: ++cid })}>
+          Add Friend
+        </button>
+      )}
+    </>
+  );
+}
+
+<Form
+  debug
+  schema={schema}
+  defaultValue={{
+    friends: [
+      { id: ++cid, name: "Sally" },
+      { id: ++cid, name: "" }
+    ]
+  }}
+>
+  <Form.Message for={`friends`} className="error" />
+  <FriendsList name="friends" />
+</Form>;
+```

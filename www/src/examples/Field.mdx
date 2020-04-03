@@ -86,10 +86,12 @@ import Form from "@docs/components/FormWithResult";
       <Form.Field type="checkbox" name="colors" value="blue" /> Blue
     </label>
     <label>
-      <Form.Field type="checkbox" name="colors" value="yellow" /> Yellow
+      <Form.Field type="checkbox" name="colors" value="yellow" />{" "}
+      Yellow
     </label>
     <label>
-      <Form.Field type="checkbox" name="colors" value="orange" /> Orange
+      <Form.Field type="checkbox" name="colors" value="orange" />{" "}
+      Orange
     </label>
   </fieldset>
 </Form>;
@@ -100,9 +102,6 @@ import Form from "@docs/components/FormWithResult";
 Fields are not limited to native input components. You can pass _any_ component
 type to `as`. The only required interface a component needs to respect is the
 `value`/`onChange` pattern for controlled fields.
-
-For a better typed experience with TypeScript, consider using the
-[render prop API instead](#children).
 
 ```jsx previewClassName=reset
 import Form from "../components/FormWithResult";
@@ -117,6 +116,29 @@ import DropdownList from "react-widgets/lib/DropdownList";
       as={DropdownList}
       data={["Red", "Yellow", "Blue", "Other"]}
     />
+  </label>
+</Form>;
+```
+
+For a better typed experience with TypeScript, consider using the
+[render prop API instead](#children).
+
+```jsx static
+import Form from "../components/FormWithResult";
+
+import DropdownList from "react-widgets/lib/DropdownList";
+
+<Form defaultValue={{ color: "red" }}>
+  <label>
+    Favorite Colors
+    <Form.Field name="color">
+      {props => (
+        <DropdownList
+          data={["Red", "Yellow", "Blue", "Other"]}
+          {...props}
+        />
+      )}
+    </Form.Field>
   </label>
 </Form>;
 ```
@@ -159,9 +181,9 @@ disabled per field with the `noValidate` prop.
 
 ### Trigger Events
 
-Validation events can be controlled finely via the [`events`](#events) prop. Events
-control which handlers `<Field>` passes to the input it renders. Multiple event
-handlers can be configured with an array of handler names.
+Validation trigger events can be finely controlled via the [`validateOn`](#validateOn) prop.
+Events control which handlers `<Field>` passes to the input it renders. Multiple triggers
+can be configured using an object configuration.
 
 ```tsx
 import * as yup from "yup";
@@ -178,21 +200,24 @@ const schema = yup.object({
   <Form schema={schema}>
     <label>
       Validates onBlur
-      <Form.Field name="name" events="onBlur" />
+      <Form.Field name="name" validateOn="blur" />
     </label>
     <Form.Message for="name" className="error" />
   </Form>
   <Form schema={schema}>
     <label>
       Validates onBlur and onChange
-      <Form.Field name="name" events={["onBlur", "onChange"]} />
+      <Form.Field
+        name="name"
+        validateOn={{ change: true, blur: true }}
+      />
     </label>
     <Form.Message for="name" className="error" />
   </Form>
 </>;
 ```
 
-For more complex situations `events` accepts a function that is based the `meta` for the field
+For more complex situations `validateOn` accepts a function that is based the `meta` for the field
 and can conditionally return events based on context.
 
 ```tsx
@@ -207,13 +232,15 @@ const schema = yup.object({
 });
 
 // Only run validation onChange when the form is invalid
-const onBlurThenChangeAndBlur = meta =>
-  meta.valid ? "onBlur" : ["onChange", "onBlur"];
+const onBlurThenChangeAndBlur = meta => ({
+  change: !meta.valid,
+  blur: true
+});
 
 <Form schema={schema}>
   <label>
     Enter an Email
-    <Form.Field name="email" events={onBlurThenChangeAndBlur} />
+    <Form.Field name="email" validateOn={onBlurThenChangeAndBlur} />
   </label>
   <Form.Message for="email" className="error" />
 </Form>;
@@ -221,24 +248,27 @@ const onBlurThenChangeAndBlur = meta =>
 
 ### Preset Strategies
 
-As a convenience React Formal exports a few common event configurations
+As a convenience React Formal exports a few common trigger configurations
 you can mix and match if that is helpful.
 
 ```jsx static
-import { EventStrategies } from "react-formal";
+import { ValidateStrategies } from "react-formal";
 
 const {
-  onChange,
-  onBlur,
-  onChangeAndBlur,
-  onBlurThenChangeAndBlur
-} = EventStrategies;
+  Change,
+  Blur,
+  ChangeAndBlur,
+  BlurThenChangeAndBlur
+} = ValidateStrategies;
 
 <Form schema={schema}>
   <label>
     Email
-    <Form.Field name="email" events={EventStrategies.onBlur} />
+    <Form.Field name="email" validateOn={Blur} />
   </label>
   <Form.Message for="email" className="error" />
 </Form>;
 ```
+
+There is nothing special about these strategies, and you can roll your own easily.
+These are provied as a small convenience.

@@ -1,7 +1,7 @@
-import { FieldEvents } from './useField';
+import { ValidateOnConfig } from './useField';
 
 interface Config {
-  events: FieldEvents;
+  validateOn: ValidateOnConfig;
   errorClass: string;
 }
 
@@ -10,7 +10,7 @@ interface Config {
 // },
 
 const config: Config = {
-  events: ['onChange', 'onBlur'],
+  validateOn: { change: true, blur: true },
   errorClass: 'invalid-field',
 };
 

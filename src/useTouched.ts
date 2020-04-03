@@ -13,14 +13,14 @@ function useTouched(): Errors;
 /**
  * Returns the current Field value at the provided path.
  *
- * @param {string|string[]} path a path to retrieve errors for.
+ * @param path a path to retrieve errors for.
  * @returns {Touched}
  */
 function useTouched(path: string): Touched;
 /**
  * Returns an array of values for the provided field paths.
  *
- * @param {string|string[]} paths a set of paths to retrieve errors for.
+ * @param paths a set of paths to retrieve errors for.
  * @returns {Touched}
  */
 function useTouched(paths: string[] | undefined): Touched;

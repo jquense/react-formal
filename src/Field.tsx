@@ -1,22 +1,49 @@
 import PropTypes from 'prop-types';
-import elementType from 'prop-types-extra/lib/elementType';
-import React from 'react';
+import React, { useMemo } from 'react';
 import useField, {
   FieldMeta,
   MapFromValue,
   MapToValue,
-  RenderFieldProps,
-  TriggerEvents,
+  UseFieldProps,
+  ValidateOnConfig,
 } from './useField';
-import { useMergedHandlers } from './utils/useEventHandlers';
+import notify from './utils/notify';
+
+export type FieldEventHandlers = {
+  onBlur?: (...args: any[]) => any;
+  onChange?: (...args: any[]) => any;
+};
+
+export function useMergedEventHandlers(
+  { onBlur: onFieldBlur, onChange: onFieldChange }: FieldEventHandlers,
+  { onBlur, onChange }: FieldEventHandlers,
+) {
+  return useMemo(
+    () => ({
+      onChange: (...args: any[]) => {
+        notify(onChange, args);
+        notify(onFieldChange, args);
+      },
+      onBlur: (...args: any[]) => {
+        notify(onBlur, args);
+        notify(onFieldBlur, args);
+      },
+    }),
+    [onFieldBlur, onFieldChange, onBlur, onChange],
+  );
+}
+
+export type FieldRenderProps<TValue = any> = UseFieldProps<TValue> & {
+  type: string;
+  ref?: React.Ref<any>;
+};
 
 /**
  * When Field renders an Element, it injects a few props.
  * In the case none DOM elements it also injects `meta`
  */
-export type InjectedFieldProps<TValue = any> = RenderFieldProps<TValue> & {
-  type: string;
-  meta: FieldMeta;
+export type FieldInjectedProps<TValue = any> = FieldRenderProps<TValue> & {
+  meta?: FieldMeta;
 };
 
 export type FieldProps<TAs extends React.ElementType = any> = {
@@ -77,11 +104,11 @@ export type FieldProps<TAs extends React.ElementType = any> = {
   name: string | string;
 
   /**
-   * Event name or array of event names that the Field should trigger a validation.
-   * You can also specify a function that receives the Field `meta` object and returns an array of events
-   * in order to change validation strategies based on validity.
+   * Configure whether validation occur: onChange, onBlur, or both
+   * You can also specify a function that receives the Field `meta` object and returns a configuration map
+   * in order to change validation strategies based on validity or other metadata.
    */
-  events?: TriggerEvents;
+  validateOn?: ValidateOnConfig;
 
   /**
    * Customize how the Field value maps to the overall Form `value`.
@@ -91,7 +118,7 @@ export type FieldProps<TAs extends React.ElementType = any> = {
    * ```jsx static
    * <Form.Field
    *   name='name'
-   *   mapFromValue={fieldValue => `${fieldValue.first} {fieldValue.last}`}
+   *   mapFromValue={fieldValue => `${fieldValue.first} ${fieldValue.last}`}
    * />
    * ```
    *
@@ -105,8 +132,8 @@ export type FieldProps<TAs extends React.ElementType = any> = {
    * const getYear = () => (new Date()).getFullYear()
    *
    * const schema = yup.object({
-   *   name: yup.string().required('Required'),
-   *   dateOfBirth: yup.date().required('Required')
+   *   dateOfBirth: yup.date().required('Required'),
+   *   age: yup.number()
    * });
    *
    * <Form
@@ -114,21 +141,13 @@ export type FieldProps<TAs extends React.ElementType = any> = {
    *   defaultValue={schema.default()}
    * >
    *   <label>
-   *     Name
-   *     <Form.Field
-   *       name='name.first'
-   *       placeholder='First name'
-   *     />
-   *   </label>
-   *
-   *   <label>
    *     Date of Birth
    *     <Form.Field
    *       name='dateOfBirth'
    *       mapFromValue={{
-   *          'dateOfBirth': date => date,
-   *          'age': date =>
-   *            getYear() - date.getFullYear()
+   *         'dateOfBirth': event => event.target.value,
+   *         'age': ({ target }) => target.valueAsDate ?
+   *            getYear() - target.valueAsDate.getFullYear() : null
    *      }}/>
    *   </label>
    *   <label>
@@ -212,6 +231,10 @@ export type FieldProps<TAs extends React.ElementType = any> = {
    * When `children` is a function, its called with the processed field
    * props and field meta.
    *
+   * **Tip:** you can pass `onChange` and `onBlur` handlers
+   * to the `<Field>` component and it will handle merging them with its own injected
+   * handlers.
+   *
    * ```jsx static
    * <Field name='birthDate'>
    *  {(props, meta) =>
@@ -224,18 +247,12 @@ export type FieldProps<TAs extends React.ElementType = any> = {
    */
   children?:
     | React.ReactNode
-    | ((
-        fieldProps: RenderFieldProps & {
-          type: string;
-          ref?: React.Ref<any>;
-        },
-        meta: FieldMeta,
-      ) => React.ReactNode);
+    | ((fieldProps: FieldRenderProps, meta: FieldMeta) => React.ReactNode);
 
   /**
    * A value to pass to checkboxs/radios/boolean inputs
    */
-  htmlValue?: any;
+  value?: any;
 
   className?: string;
 
@@ -248,7 +265,10 @@ export type FieldProps<TAs extends React.ElementType = any> = {
   /** An HTML input type attribute */
   type?: string;
 
+  /** A local onChange handler, will be merged with the injected onChange */
   onChange?: (...args: any[]) => any;
+
+  /** A local onBlur handler, will be merged with the injected onBlur */
   onBlur?: (...args: any[]) => any;
 };
 
@@ -256,11 +276,19 @@ export type FieldPropsWithAs<TAs extends React.ElementType> = FieldProps<TAs> &
   React.RefAttributes<any> &
   Omit<
     React.ComponentPropsWithoutRef<TAs>,
-    keyof FieldProps | 'meta' | 'value' | 'checked' | 'onChange' | 'onBlur'
+    | keyof FieldProps
+    | 'meta'
+    | 'name'
+    | 'value'
+    | 'checked'
+    | 'onChange'
+    | 'onBlur'
   >;
 
-export declare interface Field {
-  <TAs extends React.ElementType = 'input'>(
+export declare interface Field<
+  TDefaultControl extends React.ElementType = 'input'
+> {
+  <TAs extends React.ElementType = TDefaultControl>(
     props: FieldPropsWithAs<TAs>,
   ): React.ReactElement | null;
 
@@ -282,11 +310,13 @@ const _Field: Field = React.forwardRef((props: FieldProps, ref) => {
     mapFromValue,
     mapToValue,
     validates,
-    events,
-    htmlValue,
+    validateOn,
+    value,
     noValidate,
     errorClass,
     className,
+    onChange,
+    onBlur,
     exclusive = false,
     ...rest
   } = props;
@@ -296,27 +326,21 @@ const _Field: Field = React.forwardRef((props: FieldProps, ref) => {
     mapFromValue,
     mapToValue,
     validates,
-    events,
+    validateOn,
     exclusive,
     noValidate,
     errorClass,
     className,
-    // @ts-ignore
-    value: props.value || htmlValue,
+    onChange,
+    onBlur,
+    value,
   });
 
-  let fieldProps: any = {
-    type,
-    ...field,
-    ...useMergedHandlers(meta.events, props, field),
-  };
-
+  let fieldProps: Partial<FieldInjectedProps> = field;
   if (ref) fieldProps.ref = ref;
 
-  // Escape hatch for more complex Field types.
   if (typeof children === 'function') {
-    // @ts-ignore
-    return children(fieldProps, meta);
+    return children(fieldProps as FieldRenderProps, meta);
   }
 
   let Input = asProp || meta.nativeTagName;
@@ -337,10 +361,13 @@ _Field.displayName = 'Field';
 _Field.propTypes = {
   name: PropTypes.string.isRequired,
 
-  as: PropTypes.oneOfType([elementType, PropTypes.string]),
-  events: PropTypes.oneOfType([
-    PropTypes.string,
-    PropTypes.arrayOf(PropTypes.string),
+  as: PropTypes.oneOfType([PropTypes.elementType, PropTypes.string]),
+  validateOn: PropTypes.oneOfType([
+    PropTypes.shape({
+      change: PropTypes.bool,
+      blur: PropTypes.bool,
+    }),
+    PropTypes.oneOf(['change', 'blur']),
     PropTypes.func,
   ]),
   mapFromValue: PropTypes.oneOfType([

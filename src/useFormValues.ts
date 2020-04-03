@@ -3,17 +3,19 @@ import { useBindingContext } from 'topeka';
 /**
  * Returns the current Field value at the provided path.
  *
- * @param {string|string[]} field a field path to observe.
- * @returns {any | Array<any>}
+ * @param {string} field a field path to observe.
+ * @returns {any}
  */
 function useFormValues(field: string): any;
+
 /**
  * Returns an array of values for the provided field paths.
  *
- * @param {string|string[]} fields a set of field paths to observe.
- * @returns {any | Array<any>}
+ * @param {string[]} fields a set of field paths to observe.
+ * @returns {Array<any>}
  */
 function useFormValues(fields: string[]): any[];
+
 function useFormValues(fields: string | string[]): undefined | any | any[] {
   const ctx = useBindingContext();
   if (!ctx) return;
