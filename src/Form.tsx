@@ -39,7 +39,7 @@ export interface FormProps<
 > {
   as?: React.ElementType | null | false;
   className?: string;
-  children?: React.ReactElement | React.ReactElement[];
+  children?: React.ReactNode;
 
   schema?: TSchema;
   value?: TValue;
@@ -482,7 +482,8 @@ const _Form: Form = React.forwardRef(
     // if it's a fragment no props
     if (
       Element === Fragment ||
-      (useChildren && React.Children.only(children!).type === Fragment)
+      (useChildren &&
+        React.Children.only(children as React.ReactElement).type === Fragment)
     ) {
       elementProps = {};
     }
@@ -500,7 +501,7 @@ const _Form: Form = React.forwardRef(
               <FormErrorContext.Provider value={errorContext!}>
                 {Element == null || Element === false ? (
                   React.cloneElement(
-                    React.Children.only(children!),
+                    React.Children.only(children as React.ReactElement),
                     elementProps,
                   )
                 ) : (

@@ -333,7 +333,7 @@ function useField(
     fieldProps.onChange = update;
   }
 
-  fieldProps.type = meta.nativeType || options.type;
+  fieldProps.type = options.type || meta.nativeType;
 
   fieldProps.name = name;
   fieldProps.value = meta.value == null ? '' : meta.value;

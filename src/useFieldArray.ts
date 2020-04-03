@@ -38,7 +38,9 @@ export interface FieldArrayHelpers<T = any> {
   onItemError(name: string, errors: Errors): void;
 }
 
-export type UseFieldArrayOptions = UseFieldMetaOptions;
+export type UseFieldArrayOptions = Omit<UseFieldMetaOptions, 'validates'> & {
+  validates?: string | string[] | null;
+};
 
 /**
  * Retrieve the values at a given path as well as a set of array helpers
