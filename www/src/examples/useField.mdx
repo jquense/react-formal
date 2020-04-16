@@ -1,2 +1,68 @@
 The `useField` hook is an alternative to the `Field` component. It
 can used to create custom Field components or encapsulate thorny logic.
+
+```js static
+function MyField({ name }) {
+  const [props, meta] = useField(name);
+}
+```
+
+`useField` will return a props object you can pass to an input component. Note
+that `useField` makes a best guess at constructing props for the input likely
+to receive them. It takes hints from `type` as well as `as` options to build
+props specific to the required input.
+
+For instance, consider a checkbox field:
+
+```js static
+// formData = { isCool: true }
+
+function IsCoolField() {
+  const [props, meta] = useField({
+    name: 'isCool',
+    type: 'checkbox',
+  });
+
+  return <input {...props} />;
+}
+```
+
+To accommodate the checkbox input, `props` here contains `checked: true` and
+`value: undefined`, since the `true` value from the from needs to be passed to the
+`checked` attribute of the input. You can often even leave out the `type` and React
+Formal will try and infer the type from the schema:
+
+```js static
+const schema = object({
+  isCool: yup.boolean(),
+});
+// ...
+
+function IsCoolField() {
+  const [props, meta] = useField('isCool');
+
+  // still has checked: true
+  return <input {...props} />;
+}
+```
+
+This also works for more complex examples like `<select>`s associated with arrays:
+
+```js static
+const schema = object({
+  colors: yup.array(),
+});
+// ...
+
+function ColorsField({ children }) {
+  const [props, meta] = useField('colors');
+
+  // <select multiple>
+  return <select {...props}>{children}</select>;
+}
+```
+
+As with before you can override the inferred behavior by explicitly passing
+`type` and/or `as` to `useField`. For non-native input `as` values React Formal will
+not infer any specfic props, instead passing just `value`, `onChange`, and `onBlur`.
+Details about the inferred types and inputs are always available on the field `meta`

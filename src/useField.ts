@@ -30,12 +30,14 @@ export function splitFieldProps<
   onChange,
   onBlur,
   value,
+  as,
   ...rest
 }: TProps): [UseFieldOptions, Omit<TProps, keyof UseFieldOptions>] {
   return [
     {
       name,
       type,
+      as,
       mapFromValue,
       mapToValue,
       validates,
@@ -64,13 +66,14 @@ function useEvents(
   );
 }
 
-function resolveNativeInputConfig(type: unknown) {
+function resolveNativeInputConfig(type: unknown, asProp?: React.ElementType) {
   let tagName: 'input' | 'select' | 'textarea' = 'input';
 
   if (type === 'boolean') type = 'checkbox';
-  if (type === 'array') {
+  if (type === 'array' || asProp === 'select') {
     tagName = 'select';
   }
+  if (asProp === 'textarea') tagName = 'textarea';
 
   return tagName === 'input'
     ? { tagName, type: isNativeType(type) ? type : 'text' }
@@ -97,6 +100,7 @@ export const ValidateStrategies = {
 
 export interface UseFieldMetaOptions {
   name: string;
+  as?: React.ElementType;
   type?: string;
   exclusive?: boolean;
   noValidate?: boolean;
@@ -149,6 +153,7 @@ export function useFieldMeta(opts: UseFieldMetaOptions) {
   let {
     name,
     type,
+    as: asProp,
     validates,
     exclusive,
     noValidate,
@@ -219,7 +224,7 @@ export function useFieldMeta(opts: UseFieldMetaOptions) {
   // @ts-ignore
   let resolvedType: string = type || (meta.schema && meta.schema._type);
   meta.resolvedType = resolvedType;
-  let nativeConfig = resolveNativeInputConfig(resolvedType);
+  let nativeConfig = resolveNativeInputConfig(resolvedType, asProp);
   meta.nativeType = nativeConfig.type;
   meta.nativeTagName = nativeConfig.tagName;
 
@@ -325,7 +330,7 @@ function useField(
   let options =
     typeof optionsOrName === 'string' ? { name: optionsOrName } : optionsOrName;
 
-  let { name, validates, noValidate, onChange, onBlur } = options;
+  let { name, as: asProp, validates, noValidate, onChange, onBlur } = options;
 
   const fieldsToValidate = useMemo<string[]>(
     () => (validates != null ? toArray(validates) : [name]),
@@ -370,38 +375,59 @@ function useField(
     fieldProps.onChange = update;
   }
 
-  fieldProps.type = options.type || meta.nativeType;
-
   fieldProps.name = name;
-  fieldProps.value = meta.value == null ? '' : meta.value;
+  fieldProps.value = meta.value;
 
-  if (meta.nativeType && /checkbox|radio/.test(meta.nativeType)) {
-    if (options.value === undefined) {
-      fieldProps.checked = !!fieldProps.value;
+  // lots of rigamorole here. We only want to be
+  // clever with props if the field `as` is likely to be a native
+  // input. So only do this if
+  const elementType = asProp || meta.nativeTagName;
+  const valueIsNull = fieldProps.value == null;
+
+  if (elementType === 'input') {
+    const type = meta.nativeType!;
+
+    fieldProps.type = type;
+
+    if (type === 'checkbox' || type === 'radio') {
+      if (options.value === undefined) {
+        fieldProps.checked = !!fieldProps.value;
+      } else {
+        fieldProps.checked =
+          type === 'radio'
+            ? fieldProps.value === options.value
+            : Array.isArray(fieldProps.value)
+            ? fieldProps.value.includes(options.value)
+            : // if the value is not an array IDK seems like bad config?
+              !!fieldProps.value;
+      }
+
+      fieldProps.value = options.value;
+    } else if (type === 'file') {
+      fieldProps.value = '';
     } else {
-      fieldProps.checked =
-        meta.nativeType === 'radio'
-          ? fieldProps.value === options.value
-          : Array.isArray(fieldProps.value) &&
-            fieldProps.value.includes(options.value);
+      // all other inputs, default to empty string
+      fieldProps.value = valueIsNull ? '' : fieldProps.value;
     }
-
-    fieldProps.value = options.value;
-  } else if (meta.nativeType === 'file') {
-    fieldProps.value = '';
-  } else if (
-    meta.nativeTagName === 'select' &&
-    meta.resolvedType === 'array' &&
-    meta.value == null
-  ) {
-    fieldProps.value = [];
-    fieldProps.multiple = true;
+  } else if (elementType === 'textarea') {
+    // default null to empty string
+    fieldProps.value = valueIsNull ? '' : fieldProps.value;
+    //
+  } else if (elementType === 'select') {
+    // default to empty array for multiple selects
+    if (meta.resolvedType === 'array') {
+      fieldProps.value = valueIsNull ? [] : fieldProps.value;
+      fieldProps.multiple = true;
+    } else if (valueIsNull) {
+      fieldProps.value = '';
+    }
   }
+
   let className = options.className;
   if (!noValidate && meta.invalid && meta.errorClass) {
     className = className || '' + meta.errorClass;
   }
-  fieldProps.className = className;
+  if (className) fieldProps.className = className;
 
   return [fieldProps as any, meta];
 }

@@ -2,7 +2,8 @@ import { mount } from 'enzyme';
 import React from 'react';
 import { act } from 'react-dom/test-utils';
 import * as yup from 'yup';
-import Form from '../src';
+import Form, { useField, FieldProps, UseFieldProps, FieldMeta } from '../src';
+import notify from '../src/utils/notify';
 
 describe('Field', () => {
   let schema = yup.object({
@@ -24,7 +25,7 @@ describe('Field', () => {
       return (
         <input
           value={this.props.value || ''}
-          onChange={e => this.props.onChange(e, 'hi')}
+          onChange={(e) => this.props.onChange(e, 'hi')}
         />
       );
     }
@@ -80,6 +81,18 @@ describe('Field', () => {
         <Form.Field name="bool" />
         <Form.Field as="select" name="string" />
         <Form.Field as="textarea" name="string" />
+
+        <Form.Field name="bool">
+          {(props) => {
+            expect(props).toEqual({
+              name: 'bool',
+              value: undefined,
+              onBlur: expect.any(Function),
+              onChange: expect.any(Function),
+            });
+            return null;
+          }}
+        </Form.Field>
       </Form>,
     );
 
@@ -106,7 +119,7 @@ describe('Field', () => {
     wrapper.assertSingle('select');
   });
 
-  it('should fire onChange', done => {
+  it('should fire onChange', (done) => {
     mount(
       <Form schema={schema} defaultValue={{}}>
         <Form.Field
@@ -230,7 +243,7 @@ describe('Field', () => {
   });
 
   it('gets value from accessor', () => {
-    let spy = jest.fn(model => model.other);
+    let spy = jest.fn((model) => model.other);
     let wrapper = mount(
       <Form schema={schema} defaultValue={{}} onChange={spy}>
         <Form.Field
@@ -277,7 +290,7 @@ describe('Field', () => {
     );
   });
 
-  it('should pass all args to mapFromValue', function(done) {
+  it('should pass all args to mapFromValue', function (done) {
     let spy = jest.fn();
     mount(
       <Form schema={schema} defaultValue={{}} onChange={spy}>
@@ -303,7 +316,7 @@ describe('Field', () => {
         <Form.Field
           name="name"
           as={TestInput}
-          ref={r => {
+          ref={(r) => {
             inst = r;
           }}
         />
@@ -315,7 +328,7 @@ describe('Field', () => {
   it('should work with conditional schema', () => {
     const spy = jest.spyOn(console, 'warn').mockImplementation(() => {});
 
-    let render = name => {
+    let render = (name) => {
       mount(
         <Form schema={schema} defaultValue={{ ...schema.default(), name }}>
           <Form.Field name="more.isCool" />
@@ -328,7 +341,7 @@ describe('Field', () => {
   });
 
   describe('meta', () => {
-    it('should pass meta to field', done => {
+    it('should pass meta to field', (done) => {
       let Input = ({ meta }) => {
         // //first pass isn't correct since form hasn't propagated it's state yet.
         // if (!meta.invalid) return null
@@ -357,7 +370,7 @@ describe('Field', () => {
       );
     });
 
-    it('should pass meta to field with noValidate', done => {
+    it('should pass meta to field with noValidate', (done) => {
       let Input = ({ meta }) => {
         expect(meta.invalid).toBe(true);
         expect(meta.valid).toBe(false);
@@ -440,7 +453,7 @@ describe('Field', () => {
               change: !valid,
             })}
           >
-            {props => <input {...props} />}
+            {(props) => <input {...props} />}
           </Form.Field>
         </Form>,
       );
@@ -449,7 +462,7 @@ describe('Field', () => {
         wrapper.find('input').simulate('change', { target: { value: '4' } });
         wrapper.find('input').simulate('blur', { target: { value: '4' } });
 
-        return new Promise(resolve => {
+        return new Promise((resolve) => {
           setTimeout(() => {
             expect(spy).toHaveBeenCalledTimes(1);
             // field is invalid now: `onChange`
@@ -592,6 +605,275 @@ describe('Field', () => {
       expect(onError({ '[1].foo': 'bar' })).toEqual({ 'name[1].foo': 'bar' });
       expect(onError({ '[1].baz.foo': 'bar' })).toEqual({
         'name[1].baz.foo': 'bar',
+      });
+    });
+  });
+
+  describe('useField', () => {
+    let fieldProps: UseFieldProps, meta: FieldMeta;
+
+    it('providing `as` results in default props', () => {
+      function F() {
+        [fieldProps, meta] = useField({ name: 'field', as: () => null });
+        return null;
+      }
+
+      mount(
+        <Form
+          defaultValue={{ field: true }}
+          schema={yup.object({ field: yup.boolean() })}
+        >
+          <F />
+        </Form>,
+      );
+
+      // inferred details should still be accessible
+      expect(meta.nativeTagName).toEqual('input');
+
+      expect(meta.nativeType).toEqual('checkbox');
+
+      // no extra props
+      expect(fieldProps).toEqual({
+        name: 'field',
+        value: true,
+        onBlur: expect.any(Function),
+        onChange: expect.any(Function),
+      });
+    });
+
+    describe('checkbox/radios', () => {
+      it('should get checked correctly', () => {
+        function F() {
+          [fieldProps, meta] = useField({
+            name: 'field',
+            type: 'radio',
+            value: 'red',
+          });
+          return null;
+        }
+
+        const wrapper = mount(
+          <Form
+            value={{ field: 'red' }}
+            schema={yup.object({ field: yup.string() })}
+          >
+            <F />
+          </Form>,
+        );
+
+        expect(fieldProps).toEqual({
+          name: 'field',
+          type: 'radio',
+          checked: true,
+          value: 'red',
+          onBlur: expect.any(Function),
+          onChange: expect.any(Function),
+        });
+
+        wrapper.setProps({ value: { field: 'blue' } });
+
+        expect(fieldProps).toEqual(
+          expect.objectContaining({
+            type: 'radio',
+            checked: false,
+            value: 'red',
+          }),
+        );
+      });
+
+      it('should infer checkbox props from schema', () => {
+        function F() {
+          [fieldProps, meta] = useField('field');
+          return null;
+        }
+
+        mount(
+          <Form
+            defaultValue={{ field: true }}
+            schema={yup.object({ field: yup.boolean() })}
+          >
+            <F />
+          </Form>,
+        );
+
+        expect(fieldProps).toEqual({
+          name: 'field',
+          type: 'checkbox',
+          checked: true,
+          value: undefined,
+          onBlur: expect.any(Function),
+          onChange: expect.any(Function),
+        });
+      });
+
+      it('should infer checkbox props from schema with value', () => {
+        function F() {
+          [fieldProps, meta] = useField({ name: 'field', value: 'on' });
+          return null;
+        }
+
+        mount(
+          <Form
+            defaultValue={{ field: true }}
+            schema={yup.object({ field: yup.boolean() })}
+          >
+            <F />
+          </Form>,
+        );
+
+        expect(fieldProps).toEqual(
+          expect.objectContaining({
+            type: 'checkbox',
+            checked: true,
+            value: 'on',
+          }),
+        );
+      });
+
+      it('should checked from array', () => {
+        function F() {
+          [fieldProps, meta] = useField({
+            name: 'field',
+            type: 'checkbox',
+            value: 'red',
+          });
+          return null;
+        }
+
+        const wrapper = mount(
+          <Form
+            value={{ field: ['red'] }}
+            schema={yup.object({ field: yup.array() })}
+          >
+            <F />
+          </Form>,
+        );
+
+        wrapper.setProps({ value: { field: ['blue'] } });
+
+        expect(fieldProps).toEqual(
+          expect.objectContaining({
+            type: 'checkbox',
+            checked: false,
+            value: 'red',
+          }),
+        );
+      });
+
+      it('should respect user `as`', () => {
+        function F() {
+          [fieldProps, meta] = useField({ name: 'field', as: () => null });
+          return null;
+        }
+
+        mount(
+          <Form
+            defaultValue={{ field: true }}
+            schema={yup.object({ field: yup.boolean() })}
+          >
+            <F />
+          </Form>,
+        );
+
+        // inferred details should still be accessible
+        expect(meta.nativeTagName).toEqual('input');
+
+        expect(meta.nativeType).toEqual('checkbox');
+
+        // no extra props
+        expect(fieldProps.type).toBeUndefined();
+        expect(fieldProps.value).toEqual(true);
+      });
+
+      it('should respect user type', () => {
+        function F() {
+          [fieldProps, meta] = useField({ name: 'field', type: 'text' });
+          return null;
+        }
+
+        mount(
+          <Form
+            defaultValue={{ field: true }}
+            schema={yup.object({ field: yup.boolean() })}
+          >
+            <F />
+          </Form>,
+        );
+
+        expect(fieldProps).toEqual(
+          expect.objectContaining({
+            type: 'text',
+            value: true,
+          }),
+        );
+      });
+    });
+
+    describe('selects', () => {
+      it('should default value to ""', () => {
+        function F() {
+          [fieldProps, meta] = useField({ name: 'field', as: 'select' });
+          return null;
+        }
+
+        mount(
+          <Form
+            defaultValue={{ field: null }}
+            schema={yup.object({ field: yup.string().nullable() })}
+          >
+            <F />
+          </Form>,
+        );
+
+        expect(fieldProps.type).toBeUndefined();
+        expect(fieldProps.value).toEqual('');
+      });
+
+      it('should infer multiple select from schema', () => {
+        function F() {
+          [fieldProps, meta] = useField('field');
+          return null;
+        }
+
+        mount(
+          <Form
+            defaultValue={{ field: null }}
+            schema={yup.object({ field: yup.array().nullable() })}
+          >
+            <F />
+          </Form>,
+        );
+
+        expect(fieldProps).toEqual({
+          name: 'field',
+          value: [],
+          multiple: true,
+          onBlur: expect.any(Function),
+          onChange: expect.any(Function),
+        });
+      });
+    });
+
+    it('should not infer when element is wrong', () => {
+      function F() {
+        [fieldProps, meta] = useField({ name: 'field', as: 'select' });
+        return null;
+      }
+
+      mount(
+        <Form
+          defaultValue={{ field: true }}
+          schema={yup.object({ field: yup.boolean() })}
+        >
+          <F />
+        </Form>,
+      );
+
+      expect(fieldProps).toEqual({
+        name: 'field',
+        value: true,
+        onBlur: expect.any(Function),
+        onChange: expect.any(Function),
       });
     });
   });

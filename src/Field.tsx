@@ -320,9 +320,13 @@ const _Field: Field = React.forwardRef((props: FieldProps, ref) => {
     exclusive = false,
     ...rest
   } = props;
+  const hasRenderProp = typeof children === 'function';
+
   const [field, meta] = useField({
     name,
     type,
+    // XXX: opt out of inferred props for fn children
+    as: asProp || hasRenderProp,
     mapFromValue,
     mapToValue,
     validates,
