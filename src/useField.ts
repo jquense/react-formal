@@ -1,4 +1,3 @@
-import cn from 'classnames';
 import { useCallback, useContext, useMemo, useRef } from 'react';
 import { useBinding } from 'topeka';
 import { Schema } from 'yup';
@@ -14,6 +13,44 @@ import { toArray } from './utils/paths';
 import notify from './utils/notify';
 import useErrors from './useErrors';
 import { ValidationPathSpec } from './errorManager';
+
+export function splitFieldProps<
+  TProps extends UseFieldOptions = UseFieldOptions
+>({
+  name,
+  type,
+  mapFromValue,
+  mapToValue,
+  validates,
+  validateOn,
+  exclusive,
+  noValidate,
+  errorClass,
+  className,
+  onChange,
+  onBlur,
+  value,
+  ...rest
+}: TProps): [UseFieldOptions, Omit<TProps, keyof UseFieldOptions>] {
+  return [
+    {
+      name,
+      type,
+      mapFromValue,
+      mapToValue,
+      validates,
+      validateOn,
+      exclusive,
+      noValidate,
+      errorClass,
+      className,
+      onChange,
+      onBlur,
+      value,
+    },
+    rest,
+  ];
+}
 
 function useEvents(
   validateOn: ValidateOnConfig = config.validateOn,
@@ -46,7 +83,7 @@ const onBlur: ValidateOnConfig = { blur: true };
 
 const onChangeAndBlur: ValidateOnConfig = { change: true, blur: true };
 
-const onBlurThenChangeAndBlur: ValidateOnConfig = meta => ({
+const onBlurThenChangeAndBlur: ValidateOnConfig = (meta) => ({
   blur: true,
   change: !meta.valid,
 });
@@ -106,7 +143,7 @@ export interface FieldMeta {
   validateOn: TriggerEventConfig;
 }
 
-const passThrough = v => v;
+const passThrough = (v) => v;
 
 export function useFieldMeta(opts: UseFieldMetaOptions) {
   let {
@@ -360,13 +397,11 @@ function useField(
     fieldProps.value = [];
     fieldProps.multiple = true;
   }
-
-  if (!noValidate) {
-    fieldProps.className = cn(
-      options.className,
-      meta.invalid && meta.errorClass,
-    );
+  let className = options.className;
+  if (!noValidate && meta.invalid && meta.errorClass) {
+    className = className || '' + meta.errorClass;
   }
+  fieldProps.className = className;
 
   return [fieldProps as any, meta];
 }

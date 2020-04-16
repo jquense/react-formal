@@ -8,7 +8,7 @@ import Message from './Message';
 import NestedForm from './NestedForm';
 import Summary from './Summary';
 import config from './config';
-import useField, { ValidateStrategies } from './useField';
+import useField, { ValidateStrategies, splitFieldProps } from './useField';
 import useFormValues from './useFormValues';
 import useFieldArray from './useFieldArray';
 import errToJSON from './utils/errToJSON';
@@ -80,6 +80,7 @@ export {
   useFormValues,
   useErrors,
   useTouched,
+  splitFieldProps,
   ValidateStrategies,
 };
 
