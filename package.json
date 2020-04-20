@@ -65,9 +65,9 @@
   },
   "dependencies": {
     "@restart/hooks": "^0.3.22",
-    "@types/lodash": "^4.14.149",
+    "@types/lodash": "^4.14.150",
     "@types/react": "^16.9.34",
-    "@types/yup": "^0.26.36",
+    "@types/yup": "^0.26.37",
     "classnames": "^2.2.5",
     "invariant": "^2.2.4",
     "lodash": "^4.17.15",
@@ -78,7 +78,7 @@
     "topeka": "^4.4.1",
     "uncontrollable": "^7.1.1",
     "warning": "^4.0.3",
-    "yup": ">=0.28.3"
+    "yup": ">=0.28.4"
   },
   "devDependencies": {
     "@4c/cli": "^2.1.7",
@@ -91,7 +91,7 @@
     "@types/sinon": "^9.0.0",
     "@typescript-eslint/eslint-plugin": "^2.28.0",
     "babel-eslint": "^10.1.0",
-    "babel-jest": "^25.3.0",
+    "babel-jest": "^25.4.0",
     "babel-preset-jason": "^6.2.0",
     "cherry-pick": "^0.5.0",
     "enzyme": "^3.11.0",
@@ -103,7 +103,7 @@
     "eslint-plugin-import": "^2.20.2",
     "eslint-plugin-react": "^7.19.0",
     "eslint-plugin-react-hooks": "^3.0.0",
-    "jest": "^25.3.0",
+    "jest": "^25.4.0",
     "prettier": "^2.0.4",
     "react": "^16.13.1",
     "react-bootstrap": "^0.32.1",

@@ -8,7 +8,8 @@ export type ValidateData = {
   args?: any[];
 };
 
-export type BeforeSubmitData<T> = {
-  value: T | undefined;
+export type BeforeSubmitData = {
+  // Loose type b/c this is the uncast form value
+  value: any | undefined;
   errors: Errors;
 };

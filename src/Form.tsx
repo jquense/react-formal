@@ -56,7 +56,7 @@ export interface FormProps<
   onError?: (errors: Errors) => void;
   onTouch?: (touched: Touched, changedPaths: string[]) => void;
   onValidate?: (data: ValidateData) => void;
-  onBeforeSubmit?: (data: BeforeSubmitData<TValue>) => void;
+  onBeforeSubmit?: (data: BeforeSubmitData) => void;
   onSubmit?: (validatedValue: TValue) => void;
   onInvalidSubmit?: (errors: Errors) => void;
   onSubmitFinished?: (error?: Error) => void;
@@ -134,7 +134,7 @@ const createFormSetter = (
       const innerType = fieldSchema?._subType?._type;
 
       return Array.from(options)
-        .filter(opt => opt.selected)
+        .filter((opt) => opt.selected)
         .map(({ value }) =>
           innerType == 'number' ? parseFloat(value) : value,
         );
@@ -188,7 +188,7 @@ function validatePath(
   return schema
     .validateAt(path, value, rest)
     .then(() => null)
-    .catch(err => err);
+    .catch((err) => err);
 }
 
 const EMPTY_TOUCHED = {};
@@ -329,7 +329,7 @@ const _Form: Form = React.forwardRef(
             value,
             ...yupOptions,
           })
-          .then(nextErrors => {
+          .then((nextErrors) => {
             if (nextErrors !== errors) {
               maybeWarn(debug, errors, 'field validation');
 
@@ -356,7 +356,7 @@ const _Form: Form = React.forwardRef(
       let nextTouched = touched;
 
       onChange(model, paths);
-      paths.forEach(path => {
+      paths.forEach((path) => {
         if (touched && touched[path]) return;
         if (nextTouched === touched) nextTouched = { ...touched, [path]: true };
         else nextTouched[path] = true;
@@ -391,13 +391,13 @@ const _Form: Form = React.forwardRef(
       return Promise.resolve(submitForm && submitForm(validatedValue)).then(
         () => {
           setSubmitting(false);
-          setSubmitState(s => ({
+          setSubmitState((s) => ({
             submitCount: s.submitCount + 1,
             submitAttempts: s.submitAttempts + 1,
           }));
           notify(onSubmitFinished);
         },
-        err => {
+        (err) => {
           setSubmitting(false);
           notify(onSubmitFinished, [err]);
           throw err;
@@ -412,7 +412,7 @@ const _Form: Form = React.forwardRef(
 
       maybeWarn(debug, errors, 'onSubmit');
 
-      setSubmitState(s => ({
+      setSubmitState((s) => ({
         submitAttempts: s.submitAttempts + 1,
       }));
 
@@ -435,7 +435,7 @@ const _Form: Form = React.forwardRef(
 
       notify(onBeforeSubmit, [
         {
-          value: schema ? schema.cast(value!) : (value as any),
+          value,
           errors,
         },
       ]);
