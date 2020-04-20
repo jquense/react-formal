@@ -3,9 +3,8 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "patch": "patch-package",
-    "start": "yarn patch && gatsby develop",
-    "build": "yarn patch && gatsby build"
+    "start": "gatsby develop",
+    "build": "gatsby build"
   },
   "dependencies": {
     "@docpocalypse/code-live": "^0.4.11",
