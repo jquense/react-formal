@@ -3,16 +3,16 @@ import React from 'react';
 import { act } from 'react-dom/test-utils';
 import createSlot from 'react-tackle-box/Slot';
 import * as yup from 'yup';
-import Form from '../src';
+import Form, { toFormErrors, setter, getter } from '../src';
 import { FormActionsContext } from '../src/Contexts';
 import errorManager from '../src/errorManager';
 import { FormHandle } from '../src/Form';
 
-const wait = (ms = 0) => new Promise(resolve => setTimeout(resolve, ms));
+const wait = (ms = 0) => new Promise((resolve) => setTimeout(resolve, ms));
 
 let LeakySubmit = () => (
   <FormActionsContext.Consumer>
-    {ctx => (
+    {(ctx) => (
       <button type="submit" onClick={ctx!.onSubmit}>
         Submit
       </button>
@@ -39,11 +39,11 @@ describe('Form', () => {
   });
 
   it('should expose setter', () => {
-    expect(Form.setter('foo', {}, 5)).toEqual({ foo: 5 });
+    expect(setter('foo', {}, 5)).toEqual({ foo: 5 });
   });
 
   it('should expose setter', () => {
-    expect(Form.getter('foo', { foo: 5 })).toBe(5);
+    expect(getter('foo', { foo: 5 })).toBe(5);
   });
 
   it('should pass errors', () => {
@@ -59,9 +59,9 @@ describe('Form', () => {
     expect(wrapper.find('span.msg').text()).toBe('hi, good day');
   });
 
-  it('should update the form value', function() {
+  it('should update the form value', function () {
     let value, last;
-    let change = jest.fn(v => (value = v));
+    let change = jest.fn((v) => (value = v));
 
     let wrapper = mount(
       <Form schema={schema} defaultValue={schema.default()} onChange={change}>
@@ -101,7 +101,7 @@ describe('Form', () => {
     expect(value).not.toBe(last);
   });
 
-  it('should pass updated paths', function() {
+  it('should pass updated paths', function () {
     let paths,
       change = jest.fn((_, p) => (paths = p)),
       wrapper = mount(
@@ -119,10 +119,7 @@ describe('Form', () => {
 
     let value = { first: 'Jill', last: 'smith' };
 
-    wrapper
-      .find('.field')
-      .first()
-      .simulate('change', { target: { value } });
+    wrapper.find('.field').first().simulate('change', { target: { value } });
 
     expect(paths).toEqual(['name.first', 'name.last']);
   });
@@ -141,10 +138,7 @@ describe('Form', () => {
         </Form>,
       );
 
-    wrapper
-      .find('.field')
-      .first()
-      .simulate('change');
+    wrapper.find('.field').first().simulate('change');
 
     expect(change).not.toHaveBeenCalled();
 
@@ -187,10 +181,7 @@ describe('Form', () => {
     );
 
     await act(() => {
-      wrapper
-        .assertSingle('button')
-        .getDOMNode()
-        .click();
+      wrapper.assertSingle('button').getDOMNode().click();
       return wait();
     });
 
@@ -287,7 +278,7 @@ describe('Form', () => {
   it('does not submit while already submitting', async () => {
     let ref = React.createRef<FormHandle>();
     let onSubmit = jest.fn();
-    let submitForm = jest.fn(() => new Promise(r => setTimeout(r, 5)));
+    let submitForm = jest.fn(() => new Promise((r) => setTimeout(r, 5)));
 
     let wrapper = mount(
       <div>
@@ -305,10 +296,7 @@ describe('Form', () => {
     );
 
     await act(async () => {
-      wrapper
-        .assertSingle('Submit')
-        .simulate('click')
-        .simulate('click');
+      wrapper.assertSingle('Submit').simulate('click').simulate('click');
 
       await ref.current!.submit();
     });
@@ -339,7 +327,7 @@ describe('Form', () => {
     );
 
     return act(async () => {
-      await ref.current!.submit().catch(err => {
+      await ref.current!.submit().catch((err) => {
         expect(err).toBe('foo!');
         expect(spy).not.toHaveBeenCalled();
       });
@@ -347,22 +335,22 @@ describe('Form', () => {
   });
 
   it('return hash of errors from a assertSingle error', () => {
-    expect(
-      Form.toErrors(new yup.ValidationError('hello!', {}, 'path')),
-    ).toEqual({
-      path: [
-        {
-          message: 'hello!',
-          values: undefined,
-          type: undefined,
-        },
-      ],
-    });
+    expect(toFormErrors(new yup.ValidationError('hello!', {}, 'path'))).toEqual(
+      {
+        path: [
+          {
+            message: 'hello!',
+            values: undefined,
+            type: undefined,
+          },
+        ],
+      },
+    );
   });
 
   it('return hash of errors from aggregate error', () => {
     expect(
-      Form.toErrors(
+      toFormErrors(
         // @ts-ignore
         new yup.ValidationError([
           new yup.ValidationError('foo', null, 'bar'),
@@ -389,7 +377,7 @@ describe('Form', () => {
     });
 
     it('remove errors for branches', async () => {
-      let spy = jest.fn(errors => {
+      let spy = jest.fn((errors) => {
         expect(errors).not.toHaveProperty('name.first');
       });
 
@@ -418,7 +406,7 @@ describe('Form', () => {
     it('should deduplicate validation paths', () => {
       let paths = [] as string[];
 
-      return errorManager(spec => {
+      return errorManager((spec) => {
         paths.push(spec.path);
       })
         .collect(['name', 'name.meta', 'name.first'])
@@ -437,7 +425,7 @@ describe('Form', () => {
 
       return errorManager(() => {})
         .collect(['name'], errors)
-        .then(errors => {
+        .then((errors) => {
           expect(errors).toEqual({
             id: ['invalid'],
           });
@@ -454,7 +442,7 @@ describe('Form', () => {
 
       return errorManager(() => {})
         .collect(['foo'], errors)
-        .then(newErrors => {
+        .then((newErrors) => {
           expect(errors).toBe(newErrors);
         });
     });

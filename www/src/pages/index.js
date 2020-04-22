@@ -92,7 +92,7 @@ function SplashPageLayout(props) {
               <h2>Deferential</h2>
               <p className="flex-1">
                 Gives you complete control of how your forms look. Use any
-                components or ui framework you wish.
+                components or UI framework you wish.
               </p>
             </div>
           </div>
