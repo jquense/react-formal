@@ -20,6 +20,7 @@ export interface MessageProps {
  * value that it is `for` is invalid.
  *
  * @alias FormMessage
+ * @memberof Form
  */
 function Message({
   errors: propsErrors,
@@ -48,10 +49,7 @@ function Message({
   return (
     <>
       {children(
-        Object.values(errors)
-          .reduce(flatten, [])
-          .filter(filter)
-          .map(extract),
+        Object.values(errors).reduce(flatten, []).filter(filter).map(extract),
         {
           ...props,
           className,

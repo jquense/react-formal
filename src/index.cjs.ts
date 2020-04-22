@@ -1,3 +1,4 @@
-const ReactFormal = require('./index.js')
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const { default: Form, ...rest } = require('./index.ts');
 
-module.exports = ReactFormal.default
+module.exports = Object.assign(Form, rest);

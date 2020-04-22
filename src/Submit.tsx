@@ -13,7 +13,7 @@ export interface FormSubmitProps<TAs extends ElementType = any> {
 /**
  * A Form submit button, for triggering validations for the entire form or specific fields.
  *
- * @alias Submit
+ * @memberof Form
  */
 function Submit<TAs extends ElementType = 'button'>(
   props: FormSubmitProps<TAs> &

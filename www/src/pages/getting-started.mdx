@@ -55,8 +55,8 @@ const AgeInput = ({ name, meta, value, ...props }) => {
     <>
       <input
         {...props}
-        value={value}
         type="number"
+        value={value || ''}
         min="1900"
         max={currentYear}
       />
@@ -125,7 +125,7 @@ const schema = yup.object({
   name: yup.string().required(),
 });
 
-const handleSubmit = formData => {
+const handleSubmit = (formData) => {
   alert(JSON.stringify(formData, null, 2));
 };
 
@@ -158,7 +158,7 @@ const schema = yup.object({
   name: yup.string().required(),
 });
 
-const submitForm = async formData => {
+const submitForm = async (formData) => {
   await fakeSaveToServer(formData);
 };
 

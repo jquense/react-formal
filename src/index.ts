@@ -36,42 +36,36 @@ export type FormProps<
   TValue = InferType<TSchema>
 > = import('./Form').FormProps<TSchema, TValue>;
 
-export interface Statics {
+export interface FormStatics {
   Field: typeof Field;
   FieldArray: typeof FieldArray;
   Message: typeof Message;
-  Summary: typeof Summary;
   Submit: typeof Submit;
-  setDefaults: (defaults: any) => void;
-  toErrors: (err: ValidationError) => ReturnType<typeof errToJSON>;
-  ValidateStrategies: typeof ValidateStrategies;
-  getter: typeof getter;
-  setter: typeof setter;
+  Summary: typeof Summary;
 }
 
-const statics: Statics = {
+const setDefaults = (defaults = {}) => {
+  Object.assign(config, defaults);
+};
+
+const toFormErrors = (err: ValidationError) => {
+  invariant(
+    err && err.name === 'ValidationError',
+    '`toErrors()` only works with ValidationErrors.',
+  );
+  return errToJSON(err);
+};
+
+const formStatics: FormStatics = {
   Field,
   FieldArray,
   Message,
-  Summary,
   Submit,
-  getter,
-  setter,
-  ValidateStrategies,
-  setDefaults(defaults = {}) {
-    Object.assign(config, defaults);
-  },
-  toErrors(err: ValidationError) {
-    invariant(
-      err && err.name === 'ValidationError',
-      '`toErrors()` only works with ValidationErrors.',
-    );
-    return errToJSON(err);
-  },
+  Summary,
 };
 
 export {
-  statics,
+  formStatics,
   NestedForm,
   useField,
   useMergedEventHandlers,
@@ -82,13 +76,12 @@ export {
   useTouched,
   splitFieldProps,
   ValidateStrategies,
+  setDefaults,
+  toFormErrors,
+  getter,
+  setter,
 };
 
-export type ReactFormal = typeof FormComponent &
-  Statics & {
-    statics: Statics;
-  };
+export type ReactFormal = typeof FormComponent & FormStatics;
 
-export default Object.assign(FormComponent, statics, {
-  statics,
-}) as ReactFormal;
+export default Object.assign(FormComponent, formStatics) as ReactFormal;

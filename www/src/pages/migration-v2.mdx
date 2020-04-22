@@ -25,6 +25,31 @@ API towards simplicity and consistency. It also adds first class TypeScript supp
 There is lot of rewritten code, so there may be subtle changes that I've missed. Please
 test in your apps thoroughly.
 
+### Package exports have been rearranged
+
+Previously, most library components and utils were exported as static properties
+of the `<Form>` component as well as being named exports from the package. For
+ESM consumers the default export is the `<Form>` component and
+the `<Field>`, `<FieldArray>`, `<Message>`, `<Submit>`, and `<Summary>` components
+are still static properties of Form:
+
+```jsx static
+import Form from 'react-formal';
+
+<Form>
+  <Form.Field />
+</Form>;
+```
+
+Every thing else is exported as a named export including an object called `formStatics`
+which is all the static properties on Form.
+
+```jsx static
+import { useField, setter, toErrors } from 'react-formal';
+```
+
+For CommonJS consumers the import is the Form component with all other exports as static properties.
+
 ### Field render prop arguments
 
 Instead of passing a single `props` argument and the resolved Input, Field and FieldArrays

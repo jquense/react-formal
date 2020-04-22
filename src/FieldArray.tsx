@@ -56,6 +56,8 @@ export type FieldArrayProps<T = any> = UseFieldArrayOptions & {
  * `<FieldArray>`, unlike `<Field>`, does not render any component, and
  * is essentially a render prop version of [`useFieldArray`](/api/useFieldArray), accepting all
  * the same options.
+ *
+ * @memberof Form
  */
 function FieldArray<T = any>({ children, ...props }: FieldArrayProps<T>) {
   const [values, arrayHelpers, meta] = useFieldArray<T>(props);

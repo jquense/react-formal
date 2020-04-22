@@ -20,6 +20,8 @@ import Message, { MessageProps } from './Message';
  *   <Form.Submit>Validate</Form.Submit>
  * </Form>
  * ```
+ *
+ * @memberof Form
  */
 class Summary extends React.PureComponent<
   MessageProps & {
@@ -64,7 +66,9 @@ class Summary extends React.PureComponent<
   render() {
     let { formatMessage, ...props } = this.props;
 
-    return <Message {...props}>{errors => errors.map(formatMessage)}</Message>;
+    return (
+      <Message {...props}>{(errors) => errors.map(formatMessage)}</Message>
+    );
   }
 }
 
