@@ -1409,10 +1409,10 @@
   optionalDependencies:
     fibers "^5.0.0"
 
-"@docpocalypse/gatsby-theme@^0.11.28":
-  version "0.11.28"
-  resolved "https://registry.yarnpkg.com/@docpocalypse/gatsby-theme/-/gatsby-theme-0.11.28.tgz#a3bd10195ebd4dec2f25eecf3d542718cff7bb64"
-  integrity sha512-wlEz3VKaNYC5xb6tslpuA1J+gtCRUYWwmMQQlOAqOmenkTxdYzJl9p1qU905bc5Zi5JTIUeXMgHTa6Y9KmFMNQ==
+"@docpocalypse/gatsby-theme@^0.11.30":
+  version "0.11.30"
+  resolved "https://registry.yarnpkg.com/@docpocalypse/gatsby-theme/-/gatsby-theme-0.11.30.tgz#c6df2f26c824e6ee5d406fd122e5e9a28ce4583c"
+  integrity sha512-ZrVbS3PhGvLAyORIhq9jZbqSoJyuuwYhW7qxASumx/5RCEcKEokTs4nNUOPzVg2XChzeGl317HLXFI1FLdYnCQ==
   dependencies:
     "@docpocalypse/code-live" "^0.4.18"
     "@docpocalypse/gatsby-theme-core" "^0.8.19"
