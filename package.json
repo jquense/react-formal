@@ -61,6 +61,9 @@
     "access": "public",
     "directory": "lib"
   },
+  "release": {
+    "conventionalCommits": true
+  },
   "peerDependencies": {
     "react": ">=16.4.0"
   },
