@@ -15,8 +15,8 @@ npm install react-formal yup
 
 ## Creating a Form
 
-React Formal, consolidates and tracks your form's state, input values are mapped
-to a form value via their `name` and works very similar to how you might serialize
+React Formal consolidates and tracks form state. Input values are mapped
+to an overall form value via their `name`. It works very similar to how you might serialize
 a native HTML form.
 
 ```jsx live
@@ -35,7 +35,7 @@ import Form from '@docs/components/FormWithResult';
 ```
 
 Forms are made up of `<Field>`s, and you can use almost any component as
-a field. The only expectation React Formal has it that fields accept a `value`
+a field. The only expectation React Formal has it that the field component accept a `value`
 and report changes by calling an injected `onChange` callback. It's the same
 contract as plain controlled inputs in React.
 
@@ -79,6 +79,10 @@ const AgeInput = ({ name, meta, value, ...props }) => {
   </label>
 </Form>;
 ```
+
+Passing React Formal `onChange` handlers to native inputs will Just Work. The target
+`value` is pulled from the event correctly and passed up. However, you **do not** need to pass
+an event, and can instead pass the input `value` by itself.
 
 ## Adding Validation
 
@@ -140,14 +144,14 @@ const handleSubmit = (formData) => {
 ```
 
 When you click `Submit` the form enters a "submitting" phase while it runs validation
-again. Once it passes an `onSubmit` callback will fire. After which React Formal
-considers the submission finished and is ready to continue accepting input.
+again. If validation succeeds an `onSubmit` callback will fire. After which React Formal
+considers the submission finished and is ready to continue processing input.
 
 React Formal gives you additional hooks to control how submission works. For instance
 you may want your Submit buttons to provide feadback while saving data to the server.
 `submitForm` allows you do do async work while the Form waits for you to finish.
-In this example we change the button text to "submitting…" while we are saving
-off the form data to the server.
+In this example we change the button text to "submitting…" while saving
+the form data to a server.
 
 ```jsx live
 import Form, { useFormSubmit } from 'react-formal';
@@ -167,7 +171,9 @@ const Submit = () => {
 
   return (
     <button type="submit" onClick={submit}>
-      {submitMeta.submitting ? 'Submitting…' : 'Submit'}
+      {submitMeta.submitting
+        ? 'Submitting…'
+        : `Submit ${submitMeta.submitCount ? '✓' : ''}`}
     </button>
   );
 };

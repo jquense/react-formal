@@ -11,25 +11,22 @@ editing and adding new items, as well as any error handling quirks that come wit
 operations.
 
 ```jsx
-import * as yup from "yup";
-import Form from "../components/FormWithResult";
-import IconButton from "../components/IconButton";
+import * as yup from 'yup';
+import Form from '../components/FormWithResult';
+import IconButton from '../components/IconButton';
 
 let cid = 0;
 const friend = yup.object({
   id: yup.number().default(() => cid++),
-  name: yup
-    .string()
-    .required("Required")
-    .default("")
+  name: yup.string().required('Required').default(''),
 });
 
 const schema = yup.object({
   friends: yup
     .array()
     .of(friend)
-    .min(1, "Must have at least one friend")
-    .max(4, "That is too many friends")
+    .min(1, 'Must have at least one friend')
+    .max(4, 'That is too many friends'),
 });
 
 <Form
@@ -37,14 +34,14 @@ const schema = yup.object({
   schema={schema}
   defaultValue={{
     friends: [
-      { id: ++cid, name: "Sally" },
-      { id: ++cid, name: "" }
-    ]
+      { id: ++cid, name: 'Sally' },
+      { id: ++cid, name: '' },
+    ],
   }}
 >
   <p className="font-bold text-sm">
-    Add or remove items, with and without errors to see how they are correctly
-    moved or removed along with their field
+    Add or remove items, with and without errors to see how they are
+    correctly moved or removed along with their field
   </p>
   <Form.Message for={`friends`} className="error" />
   <Form.FieldArray name="friends">
@@ -63,7 +60,9 @@ const schema = yup.object({
                 </IconButton>
                 <IconButton
                   aria-label="Insert item"
-                  onClick={() => arrayHelpers.insert(friend.default(), idx + 1)}
+                  onClick={() =>
+                    arrayHelpers.insert(friend.default(), idx + 1)
+                  }
                 >
                   +
                 </IconButton>
@@ -127,27 +126,27 @@ Validation works a bit differently for FieldArrays as compared to normal Fields.
 when a field value changes validation is triggered for that path _as well as any nested paths:_
 
 ```js static
-import { object, string, array } from "yup";
+import { object, string, array } from 'yup';
 
 const schema = object({
   friends: array()
     .of(
       object({
-        name: string().required("Required")
+        name: string().required('Required'),
       })
     )
-    .min(1, "You need at least one friend")
+    .min(1, 'You need at least one friend'),
 });
 ```
 
-As a normal Field triggering validation for `friends` might result in two
-errors: `"Required"` and `"You need at least one friend"`. This makes sense friends
-for object fields, but is a bit confusing when adding a new friend would immediately
-validate it, even though the user hasn't had a chance to input anything.
+A normal Field trigger validation for `friends` produces two
+errors: `"Required"` and `"You need at least one friend"`. This behavior works well for object fields.
+Hover, it's a bit confusing if creating a new "friend" triggers validation before
+the user makes any changes to it.
 
-To address this, `FieldArray` changes, **only report errors for its `name`** . Meaning
-`arrayHelpers.add()` will check if the `min` for fiends is correct, but not if the newly added
-item is valid.
+To address this, `FieldArray`s **only report errors for array itself**. Meaning
+`arrayHelpers.add()` will check if the `min` for "friends" is correct, but not
+if the newly added item is valid.
 
 > **Note:** validation via the schema is still run for the entire `friends` branch,
 > but child errors are discarded and not added to form errors. This is only relevant
