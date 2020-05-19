@@ -1,5 +1,5 @@
 import React from 'react';
-import Form, { statics } from 'react-formal';
+import Form, { formStatics } from 'react-formal';
 import Result from './Result';
 
 function FormWithErrors({ children, ...props }) {
@@ -11,4 +11,4 @@ function FormWithErrors({ children, ...props }) {
   );
 }
 
-export default Object.assign(FormWithErrors, statics);
+export default Object.assign(FormWithErrors, formStatics);

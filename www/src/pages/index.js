@@ -1,4 +1,4 @@
-import styled from 'astroturf';
+import styled, { css } from 'astroturf';
 import { Link } from 'gatsby';
 import React, { useState } from 'react';
 import { Navbar } from '@docpocalypse/gatsby-theme';
@@ -33,12 +33,23 @@ function SplashPageLayout(props) {
         bg={!stuck ? 'bg-transparent' : 'bg-primary'}
       />
       <main className="flex flex-col">
-        <div className="px-4 text-white bg-primary relative">
+        <div
+          className="px-4 text-white bg-primary relative"
+          css="min-width: 0; max-width: 100vw; overflow:hidden;"
+        >
           <svg
             viewBox="0 0 700 400"
             xmlns="http://www.w3.org/2000/svg"
             className="absolute block"
-            css="height: 100%; left: 50%; transform: translateX(-50%);"
+            css={css`
+              height: 100%;
+              left: 50%;
+              transform: translateX(-50%);
+
+              @media (max-width: theme(screens.sm)) {
+                left: 0;
+              }
+            `}
           >
             <path
               d="M349.884 874.72L-.003.006h699.772L349.884 874.72z"
@@ -49,11 +60,15 @@ function SplashPageLayout(props) {
           </svg>
           <div className="mt-navbar" />
           <div className="mx-auto container py-24 flex items-center flex-col relative z-10 ">
-            <h1 className="m-0 flex text-6xl mb-5 w-full">
-              <span className="flex-1 text-right">React</span>
-              <Logo className="mx-4" />
-              <span className="flex-1">Formal</span>
+            <h1 className="m-0 flex md:text-6xl justify-center text-5xl mb-5 w-full ">
+              <div className="hidden sm:inline-block">
+                <span className="flex-1 text-right">React</span>
+                <Logo className="mx-4 " />
+                <span className="flex-1">Formal</span>
+              </div>
+              <div className="sm:hidden">React Formal</div>
             </h1>
+
             <p className="text-2xl">Classy HTML form management</p>
             <div className="flex whitespace-no-wrap  mt-3">
               <Link
@@ -106,7 +121,14 @@ function SplashPageLayout(props) {
           viewBox="0 730 700 400"
           xmlns="http://www.w3.org/2000/svg"
           className="absolute block"
-          css="top:0; left: 50%; transform: translateX(-50%);"
+          css={css`
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            @media (max-width: theme(screens.sm)) {
+              left: 0;
+            }
+          `}
         >
           <path
             d="M349.884 874.72L-.003.006h699.772L349.884 874.72z"

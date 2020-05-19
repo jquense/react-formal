@@ -18,7 +18,7 @@ function Navbar({ className, bg = 'bg-primary' }) {
           className="inline-flex items-center font-brand tracking-wide text-2xl"
         >
           <Logo style={{ width: 30 }} className="mr-4" />
-          React Formal
+          <span className="hidden md:inline">React Formal</span>
         </Link>
 
         <nav className="ml-auto">
