@@ -1,5 +1,4 @@
-/* eslint-disable no-inner-declarations */
-/* eslint-disable no-empty */
+/* eslint-disable */
 
 declare module '@restart/hooks/useMergeState' {
   declare type Updater<TState> = (state: TState) => Partial<TState> | null;

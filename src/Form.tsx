@@ -64,7 +64,7 @@ export interface FormProps<
   submitForm?: (input: TValue) => Promise<any>;
   getter?: (path: string, value: TValue) => any;
   setter?: (path: string, value: TValue, fieldValue: any) => TValue;
-  context?: object;
+  context?: Record<string, unknown>;
 
   delay?: number;
 
@@ -451,7 +451,7 @@ const _Form: Form = React.forwardRef(
 
       return (
         (!shouldValidate
-          ? Promise.resolve(value as object)
+          ? Promise.resolve(value as any)
           : schema!.validate(value, {
               ...yupOptions,
               abortEarly: false,

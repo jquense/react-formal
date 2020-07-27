@@ -5,8 +5,10 @@ globals:
   Promise: true
 rules:
   prefer-const: off
-  func-call-spacing: "off"
-  "@typescript-eslint/member-delimiter-style": off
+  func-call-spacing: 'off'
+  '@typescript-eslint/member-delimiter-style': off
+  '@typescript-eslint/ban-ts-comment': 'off'
+  '@typescript-eslint/explicit-module-boundary-types': 'off'
   no-unused-vars:
     - error
     - vars: all

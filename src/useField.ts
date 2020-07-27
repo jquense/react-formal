@@ -238,7 +238,7 @@ export type MapFromValue =
   | ValueMapper
   | Record<string, string | ValueMapper>;
 
-export type MapToValue = (formValue: {}) => any;
+export type MapToValue = (formValue: Record<string, any>) => any;
 
 export type TriggerEvent = 'change' | 'blur';
 export type TriggerEventConfig = { blur?: boolean; change?: boolean };
