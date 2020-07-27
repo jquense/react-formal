@@ -423,8 +423,14 @@ const _Form: Form = React.forwardRef(
       notify(onSubmitFinished, [err]);
     };
 
+    const clearPendingValidations = () => {
+      flushTimeout.clear();
+      queueRef.current.length = 0;
+    };
+
     const handleSubmit = (e?: React.SyntheticEvent) => {
       if (e && e.preventDefault) e.preventDefault();
+      clearPendingValidations();
       submitTimeout.set(() => submit().catch(done));
     };
 
@@ -433,6 +439,7 @@ const _Form: Form = React.forwardRef(
         return Promise.resolve(false);
       }
 
+      clearPendingValidations();
       notify(onBeforeSubmit, [
         {
           value,
