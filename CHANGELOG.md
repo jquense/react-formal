@@ -1,3 +1,14 @@
+## [2.1.1](https://github.com/jquense/react-formal/compare/v2.1.0...v2.1.1) (2020-07-27)
+
+
+### Bug Fixes
+
+* dont validate on submit ([#173](https://github.com/jquense/react-formal/issues/173)) ([fca9c63](https://github.com/jquense/react-formal/commit/fca9c63))
+
+
+
+
+
 # [2.1.0](https://github.com/jquense/react-formal/compare/v2.0.0...v2.1.0) (2020-05-19)
 
 
