@@ -238,7 +238,7 @@ describe('Form', () => {
 
     expect(onSubmit).toHaveBeenCalledTimes(1);
     expect(submitForm).toHaveBeenCalledTimes(1);
-    // expect(submitForm).toHaveBeenCalled()After(onSubmit);
+    // expect(submitForm).toHaveBeenCalledAfter(onSubmit);
   });
 
   it('submits through a Slot', async () => {
@@ -272,7 +272,7 @@ describe('Form', () => {
 
     expect(onSubmit).toHaveBeenCalledTimes(1);
     expect(submitForm).toHaveBeenCalledTimes(1);
-    // expect(submitForm).toHaveBeenCalled()After(onSubmit);
+    // expect(submitForm).toHaveBeenCalledAfter(onSubmit);
   });
 
   it('does not submit while already submitting', async () => {
@@ -329,7 +329,8 @@ describe('Form', () => {
     return act(async () => {
       await ref.current!.submit().catch((err) => {
         expect(err).toBe('foo!');
-        expect(spy).not.toHaveBeenCalled();
+        expect(spy).toHaveBeenCalledTimes(1);
+        expect(spy).toHaveBeenCalledWith(undefined);
       });
     });
   });
@@ -377,7 +378,7 @@ describe('Form', () => {
     });
 
     it('remove errors for branches', async () => {
-      let spy = jest.fn((errors) => {
+      const spy = jest.fn((errors) => {
         expect(errors).not.toHaveProperty('name.first');
       });
 
@@ -404,7 +405,7 @@ describe('Form', () => {
     });
 
     it('should deduplicate validation paths', () => {
-      let paths = [] as string[];
+      const paths = [] as string[];
 
       return errorManager((spec) => {
         paths.push(spec.path);
@@ -433,7 +434,7 @@ describe('Form', () => {
     });
 
     it('should return same object when unchanged', () => {
-      let errors = {
+      const errors = {
         'name': ['invalid'],
         'name.meta': ['invalid'],
         'name.first': ['invalid'],
@@ -445,6 +446,33 @@ describe('Form', () => {
         .then((newErrors) => {
           expect(errors).toBe(newErrors);
         });
+    });
+
+    it('should clear errors on submit', async () => {
+      const spy = jest.fn();
+
+      const wrapper = mount(
+        <Form
+          submitForm={() => {}}
+          schema={yup.object({
+            name: yup.string(),
+          })}
+          defaultValue={{}}
+          errors={{ 'name': ['invalid'] }}
+          onError={spy}
+        >
+          <Form.Field name="name" type="text" />
+          <Form.Submit type="submit" />
+        </Form>,
+      );
+
+      await act(() => {
+        wrapper.assertSingle('Submit').simulate('click');
+        return wait(10);
+      });
+
+      expect(spy).toHaveBeenCalledTimes(1);
+      expect(spy).toHaveBeenCalledWith(undefined);
     });
   });
 });
