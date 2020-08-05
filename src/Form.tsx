@@ -386,6 +386,7 @@ const _Form: Form = React.forwardRef(
     };
 
     const handleSubmitSuccess = (validatedValue: InferType<T>) => {
+      notify(onError, [] as any);
       notify(onSubmit, [validatedValue]);
 
       return Promise.resolve(submitForm && submitForm(validatedValue)).then(
