@@ -35,7 +35,7 @@ import notify from './utils/notify';
 
 export interface FormProps<
   TSchema extends ObjectSchema,
-  TValue = InferType<TSchema>
+  TValue = Record<string, any>
 > {
   as?: React.ElementType | null | false;
   className?: string;
@@ -57,11 +57,11 @@ export interface FormProps<
   onTouch?: (touched: Touched, changedPaths: string[]) => void;
   onValidate?: (data: ValidateData) => void;
   onBeforeSubmit?: (data: BeforeSubmitData) => void;
-  onSubmit?: (validatedValue: TValue) => void;
+  onSubmit?: (validatedValue: InferType<TSchema>) => void;
   onInvalidSubmit?: (errors: Errors) => void;
   onSubmitFinished?: (error?: Error) => void;
 
-  submitForm?: (input: TValue) => Promise<any>;
+  submitForm?: (input: TValue) => Promise<any> | any;
   getter?: (path: string, value: TValue) => any;
   setter?: (path: string, value: TValue, fieldValue: any) => TValue;
   context?: Record<string, unknown>;
@@ -199,8 +199,8 @@ export interface FormHandle {
 }
 
 export declare interface Form {
-  <T extends ObjectSchema>(
-    props: FormProps<T> & React.RefAttributes<FormHandle>,
+  <T extends ObjectSchema, TValue = Record<string, any>>(
+    props: FormProps<T, TValue> & React.RefAttributes<FormHandle>,
   ): React.ReactElement | null;
 
   displayName?: string;

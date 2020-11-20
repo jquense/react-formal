@@ -2,8 +2,8 @@ import { mount } from 'enzyme';
 import React from 'react';
 import { act } from 'react-dom/test-utils';
 import * as yup from 'yup';
-import Form, { useField, FieldProps, UseFieldProps, FieldMeta } from '../src';
-import notify from '../src/utils/notify';
+import Form, { useField, UseFieldProps, FieldMeta } from '../src';
+
 
 describe('Field', () => {
   let schema = yup.object({
@@ -462,7 +462,7 @@ describe('Field', () => {
         wrapper.find('input').simulate('change', { target: { value: '4' } });
         wrapper.find('input').simulate('blur', { target: { value: '4' } });
 
-        return new Promise((resolve) => {
+        return new Promise<void>((resolve) => {
           setTimeout(() => {
             expect(spy).toHaveBeenCalledTimes(1);
             // field is invalid now: `onChange`
