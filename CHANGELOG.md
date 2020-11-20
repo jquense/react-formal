@@ -1,3 +1,14 @@
+## [2.1.3](https://github.com/jquense/react-formal/compare/v2.1.2...v2.1.3) (2020-11-20)
+
+
+### Bug Fixes
+
+* **types:** looser value typing ([52e92b2](https://github.com/jquense/react-formal/commit/52e92b2))
+
+
+
+
+
 ## [2.1.2](https://github.com/jquense/react-formal/compare/v2.1.1...v2.1.2) (2020-08-06)
 
 
