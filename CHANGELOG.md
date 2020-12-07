@@ -1,3 +1,14 @@
+# [2.2.0](https://github.com/jquense/react-formal/compare/v2.1.3...v2.2.0) (2020-12-07)
+
+
+### Features
+
+* bump yup types ([daa8419](https://github.com/jquense/react-formal/commit/daa841995df8bcedb0536f1fa424d82928d2b96f))
+
+
+
+
+
 ## [2.1.3](https://github.com/jquense/react-formal/compare/v2.1.2...v2.1.3) (2020-11-20)
 
 
