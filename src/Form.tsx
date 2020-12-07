@@ -13,7 +13,7 @@ import shallowequal from 'shallowequal';
 import { BindingContext } from 'topeka';
 import { useUncontrolledProp } from 'uncontrollable';
 import warning from 'warning';
-import { reach, isSchema, ObjectSchema, Schema, InferType } from 'yup';
+import { reach, isSchema, AnyObjectSchema, AnySchema, InferType } from 'yup';
 import useEventCallback from '@restart/hooks/useEventCallback';
 import useMergeState from '@restart/hooks/useMergeState';
 import useMounted from '@restart/hooks/useMounted';
@@ -34,7 +34,7 @@ import errToJSON from './utils/errToJSON';
 import notify from './utils/notify';
 
 export interface FormProps<
-  TSchema extends ObjectSchema,
+  TSchema extends AnyObjectSchema,
   TValue = Record<string, any>
 > {
   as?: React.ElementType | null | false;
@@ -118,7 +118,7 @@ type Setter = (
 
 const createFormSetter = (
   setter: Setter,
-  schema?: Schema<any>,
+  schema?: AnySchema,
   context?: any,
 ) => {
   function parseValueFromEvent(
@@ -135,8 +135,8 @@ const createFormSetter = (
 
       return Array.from(options)
         .filter((opt) => opt.selected)
-        .map(({ value }) =>
-          innerType == 'number' ? parseFloat(value) : value,
+        .map(({ value: option }) =>
+          innerType == 'number' ? parseFloat(option) : option,
         );
     }
 
@@ -199,7 +199,7 @@ export interface FormHandle {
 }
 
 export declare interface Form {
-  <T extends ObjectSchema, TValue = Record<string, any>>(
+  <T extends AnyObjectSchema, TValue = Record<string, any>>(
     props: FormProps<T, TValue> & React.RefAttributes<FormHandle>,
   ): React.ReactElement | null;
 
@@ -212,7 +212,7 @@ export declare interface Form {
 
 /** @alias Form */
 const _Form: Form = React.forwardRef(
-  <T extends ObjectSchema>(
+  <T extends AnyObjectSchema>(
     {
       children,
 
@@ -348,7 +348,7 @@ const _Form: Form = React.forwardRef(
       queueRef.current.push(...fields);
     }
 
-    const getSchemaForPath = (path: string): Schema<any> | undefined => {
+    const getSchemaForPath = (path: string): AnySchema | undefined => {
       if (schema && path) return reach(schema, path, value, context);
     };
 
@@ -381,8 +381,8 @@ const _Form: Form = React.forwardRef(
       handleError(Object.assign(ErrorUtils.remove(errors, name), fieldErrors));
     };
 
-    const handleError = (errors: Errors) => {
-      notify(onError, [errors]);
+    const handleError = (nextErrors: Errors) => {
+      notify(onError, [nextErrors]);
     };
 
     const handleSubmitSuccess = (validatedValue: InferType<T>) => {
@@ -409,16 +409,16 @@ const _Form: Form = React.forwardRef(
     const handleSubmitError = (err: any) => {
       if (!isValidationError(err)) throw err;
 
-      const errors = errToJSON(err);
+      const nextErrors = errToJSON(err);
 
-      maybeWarn(debug, errors, 'onSubmit');
+      maybeWarn(debug, nextErrors, 'onSubmit');
 
       setSubmitState((s) => ({
         submitAttempts: s.submitAttempts + 1,
       }));
 
-      notify(onError, [errors]);
-      notify(onInvalidSubmit, [errors]);
+      notify(onError, [nextErrors]);
+      notify(onInvalidSubmit, [nextErrors]);
       setSubmitting(false);
 
       notify(onSubmitFinished, [err]);

@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types';
 import React from 'react';
-import * as Yup from 'yup';
+import { AnyObjectSchema } from 'yup';
 import Form, { FormProps } from './Form';
 import useField from './useField';
 import { prefix, unprefix } from './Errors';
@@ -16,7 +16,7 @@ const propTypes = {
   }),
 };
 
-export interface NestedFormProps<TSchema extends Yup.ObjectSchema>
+export interface NestedFormProps<TSchema extends AnyObjectSchema>
   extends Omit<
     FormProps<TSchema>,
     'onError' | 'onChange' | 'value' | 'defaultValue' | 'defaultErrors'
@@ -32,7 +32,7 @@ export interface NestedFormProps<TSchema extends Yup.ObjectSchema>
  * This is useful for encapsulating complex input groups into self-contained
  * forms without having to worry about `"very.long[1].paths[4].to.fields"` for names.
  */
-function NestedForm<T extends Yup.ObjectSchema>({
+function NestedForm<T extends AnyObjectSchema>({
   name,
   schema,
   errors,
@@ -50,7 +50,7 @@ function NestedForm<T extends Yup.ObjectSchema>({
       {...props}
       value={meta.value}
       onChange={meta.onChange}
-      onError={errors => meta.onError(prefix(errors, name))}
+      onError={(nextErrors) => meta.onError(prefix(nextErrors, name))}
       errors={unprefix(name ? meta.errors : errors, name)}
       schema={schema || (meta.schema as T)}
       context={name ? { ...meta.context, ...props.context } : props.context}

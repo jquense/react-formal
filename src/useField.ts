@@ -1,6 +1,6 @@
 import { useCallback, useContext, useMemo, useRef } from 'react';
 import { useBinding } from 'topeka';
-import { Schema } from 'yup';
+import { AnySchema } from 'yup';
 import {
   FormActionsContext,
   FormSubmitsContext,
@@ -116,7 +116,7 @@ export interface FieldMeta {
   errors: Errors;
   touched: boolean;
 
-  schema?: Schema<unknown>;
+  schema?: AnySchema;
   errorClass?: string;
   context: any;
   /**
@@ -173,7 +173,7 @@ export function useFieldMeta(opts: UseFieldMetaOptions) {
   let handleFieldError = (errors: Errors) =>
     actions!.onFieldError(name, errors);
 
-  let schema: Schema<any> | undefined;
+  let schema: AnySchema | undefined;
   try {
     if (name) schema = actions!.getSchemaForPath(name)
   } catch (err) { /* ignore */ } // prettier-ignore

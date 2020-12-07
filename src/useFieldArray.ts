@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-shadow */
 import invariant from 'invariant';
 import { useRef, useMemo, useContext } from 'react';
 import { Errors } from './types';
@@ -171,13 +172,13 @@ function useFieldArray<T = any>(
       if (value == null) return;
 
       const index = value.indexOf(item);
-      onChange(value.filter(v => v !== item));
+      onChange(value.filter((v) => v !== item));
 
       sendErrors((errors, name) => shift(errors, name, index));
     },
 
     onItemError: (name: string, errors: Errors) => {
-      sendErrors(fieldErrors => ({
+      sendErrors((fieldErrors) => ({
         ...remove(fieldErrors, name),
         ...errors,
       }));

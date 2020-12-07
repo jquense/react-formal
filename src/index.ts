@@ -1,5 +1,5 @@
 import invariant from 'invariant';
-import { InferType, ObjectSchema, ValidationError } from 'yup';
+import { AnyObjectSchema, InferType, ValidationError } from 'yup';
 import Field, { useMergedEventHandlers } from './Field';
 import FieldArray from './FieldArray';
 import FormComponent, { getter, setter } from './Form';
@@ -32,7 +32,7 @@ export type FieldRenderProps = import('./Field').FieldRenderProps;
 export type FieldInjectedProps = import('./Field').FieldInjectedProps;
 export type MessageProps = import('./Message').MessageProps;
 export type FormProps<
-  TSchema extends ObjectSchema,
+  TSchema extends AnyObjectSchema,
   TValue = InferType<TSchema>
 > = import('./Form').FormProps<TSchema, TValue>;
 

@@ -6,12 +6,7 @@ globals:
 rules:
   prefer-const: off
   func-call-spacing: 'off'
+  '@typescript-eslint/naming-convention': off
   '@typescript-eslint/member-delimiter-style': off
   '@typescript-eslint/ban-ts-comment': 'off'
   '@typescript-eslint/explicit-module-boundary-types': 'off'
-  no-unused-vars:
-    - error
-    - vars: all
-      args: after-used
-      varsIgnorePattern: ^_
-      argsIgnorePattern: ^_
