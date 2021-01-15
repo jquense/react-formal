@@ -1,3 +1,14 @@
+## [2.2.1](https://github.com/jquense/react-formal/compare/v2.2.0...v2.2.1) (2021-01-15)
+
+
+### Bug Fixes
+
+* bad cjs import ([ff990a3](https://github.com/jquense/react-formal/commit/ff990a34ae3203b91af48273830a9c032335e431))
+
+
+
+
+
 # [2.2.0](https://github.com/jquense/react-formal/compare/v2.1.3...v2.2.0) (2020-12-07)
 
 
