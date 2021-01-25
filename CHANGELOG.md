@@ -1,3 +1,14 @@
+## [2.2.2](https://github.com/jquense/react-formal/compare/v2.2.1...v2.2.2) (2021-01-25)
+
+
+### Bug Fixes
+
+* wider react type range ([2d9dfb2](https://github.com/jquense/react-formal/commit/2d9dfb255c444ff6576b333a2316b9b42aa843ac))
+
+
+
+
+
 ## [2.2.1](https://github.com/jquense/react-formal/compare/v2.2.0...v2.2.1) (2021-01-15)
 
 
