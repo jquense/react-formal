@@ -70,7 +70,7 @@
   "dependencies": {
     "@restart/hooks": "^0.3.25",
     "@types/lodash": "^4.14.165",
-    "@types/react": "^16.14.0",
+    "@types/react": ">=16.14.0",
     "@typescript-eslint/parser": "^4.9.0",
     "classnames": "^2.2.5",
     "invariant": "^2.2.4",
