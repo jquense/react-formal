@@ -1,3 +1,14 @@
+## [2.2.3](https://github.com/jquense/react-formal/compare/v2.2.2...v2.2.3) (2021-07-19)
+
+
+### Bug Fixes
+
+* stop propagation on form submit ([#178](https://github.com/jquense/react-formal/issues/178)) ([de88a01](https://github.com/jquense/react-formal/commit/de88a0194ecef485a48e75028f2c86fa81650612))
+
+
+
+
+
 ## [2.2.2](https://github.com/jquense/react-formal/compare/v2.2.1...v2.2.2) (2021-01-25)
 
 
