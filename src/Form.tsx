@@ -430,7 +430,10 @@ const _Form: Form = React.forwardRef(
     };
 
     const handleSubmit = (e?: React.SyntheticEvent) => {
-      if (e && e.preventDefault) e.preventDefault();
+      if (e && e.preventDefault && e.stopPropagation) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
       clearPendingValidations();
       submitTimeout.set(() => submit().catch(done));
     };
