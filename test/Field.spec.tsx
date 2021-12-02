@@ -4,7 +4,6 @@ import { act } from 'react-dom/test-utils';
 import * as yup from 'yup';
 import Form, { useField, UseFieldProps, FieldMeta } from '../src';
 
-
 describe('Field', () => {
   let schema = yup.object({
     name: yup.string().default(''),
@@ -326,11 +325,13 @@ describe('Field', () => {
   });
 
   it('should work with conditional schema', () => {
-    const spy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+    const spy = jest.spyOn(console, 'warn').mockImplementation(() => {
+      /* ignore */
+    });
 
     let render = (name) => {
       mount(
-        <Form schema={schema} defaultValue={{ ...schema.default(), name }}>
+        <Form schema={schema} defaultValue={{ ...schema.getDefault(), name }}>
           <Form.Field name="more.isCool" />
         </Form>,
       );

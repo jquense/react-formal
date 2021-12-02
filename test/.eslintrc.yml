@@ -1,4 +1,4 @@
-parser: babel-eslint
 extends: jason/jest
 rules:
   react/prop-types: off
+  '@typescript-eslint/no-shadow': off

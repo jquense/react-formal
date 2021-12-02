@@ -51,7 +51,7 @@ function NestedForm<T extends AnyObjectSchema>({
       value={meta.value}
       onChange={meta.onChange}
       onError={(nextErrors) => meta.onError(prefix(nextErrors, name))}
-      errors={unprefix(name ? meta.errors : errors, name)}
+      errors={unprefix(name ? meta.errors : errors!, name)}
       schema={schema || (meta.schema as T)}
       context={name ? { ...meta.context, ...props.context } : props.context}
     />

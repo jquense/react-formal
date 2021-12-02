@@ -12,7 +12,7 @@ export interface ValidationPathSpec {
 
 function trimChildren(rootPath: string, errors: Record<string, any>) {
   let result = {};
-  Object.keys(errors).forEach(path => {
+  Object.keys(errors).forEach((path) => {
     if (rootPath !== path && inPath(rootPath, path)) return;
     result[path] = errors[path];
   });
@@ -21,16 +21,17 @@ function trimChildren(rootPath: string, errors: Record<string, any>) {
 }
 
 function reduce(paths: ValidationPathSpec[]) {
-  paths = uniqBy(paths, p => p.path);
+  paths = uniqBy(paths, (p) => p.path);
 
   if (paths.length <= 1) return paths;
 
-  return paths.reduce<ValidationPathSpec[]>((paths, current) => {
-    paths = paths.filter(p => !inPath(current.path, p.path));
+  return paths.reduce<ValidationPathSpec[]>((innerPaths, current) => {
+    innerPaths = innerPaths.filter((p) => !inPath(current.path, p.path));
 
-    if (!paths.some(p => inPath(p.path, current.path))) paths.push(current);
+    if (!innerPaths.some((p) => inPath(p.path, current.path)))
+      innerPaths.push(current);
 
-    return paths;
+    return innerPaths;
   }, []);
 }
 
@@ -50,7 +51,7 @@ export default function errorManager<TOptions>(
       options?: TOptions,
     ): Promise<Errors> {
       const specs = reduce(
-        paths.map(p =>
+        paths.map((p) =>
           typeof p === 'string' ? { path: p, shallow: false } : p,
         ),
       );
@@ -64,9 +65,9 @@ export default function errorManager<TOptions>(
         if (errors !== nextErrors) workDone = true;
       });
 
-      let validations = specs.map(spec =>
+      let validations = specs.map((spec) =>
         Promise.resolve(handleValidation(spec, options)).then(
-          validationError => {
+          (validationError) => {
             if (!validationError) return true;
 
             if (!isValidationError(validationError)) throw validationError;

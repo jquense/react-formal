@@ -4,7 +4,7 @@ import { act } from 'react-dom/test-utils';
 import { array, object, string } from 'yup';
 import Form, { useFieldArray } from '../src';
 
-const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
+const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 describe('FieldArray', () => {
   let schema = object({
@@ -24,7 +24,7 @@ describe('FieldArray', () => {
     useImperativeHandle(
       ref,
       () => ({
-        remove: index => {
+        remove: (index) => {
           arrayHelpers.remove(values[index]);
         },
       }),
@@ -51,7 +51,7 @@ describe('FieldArray', () => {
         defaultErrors={{ 'colors[0].name': 'foo' }}
       >
         <Form.FieldArray name="colors">
-          {values => (
+          {(values) => (
             <ul>
               {values.map((value, idx) => (
                 <li key={idx}>
@@ -71,7 +71,7 @@ describe('FieldArray', () => {
 
   it('should update the form value correctly', async () => {
     let value, last;
-    let changeSpy = jest.fn(v => (value = v));
+    let changeSpy = jest.fn((v) => (value = v));
 
     let wrapper = mount(
       <Form
@@ -81,7 +81,7 @@ describe('FieldArray', () => {
         defaultErrors={{ 'colors[0].name': 'foo' }}
       >
         <Form.FieldArray name="colors">
-          {values => (
+          {(values) => (
             <ul>
               {values.map((value, idx) => (
                 <li key={idx}>
@@ -140,7 +140,7 @@ describe('FieldArray', () => {
 
   it('should handle removing array items', async () => {
     let value;
-    let changeSpy = jest.fn(v => (value = v));
+    let changeSpy = jest.fn((v) => (value = v));
     let defaultValue = {
       colors: [
         { name: 'red', hexCode: '#ff0000' },
@@ -181,8 +181,8 @@ describe('FieldArray', () => {
 
   it('should shift errors for removed fields', async () => {
     let value, errors;
-    let errorSpy = jest.fn(v => (errors = v));
-    let changeSpy = jest.fn(v => (value = v));
+    let errorSpy = jest.fn((v) => (errors = v));
+    let changeSpy = jest.fn((v) => (value = v));
     let defaultValue = {
       colors: [
         { name: '', hexCode: '#ff0000' },

@@ -80,8 +80,6 @@ export interface FormProps<
 
   /** Adds some additional runtime console warnings */
   debug?: boolean;
-
-  [other: string]: any;
 }
 
 let done = (e: Error) =>
@@ -246,7 +244,7 @@ const _Form: Form = React.forwardRef(
       strict = false,
       as: Element = 'form',
       ...elementProps
-    }: FormProps<T>,
+    }: FormProps<T> & Record<string, any>,
     ref: React.Ref<FormHandle>,
   ) => {
     const [value, onChange] = useUncontrolledProp(
