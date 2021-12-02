@@ -1,3 +1,14 @@
+# [2.3.0](https://github.com/jquense/react-formal/compare/v2.2.3...v2.3.0) (2021-12-02)
+
+
+### Features
+
+* bump deps and remove index sig from prop type ([fed8e54](https://github.com/jquense/react-formal/commit/fed8e5491b3a3af3903238506741759ac7c0a061))
+
+
+
+
+
 ## [2.2.3](https://github.com/jquense/react-formal/compare/v2.2.2...v2.2.3) (2021-07-19)
 
 
