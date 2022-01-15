@@ -1,3 +1,14 @@
+# [2.4.0](https://github.com/jquense/react-formal/compare/v2.3.0...v2.4.0) (2022-01-15)
+
+
+### Features
+
+* clean up contexts and use observed bits ([9e7a2c7](https://github.com/jquense/react-formal/commit/9e7a2c7240b24dbe7db57bb4d5d0b63a7dace293))
+
+
+
+
+
 # [2.3.0](https://github.com/jquense/react-formal/compare/v2.2.3...v2.3.0) (2021-12-02)
 
 
