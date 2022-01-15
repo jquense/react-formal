@@ -1,4 +1,4 @@
-import { useBindingContext } from 'topeka';
+import { useBindingContext } from './BindingContext';
 
 /**
  * Returns the current Field value at the provided path.
@@ -21,7 +21,7 @@ function useFormValues(fields: string | string[]): undefined | any | any[] {
   if (!ctx) return;
 
   return Array.isArray(fields)
-    ? fields.map(f => ctx.getValue(f))
+    ? fields.map((f) => ctx.getValue(f))
     : ctx.getValue(fields);
 }
 

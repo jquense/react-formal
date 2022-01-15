@@ -1,29 +1,25 @@
 /* eslint-disable @typescript-eslint/no-use-before-define */
 import PropTypes from 'prop-types';
-import expr from 'property-expr';
 import React, {
   useEffect,
   useImperativeHandle,
   useMemo,
   useRef,
-  SyntheticEvent,
   Fragment,
 } from 'react';
 import shallowequal from 'shallowequal';
-import { BindingContext } from 'topeka';
+import useFormBindingContext, {
+  BindingContext,
+  formGetter,
+  formSetter,
+} from './BindingContext';
 import { useUncontrolledProp } from 'uncontrollable';
-import warning from 'warning';
-import { reach, isSchema, AnyObjectSchema, AnySchema, InferType } from 'yup';
+import { reach, isSchema, AnyObjectSchema, InferType } from 'yup';
 import useEventCallback from '@restart/hooks/useEventCallback';
 import useMergeState from '@restart/hooks/useMergeState';
 import useMounted from '@restart/hooks/useMounted';
 import useTimeout from '@restart/hooks/useTimeout';
-import {
-  FormActionsContext,
-  FormErrorContext,
-  FormSubmitsContext,
-  FormTouchedContext,
-} from './Contexts';
+import { FormContext } from './Contexts';
 import createErrorManager, {
   isValidationError,
   ValidationPathSpec,
@@ -35,7 +31,7 @@ import notify from './utils/notify';
 
 export interface FormProps<
   TSchema extends AnyObjectSchema,
-  TValue = Record<string, any>
+  TValue = Record<string, any>,
 > {
   as?: React.ElementType | null | false;
   className?: string;
@@ -87,11 +83,6 @@ let done = (e: Error) =>
     throw e;
   });
 
-const formGetter = (path: string, model: any) =>
-  path ? expr.getter(path, true)(model || {}) : model;
-
-const formSetter = BindingContext.defaultProps.setter;
-
 function useErrorContext(errors?: Errors) {
   const ref = useRef<Errors | null>(null);
   if (!ref.current) {
@@ -103,81 +94,6 @@ function useErrorContext(errors?: Errors) {
 
   return ref.current;
 }
-
-const isEvent = (e): e is SyntheticEvent =>
-  typeof e == 'object' && e != null && 'target' in e;
-
-type Setter = (
-  path: string,
-  formData: unknown,
-  fieldValue: any,
-  setter: any,
-) => unknown;
-
-const createFormSetter = (
-  setter: Setter,
-  schema?: AnySchema,
-  context?: any,
-) => {
-  function parseValueFromEvent(
-    target: HTMLInputElement & HTMLSelectElement,
-    fieldValue: any,
-    fieldSchema?: any,
-  ) {
-    const { type, value, checked, options, multiple, files } = target;
-
-    if (type === 'file') return multiple ? files : files && files[0];
-    if (multiple) {
-      // @ts-ignore
-      const innerType = fieldSchema?._subType?._type;
-
-      return Array.from(options)
-        .filter((opt) => opt.selected)
-        .map(({ value: option }) =>
-          innerType == 'number' ? parseFloat(option) : option,
-        );
-    }
-
-    if (/number|range/.test(type)) {
-      let parsed = parseFloat(value);
-      return isNaN(parsed) ? null : parsed;
-    }
-    if (type === 'checkbox') {
-      const isArray = Array.isArray(fieldValue);
-
-      const isBool = !isArray && (fieldSchema as any)?._type === 'boolean';
-
-      if (isBool) return checked;
-
-      const nextValue = isArray ? [...fieldValue] : [];
-      const idx = nextValue.indexOf(value);
-
-      if (checked) {
-        if (idx === -1) nextValue.push(value);
-      } else nextValue.splice(idx, 1);
-
-      return nextValue;
-    }
-
-    return value;
-  }
-
-  return (
-    path: string,
-    formData: any,
-    fieldValue: any,
-    defaultSetter: any,
-  ): any => {
-    if (isEvent(fieldValue))
-      fieldValue = parseValueFromEvent(
-        fieldValue.target as any,
-        formGetter(path, formData),
-        schema && path && reach(schema, path, formData, context),
-      );
-
-    return setter(path, formData, fieldValue, defaultSetter);
-  };
-};
 
 function validatePath(
   { path }: ValidationPathSpec,
@@ -272,10 +188,31 @@ const _Form: Form = React.forwardRef(
 
     const errorManager = useMemo(() => createErrorManager(validatePath), []);
 
-    const updateFormValue = useMemo(
-      () => createFormSetter(setter, schema, context),
-      [context, schema, setter],
+    const handleChange = useEventCallback((model, paths) => {
+      let nextTouched = touched;
+
+      onChange(model, paths);
+      paths.forEach((path) => {
+        if (touched && touched[path]) return;
+        if (nextTouched === touched) nextTouched = { ...touched, [path]: true };
+        else nextTouched[path] = true;
+      });
+
+      if (nextTouched !== touched) onTouch(nextTouched!, paths);
+    });
+
+    const getSchemaForPath = useEventCallback(
+      (path, currentValue = value) =>
+        schema && path && reach(schema, path, currentValue, context),
     );
+
+    const formValueContext = useFormBindingContext({
+      formValue: value,
+      onChange: handleChange,
+      setter,
+      getter,
+      getSchemaForPath,
+    });
 
     const yupOptions = {
       strict,
@@ -345,23 +282,6 @@ const _Form: Form = React.forwardRef(
     function enqueue(fields: string[]) {
       queueRef.current.push(...fields);
     }
-
-    const getSchemaForPath = (path: string): AnySchema | undefined => {
-      if (schema && path) return reach(schema, path, value, context);
-    };
-
-    const handleChange = useEventCallback((model, paths) => {
-      let nextTouched = touched;
-
-      onChange(model, paths);
-      paths.forEach((path) => {
-        if (touched && touched[path]) return;
-        if (nextTouched === touched) nextTouched = { ...touched, [path]: true };
-        else nextTouched[path] = true;
-      });
-
-      if (nextTouched !== touched) onTouch(nextTouched!, paths);
-    });
 
     const handleValidationRequest = (
       fields: string[],
@@ -442,23 +362,19 @@ const _Form: Form = React.forwardRef(
       }
 
       clearPendingValidations();
-      notify(onBeforeSubmit, [
-        {
-          value,
-          errors,
-        },
-      ]);
+      notify(onBeforeSubmit, [{ value, errors }]);
 
       setSubmitting(true);
 
       return (
-        (!shouldValidate
-          ? Promise.resolve(value as any)
-          : schema!.validate(value, {
-              ...yupOptions,
-              abortEarly: false,
-              strict: false,
-            })
+        (
+          !shouldValidate
+            ? Promise.resolve(value as any)
+            : schema!.validate(value, {
+                ...yupOptions,
+                abortEarly: false,
+                strict: false,
+              })
         )
           // no catch, we aren't interested in errors from onSubmit handlers
           .then(handleSubmitSuccess, handleSubmitError)
@@ -472,7 +388,7 @@ const _Form: Form = React.forwardRef(
       },
     }));
 
-    const formActions = Object.assign(useRef({}).current, {
+    const actions = Object.assign(useRef({}).current, {
       getSchemaForPath,
       yupContext: context,
       onSubmit: handleSubmit,
@@ -480,6 +396,16 @@ const _Form: Form = React.forwardRef(
       onFieldError: handleFieldError,
       formHasValidation: () => shouldValidate,
     });
+
+    const contextValue = useMemo(
+      () => ({
+        touched,
+        actions,
+        errors: errorContext!,
+        submits,
+      }),
+      [touched, errorContext, submits, actions],
+    );
 
     if (Element === 'form') {
       elementProps.noValidate = true; // disable html5 validation
@@ -498,29 +424,18 @@ const _Form: Form = React.forwardRef(
     }
 
     return (
-      <BindingContext
-        value={value}
-        getter={getter}
-        setter={updateFormValue}
-        onChange={handleChange}
-      >
-        <FormActionsContext.Provider value={formActions}>
-          <FormTouchedContext.Provider value={touched}>
-            <FormSubmitsContext.Provider value={submits}>
-              <FormErrorContext.Provider value={errorContext!}>
-                {Element == null || Element === false ? (
-                  React.cloneElement(
-                    React.Children.only(children as React.ReactElement),
-                    elementProps,
-                  )
-                ) : (
-                  <Element {...elementProps}>{children}</Element>
-                )}
-              </FormErrorContext.Provider>
-            </FormSubmitsContext.Provider>
-          </FormTouchedContext.Provider>
-        </FormActionsContext.Provider>
-      </BindingContext>
+      <BindingContext.Provider value={formValueContext}>
+        <FormContext.Provider value={contextValue}>
+          {Element == null || Element === false ? (
+            React.cloneElement(
+              React.Children.only(children as React.ReactElement),
+              elementProps,
+            )
+          ) : (
+            <Element {...elementProps}>{children}</Element>
+          )}
+        </FormContext.Provider>
+      </BindingContext.Provider>
     );
   },
 );
@@ -530,10 +445,11 @@ function maybeWarn(debug, errors, target) {
 
   if (process.env.NODE_ENV !== 'production') {
     let keys = Object.keys(errors);
-    warning(
-      !keys.length,
-      `[react-formal] (${target}) invalid fields: ${keys.join(', ')}`,
-    );
+    if (keys.length) {
+      console.error(
+        `[react-formal] (${target}) invalid fields: ${keys.join(', ')}`,
+      );
+    }
   }
 }
 

@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/no-shadow */
-import invariant from 'invariant';
-import { useRef, useMemo, useContext } from 'react';
+
+import { useRef, useMemo } from 'react';
 import { Errors } from './types';
 import { FieldMeta, UseFieldMetaOptions, useFieldMeta } from './useField';
 import { move, remove, shift, unshift } from './Errors';
 import { ValidationPathSpec } from './errorManager';
-import { FormActionsContext } from './Contexts';
+import { BITS, useFormContext } from './Contexts';
 
 export type FieldArrayMeta = FieldMeta;
 
@@ -115,7 +115,7 @@ function useFieldArray<T = any>(
 
   let { name } = options;
 
-  const actions = useContext(FormActionsContext);
+  const { actions } = useFormContext(BITS.actions);
 
   // TODO: doesn't shallow validate validates
   const fieldsToValidate = useMemo<ValidationPathSpec[]>(
@@ -155,10 +155,8 @@ function useFieldArray<T = any>(
       const fromIndex = value.indexOf(item);
       const newValue = value == null ? [] : [...value];
 
-      invariant(
-        fromIndex !== -1,
-        '`onMove` must be called with an item in the array',
-      );
+      if (fromIndex === -1)
+        throw new Error('`onMove` must be called with an item in the array');
 
       newValue.splice(toIndex, 0, ...newValue.splice(fromIndex, 1));
 

@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types';
 import React, { useContext, useMemo } from 'react';
-import { FormErrorContext } from './Contexts';
+import { FormContext } from './Contexts';
 import { Errors } from './types';
 import { filterAndMapErrors } from './Errors';
 import uniq from './utils/uniqMessage';
@@ -28,12 +28,12 @@ function Message({
   className,
   filter = uniq,
   extract = (error: any) => error.message || error,
-  children = (errors: any[], props: any) => (
-    <span {...props}>{errors.join(', ')}</span>
+  children = (errors: any[], msgProps: any) => (
+    <span {...msgProps}>{errors.join(', ')}</span>
   ),
   ...props
 }: MessageProps) {
-  const formErrors = useContext(FormErrorContext);
+  const { errors: formErrors } = useContext(FormContext);
   const inputErrors = propsErrors || formErrors;
   const errors = useMemo(
     () =>

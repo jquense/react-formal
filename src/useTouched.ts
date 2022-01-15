@@ -1,5 +1,5 @@
-import { useContext, useMemo } from 'react';
-import { FormTouchedContext } from './Contexts';
+import { useMemo } from 'react';
+import { BITS, useFormContext } from './Contexts';
 import memoize from 'memoize-one';
 import { filterAndMapErrors } from './Errors';
 import { Errors, Touched } from './types';
@@ -25,7 +25,7 @@ function useTouched(path: string): Touched;
  */
 function useTouched(paths: string[] | undefined): Touched;
 function useTouched(paths?: string | string[]): Touched {
-  const touched = useContext(FormTouchedContext);
+  const { touched } = useFormContext(BITS.touched);
   const memoFilterAndMapErrors = useMemo(
     () =>
       memoize(

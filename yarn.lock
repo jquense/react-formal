@@ -8057,11 +8057,6 @@ querystringify@^2.1.1:
   resolved "https://registry.yarnpkg.com/querystringify/-/querystringify-2.2.0.tgz#3345941b4153cb9d082d8eee4cda2016a9aef7f6"
   integrity sha512-FIqgj2EUvTa7R50u0rGsyTftzjYmv/a3hO345bZNrqabNqjtgiDMgmo4mkUjd+nzU5oF3dClKqFIPUKybUyqoQ==
 
-queue-microtask@^1.2.3:
-  version "1.2.3"
-  resolved "https://registry.yarnpkg.com/queue-microtask/-/queue-microtask-1.2.3.tgz#4929228bbc724dfac43e0efb058caf7b6cfb6243"
-  integrity sha512-NuaNSa6flKT5JaSYQzJok04JzTL1CA6aGhv5rfLW3PgqA+M2ChpZQnAC8h8i4ZFkBS8X5RqkDBHA7r4hej3K9A==
-
 quick-lru@^1.0.0:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/quick-lru/-/quick-lru-1.1.0.tgz#4360b17c61136ad38078397ff11416e186dcfbb8"
@@ -9580,16 +9575,6 @@ toidentifier@1.0.0:
   resolved "https://registry.yarnpkg.com/toidentifier/-/toidentifier-1.0.0.tgz#7e1be3470f1e77948bc43d94a3c8f4d7752ba553"
   integrity sha512-yaOH/Pk/VEhBWWTlhI+qXxDFXlejDGcQipMlyxda9nthulaxLZUNcUqFxokp0vcYnvteJln5FNQDRrxj3YcbVw==
 
-topeka@^4.4.3:
-  version "4.4.3"
-  resolved "https://registry.yarnpkg.com/topeka/-/topeka-4.4.3.tgz#fcf90401f14e4cf3ae84014bc6078420cba49e39"
-  integrity sha512-9w1hgZsznbAbk3AOZ+bhgoiPeFLAhDh5bhqMOhjkcdYjHAsxypucKfursHj0bFzAuVu/wAJdjG6dsswrnRTJ4Q==
-  dependencies:
-    "@restart/hooks" "^0.3.26"
-    property-expr "^2.0.4"
-    queue-microtask "^1.2.3"
-    uncontrollable "^7.2.1"
-
 toposort@^2.0.2:
   version "2.0.2"
   resolved "https://registry.yarnpkg.com/toposort/-/toposort-2.0.2.tgz#ae21768175d1559d48bef35420b2f4962f09c330"
@@ -9981,7 +9966,7 @@ walker@^1.0.7:
   dependencies:
     makeerror "1.0.x"
 
-warning@^4.0.0, warning@^4.0.3:
+warning@^4.0.0:
   version "4.0.3"
   resolved "https://registry.yarnpkg.com/warning/-/warning-4.0.3.tgz#16e9e077eb8a86d6af7d64aa1e05fd85b4678ca3"
   integrity sha512-rpJyN222KWIvHJ/F53XSZv0Zl/accqHR8et1kpaMTD/fLCRxtV8iX8czMzY7sVZupTI3zcUTg8eycS2kNF9l6w==

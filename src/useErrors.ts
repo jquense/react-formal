@@ -1,5 +1,5 @@
-import { useContext, useMemo } from 'react';
-import { FormErrorContext } from './Contexts';
+import { useMemo } from 'react';
+import { BITS, useFormContext } from './Contexts';
 import memoize from 'memoize-one';
 import shallowequal from 'shallowequal';
 import { filterAndMapErrors, inclusiveMapErrors } from './Errors';
@@ -30,7 +30,7 @@ function useErrors(
   paths?: string | string[],
   { inclusive }: UseErrorOptions = {},
 ): Errors {
-  const errors = useContext(FormErrorContext);
+  const errors = useFormContext(BITS.errors).errors;
   const memoFilterAndMapErrors = useMemo(
     () => memoize(filterAndMapErrors, isFilterErrorsEqual),
     [],

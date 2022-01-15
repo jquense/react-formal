@@ -1,23 +1,24 @@
+/* eslint-disable @typescript-eslint/no-empty-function */
 import { mount } from 'enzyme';
 import React from 'react';
 import { act } from 'react-dom/test-utils';
 import createSlot from 'react-tackle-box/Slot';
 import * as yup from 'yup';
 import Form, { toFormErrors, setter, getter } from '../src';
-import { FormActionsContext } from '../src/Contexts';
+import { FormContext } from '../src/Contexts';
 import errorManager from '../src/errorManager';
 import { FormHandle } from '../src/Form';
 
 const wait = (ms = 0) => new Promise((resolve) => setTimeout(resolve, ms));
 
 let LeakySubmit = () => (
-  <FormActionsContext.Consumer>
+  <FormContext.Consumer>
     {(ctx) => (
-      <button type="submit" onClick={ctx!.onSubmit}>
+      <button type="submit" onClick={ctx!.actions!.onSubmit}>
         Submit
       </button>
     )}
-  </FormActionsContext.Consumer>
+  </FormContext.Consumer>
 );
 
 describe('Form', () => {
@@ -64,7 +65,11 @@ describe('Form', () => {
     let change = jest.fn((v) => (value = v));
 
     let wrapper = mount(
-      <Form schema={schema} defaultValue={schema.default()} onChange={change}>
+      <Form
+        schema={schema}
+        defaultValue={schema.getDefault()}
+        onChange={change}
+      >
         <Form.Field name="name.first" className="field" />
         <Form.Field name="name.last" className="field" />
       </Form>,
@@ -105,7 +110,11 @@ describe('Form', () => {
     let paths,
       change = jest.fn((_, p) => (paths = p)),
       wrapper = mount(
-        <Form schema={schema} defaultValue={schema.default()} onChange={change}>
+        <Form
+          schema={schema}
+          defaultValue={schema.getDefault()}
+          onChange={change}
+        >
           <Form.Field
             name="name.first"
             className="field"
@@ -130,7 +139,7 @@ describe('Form', () => {
         <Form
           noValidate
           schema={schema}
-          defaultValue={schema.default()}
+          defaultValue={schema.getDefault()}
           onValidate={change}
         >
           <Form.Field name="name.first" className="field" />
@@ -458,7 +467,7 @@ describe('Form', () => {
             name: yup.string(),
           })}
           defaultValue={{}}
-          errors={{ 'name': ['invalid'] }}
+          errors={{ name: ['invalid'] }}
           onError={spy}
         >
           <Form.Field name="name" type="text" />

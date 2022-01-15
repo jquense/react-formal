@@ -1,11 +1,7 @@
-import { useCallback, useContext, useMemo, useRef } from 'react';
-import { useBinding } from 'topeka';
+import { useCallback, useMemo, useRef } from 'react';
+import useBinding from './useBinding';
 import { AnySchema } from 'yup';
-import {
-  FormActionsContext,
-  FormSubmitsContext,
-  FormTouchedContext,
-} from './Contexts';
+import { BITS, useFormContext } from './Contexts';
 import config from './config';
 import { Errors } from './types';
 import isNativeType from './utils/isNativeType';
@@ -15,7 +11,7 @@ import useErrors from './useErrors';
 import { ValidationPathSpec } from './errorManager';
 
 export function splitFieldProps<
-  TProps extends UseFieldOptions = UseFieldOptions
+  TProps extends UseFieldOptions = UseFieldOptions,
 >({
   name,
   type,
@@ -80,22 +76,22 @@ function resolveNativeInputConfig(type: unknown, asProp?: React.ElementType) {
     : { tagName };
 }
 
-const onChange: ValidateOnConfig = { change: true };
+const onChangeStrategy: ValidateOnConfig = { change: true };
 
-const onBlur: ValidateOnConfig = { blur: true };
+const onBlurStrategy: ValidateOnConfig = { blur: true };
 
-const onChangeAndBlur: ValidateOnConfig = { change: true, blur: true };
+const onChangeAndBlurStrategy: ValidateOnConfig = { change: true, blur: true };
 
-const onBlurThenChangeAndBlur: ValidateOnConfig = (meta) => ({
+const onBlurThenChangeAndBlurStrategy: ValidateOnConfig = (meta) => ({
   blur: true,
   change: !meta.valid,
 });
 
 export const ValidateStrategies = {
-  Change: onChange,
-  Blur: onBlur,
-  ChangeAndBlur: onChangeAndBlur,
-  BlurThenChangeAndBlur: onBlurThenChangeAndBlur,
+  Change: onChangeStrategy,
+  Blur: onBlurStrategy,
+  ChangeAndBlur: onChangeAndBlurStrategy,
+  BlurThenChangeAndBlur: onBlurThenChangeAndBlurStrategy,
 };
 
 export interface UseFieldMetaOptions {
@@ -165,9 +161,11 @@ export function useFieldMeta(opts: UseFieldMetaOptions) {
   const [value, onChange] = useBinding(mapToValue || name, mapFromValue);
 
   const warned = useRef(false);
-  const actions = useContext(FormActionsContext);
-  const submits = useContext(FormSubmitsContext);
-  const touched = useContext(FormTouchedContext);
+
+  const { actions, touched, submits } = useFormContext(
+    BITS.actions | BITS.touched | BITS.submits,
+  );
+
   const filteredErrors = useErrors(name, { inclusive: !exclusive });
 
   let handleFieldError = (errors: Errors) =>
@@ -336,7 +334,7 @@ function useField(
     () => (validates != null ? toArray(validates) : [name]),
     [name, validates],
   );
-  const formActions = useContext(FormActionsContext);
+  const { actions } = useFormContext(BITS.actions);
 
   const meta = useFieldMeta({ ...options, validates: fieldsToValidate });
 
@@ -345,7 +343,7 @@ function useField(
   const { blur, change } = meta.validateOn;
 
   const { update } = meta;
-  const validate = formActions?.onValidate;
+  const validate = actions?.onValidate;
 
   const fieldProps: Partial<UseFieldProps> = {
     onChange: useCallback(

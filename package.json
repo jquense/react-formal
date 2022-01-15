@@ -72,15 +72,12 @@
     "@restart/hooks": "^0.4.1",
     "@types/lodash": "^4.14.177",
     "@types/react": ">=17.0.37",
-    "invariant": "^2.2.4",
     "lodash": "^4.17.21",
     "memoize-one": "^6.0.0",
     "prop-types": "^15.7.2",
     "property-expr": "^2.0.4",
     "shallowequal": "^1.1.0",
-    "topeka": "^4.4.3",
     "uncontrollable": "^7.2.1",
-    "warning": "^4.0.3",
     "yup": ">=0.32.11"
   },
   "devDependencies": {

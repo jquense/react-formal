@@ -1,4 +1,3 @@
-import invariant from 'invariant';
 import { AnyObjectSchema, InferType, ValidationError } from 'yup';
 import Field, { useMergedEventHandlers } from './Field';
 import FieldArray from './FieldArray';
@@ -20,7 +19,8 @@ export type Form = typeof FormComponent;
 
 export type FieldArrayHelpers = import('./useFieldArray').FieldArrayHelpers;
 export type FieldArrayMeta = import('./useFieldArray').FieldArrayMeta;
-export type UseFieldArrayOptions = import('./useFieldArray').UseFieldArrayOptions;
+export type UseFieldArrayOptions =
+  import('./useFieldArray').UseFieldArrayOptions;
 
 export type FieldMeta = import('./useField').FieldMeta;
 export type UseFieldProps = import('./useField').UseFieldProps;
@@ -33,7 +33,7 @@ export type FieldInjectedProps = import('./Field').FieldInjectedProps;
 export type MessageProps = import('./Message').MessageProps;
 export type FormProps<
   TSchema extends AnyObjectSchema,
-  TValue = InferType<TSchema>
+  TValue = InferType<TSchema>,
 > = import('./Form').FormProps<TSchema, TValue>;
 
 export interface FormStatics {
@@ -49,10 +49,9 @@ const setDefaults = (defaults = {}) => {
 };
 
 const toFormErrors = (err: ValidationError) => {
-  invariant(
-    err && err.name === 'ValidationError',
-    '`toErrors()` only works with ValidationErrors.',
-  );
+  if (!err || err.name !== 'ValidationError')
+    throw new Error('`toErrors()` only works with ValidationErrors.');
+
   return errToJSON(err);
 };
 

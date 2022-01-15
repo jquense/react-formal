@@ -1,6 +1,5 @@
-import { useContext, useCallback, useMemo } from 'react';
-import warning from 'warning';
-import { FormActionsContext, FormSubmitsContext } from './Contexts';
+import { useCallback, useMemo } from 'react';
+import { BITS, useFormContext } from './Contexts';
 import useErrors from './useErrors';
 
 export interface UseFormSubmitOptions {
@@ -13,19 +12,19 @@ export interface UseFormSubmitOptions {
  * @param {string[]} options.trigger A set of paths to trigger validation for
  */
 export default function useFormSubmit({ triggers }: UseFormSubmitOptions = {}) {
-  const actions = useContext(FormActionsContext);
-  const submits = useContext(FormSubmitsContext);
+  const { actions, submits } = useFormContext(BITS.actions | BITS.submits);
+
   const errors = useErrors(triggers);
 
   const handleSubmit = useCallback(
     (...args: any[]) => {
       if (!actions) {
-        return warning(
-          false,
-          'A Form submit event ' +
-            'was triggered from a component outside the context of a Form. ' +
-            'The Button should be wrapped in a Form component',
-        );
+        if (process.env.NODE_ENV !== 'production')
+          return console.error(
+            'A Form submit event ' +
+              'was triggered from a component outside the context of a Form. ' +
+              'The Button should be wrapped in a Form component',
+          );
       }
 
       if (triggers && triggers.length) {
