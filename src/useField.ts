@@ -421,9 +421,9 @@ function useField(
     }
   }
 
-  let className = options.className;
+  let className = options.className || '';
   if (!noValidate && meta.invalid && meta.errorClass) {
-    className = className || '' + meta.errorClass;
+    className = className + ' ' + meta.errorClass;
   }
   if (className) fieldProps.className = className;
 

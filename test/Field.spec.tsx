@@ -48,6 +48,23 @@ describe('Field', () => {
     ).toEqual('test'); // test invalid-field
   });
 
+  it('should pass props to inner type if field is invalid', () => {
+    expect(
+      mount(
+        <Form schema={schema} defaultValue={{}} defaultErrors={{ name: 'foo' }}>
+          <Form.Field
+            name='name'
+            as={TestInput}
+            className='test'
+            errorClass='invalid'
+          />
+        </Form>,
+      )
+        .find(TestInput)
+        .instance().props.className,
+    ).toEqual('test invalid');
+  });
+
   it('should provide an onChange handler even without validation', () => {
     const spy = jest.fn();
 
