@@ -1,3 +1,14 @@
+## [2.4.1](https://github.com/jquense/react-formal/compare/v2.4.0...v2.4.1) (2022-01-18)
+
+
+### Bug Fixes
+
+* pass props to inner type if a field is invalid ([#180](https://github.com/jquense/react-formal/issues/180)) ([29122ea](https://github.com/jquense/react-formal/commit/29122eafc33239f1c8bf87ebe10a97354b1ed459))
+
+
+
+
+
 # [2.4.0](https://github.com/jquense/react-formal/compare/v2.3.0...v2.4.0) (2022-01-15)
 
 
