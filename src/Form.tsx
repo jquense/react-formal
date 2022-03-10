@@ -367,13 +367,7 @@ const _Form: Form = React.forwardRef(
         e.stopPropagation();
       }
       notify(onReset);
-      onChange?.(
-        {
-          ...schema?.getDefault(),
-          ...defaultValue,
-        },
-        [],
-      );
+      onChange?.(defaultValue || {}, []);
       resetTimeout.set(() => setResets((prevResets) => (prevResets += 1)));
     };
 

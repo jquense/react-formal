@@ -1,7 +1,7 @@
 import { mount } from 'enzyme';
 import React from 'react';
 import * as yup from 'yup';
-import Form, { useFormSubmit } from '../src';
+import Form from '../src';
 
 describe('Reset', () => {
   const schema = yup.object({ testfield: yup.string() });
