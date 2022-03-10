@@ -8,6 +8,7 @@ export interface FormActions {
   getSchemaForPath: (name?: string) => AnySchema | undefined;
   yupContext: any;
   onSubmit: () => void;
+  onReset: () => void;
   onValidate: (
     fields: Array<ValidationPathSpec | string>,
     event: string,
@@ -18,10 +19,11 @@ export interface FormActions {
 }
 
 export const BITS = {
-  errors: 1 << 1,
-  touched: 1 << 2,
-  actions: 1 << 3,
-  submits: 1 << 4,
+  errors: 1 << 1, // before: 1 after: 10(2)
+  touched: 1 << 2, // before: 1 after: 100(4)
+  actions: 1 << 3, // before: 1 after: 1000(8)
+  submits: 1 << 4, // before: 1 after: 10000(16)
+  resets: 1 << 5, // before: 1 after: 100000(32)
 };
 
 export interface FormContextValue {
@@ -34,6 +36,8 @@ export interface FormContextValue {
     submitAttempts: number;
     submitting: boolean;
   };
+
+  resets: number;
 }
 
 export const FormContext = React.createContext<FormContextValue>(
@@ -46,6 +50,7 @@ export const FormContext = React.createContext<FormContextValue>(
       submitAttempts: 0,
       submitting: false,
     },
+    resets: 0,
   },
   // @ts-ignore
   (a, b) => {
@@ -54,6 +59,7 @@ export const FormContext = React.createContext<FormContextValue>(
     if (a.touched !== b.touched) bits |= BITS.touched;
     if (a.actions !== b.actions) bits |= BITS.actions;
     if (a.submits !== b.submits) bits |= BITS.submits;
+    if (a.resets !== b.resets) bits |= BITS.resets;
     return bits;
   },
 );

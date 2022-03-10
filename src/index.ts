@@ -14,6 +14,8 @@ import errToJSON from './utils/errToJSON';
 import useFormSubmit from './useFormSubmit';
 import useErrors from './useErrors';
 import useTouched from './useTouched';
+import Reset from './Reset';
+import useFormReset from './useFormReset';
 
 export type Form = typeof FormComponent;
 
@@ -41,6 +43,7 @@ export interface FormStatics {
   FieldArray: typeof FieldArray;
   Message: typeof Message;
   Submit: typeof Submit;
+  Reset: typeof Reset;
   Summary: typeof Summary;
 }
 
@@ -60,6 +63,7 @@ const formStatics: FormStatics = {
   FieldArray,
   Message,
   Submit,
+  Reset,
   Summary,
 };
 
@@ -70,6 +74,7 @@ export {
   useMergedEventHandlers,
   useFieldArray,
   useFormSubmit,
+  useFormReset,
   useFormValues,
   useErrors,
   useTouched,
