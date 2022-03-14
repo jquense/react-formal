@@ -462,7 +462,7 @@ function maybeWarn(debug, errors, target) {
   if (!debug) return;
 
   if (process.env.NODE_ENV !== 'production') {
-    let keys = Object.keys(errors);
+    let keys = Object.keys(errors || ErrorUtils.EMPTY_ERRORS);
     if (keys.length) {
       console.error(
         `[react-formal] (${target}) invalid fields: ${keys.join(', ')}`,
