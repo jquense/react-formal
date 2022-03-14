@@ -19,11 +19,11 @@ export interface FormActions {
 }
 
 export const BITS = {
-  errors: 1 << 1, // before: 1 after: 10(2)
-  touched: 1 << 2, // before: 1 after: 100(4)
-  actions: 1 << 3, // before: 1 after: 1000(8)
-  submits: 1 << 4, // before: 1 after: 10000(16)
-  resets: 1 << 5, // before: 1 after: 100000(32)
+  errors: 1 << 1, // =2
+  touched: 1 << 2, // =4
+  actions: 1 << 3, // =8
+  submits: 1 << 4, // =16
+  resets: 1 << 5, // =32
 };
 
 export interface FormContextValue {
