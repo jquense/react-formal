@@ -367,7 +367,9 @@ const _Form: Form = React.forwardRef(
         e.stopPropagation();
       }
       notify(onReset);
-      onChange?.(defaultValue || {}, []);
+
+      onChange(defaultValue || {}, []);
+      onError(defaultErrors || ErrorUtils.EMPTY_ERRORS);
       resetTimeout.set(() => setResets((prevResets) => (prevResets += 1)));
     };
 
@@ -590,6 +592,16 @@ _Form.propTypes = {
    */
   onSubmit: PropTypes.func,
 
+  /**
+   * Callback that is fired in response to a form reset. `onReset` fires before
+   * the accompanying `onChange`.
+   *
+   * ```js static
+   * function onReset() {
+   *   // reset has been called
+   * }
+   * ```
+   */
   onReset: PropTypes.func,
 
   onSubmitFinished: PropTypes.func,

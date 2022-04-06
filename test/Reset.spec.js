@@ -23,10 +23,11 @@ describe('Reset', () => {
     stub.mockRestore();
   });
 
-  it('should reset to default form values', () => {
+  it('should reset to default form values', async () => {
     let spy = jest.fn();
+    let errorSpy = jest.fn();
     const wrapper = mount(
-      <Form schema={schema} onReset={spy}>
+      <Form schema={schema} onReset={spy} onError={errorSpy}>
         <div>
           <Form.Field name="testfield" />
           <Form.Reset data-test="test" />
@@ -50,5 +51,7 @@ describe('Reset', () => {
     ).toBe('');
 
     expect(spy).toHaveBeenCalledTimes(1);
+
+    expect(errorSpy).toHaveBeenCalledTimes(1);
   });
 });
