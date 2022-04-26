@@ -1,3 +1,19 @@
+# [2.6.0](https://github.com/jquense/react-formal/compare/v2.5.0...v2.6.0) (2022-04-26)
+
+
+### Bug Fixes
+
+* root path validations ([7ef990d](https://github.com/jquense/react-formal/commit/7ef990d7e1cfead52101305a5f49b143629a51d1))
+
+
+### Features
+
+* reset errors on Reset as well as value ([f148ddf](https://github.com/jquense/react-formal/commit/f148ddf974c85eb457c03d936a500b4d94cb728c))
+
+
+
+
+
 # [2.5.0](https://github.com/jquense/react-formal/compare/v2.4.1...v2.5.0) (2022-03-14)
 
 
