@@ -101,10 +101,12 @@ function validatePath(
   { path }: ValidationPathSpec,
   { value, schema, ...rest },
 ): Promise<Error | void> {
-  return schema
-    .validateAt(path, value, rest)
-    .then(() => null)
-    .catch((err) => err);
+  const validation =
+    path === '' || path === '.'
+      ? schema.validate(value, rest)
+      : schema.validateAt(path, value, rest);
+
+  return validation.then(() => null).catch((err) => err);
 }
 
 const EMPTY_TOUCHED = {};
