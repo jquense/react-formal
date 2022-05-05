@@ -112,7 +112,8 @@ function validatePath(
 const EMPTY_TOUCHED = {};
 
 export interface FormHandle {
-  submit: () => Promise<false | void>;
+  /** manually submit a Form, returns a boolean indicating if the submission was successful */
+  submit: () => Promise<boolean>;
   validate(fields: string[]): void;
 }
 
@@ -322,6 +323,7 @@ const _Form: Form = React.forwardRef(
             submitAttempts: s.submitAttempts + 1,
           }));
           notify(onSubmitFinished);
+          return true;
         },
         (err) => {
           setSubmitting(false);
@@ -347,6 +349,7 @@ const _Form: Form = React.forwardRef(
       setSubmitting(false);
 
       notify(onSubmitFinished, [err]);
+      return false;
     };
 
     const clearPendingValidations = () => {
@@ -375,7 +378,7 @@ const _Form: Form = React.forwardRef(
       resetTimeout.set(() => setResets((prevResets) => (prevResets += 1)));
     };
 
-    const submit = (): Promise<false | void> => {
+    const submit = (): Promise<boolean> => {
       if (isSubmittingRef.current) {
         return Promise.resolve(false);
       }
