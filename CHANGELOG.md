@@ -1,3 +1,14 @@
+# [2.7.0](https://github.com/jquense/react-formal/compare/v2.6.0...v2.7.0) (2022-05-05)
+
+
+### Features
+
+* return true/false from submit ([ebce1d8](https://github.com/jquense/react-formal/commit/ebce1d89f33fa820d917d3a904fa5d7a6ecea2aa))
+
+
+
+
+
 # [2.6.0](https://github.com/jquense/react-formal/compare/v2.5.0...v2.6.0) (2022-04-26)
 
 
