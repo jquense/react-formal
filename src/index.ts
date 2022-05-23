@@ -9,6 +9,7 @@ import Summary from './Summary';
 import config from './config';
 import useField, { ValidateStrategies, splitFieldProps } from './useField';
 import useFormValues from './useFormValues';
+import useForm from './useForm';
 import useFieldArray from './useFieldArray';
 import errToJSON from './utils/errToJSON';
 import useFormSubmit from './useFormSubmit';
@@ -76,6 +77,7 @@ export {
   useFormSubmit,
   useFormReset,
   useFormValues,
+  useForm,
   useErrors,
   useTouched,
   splitFieldProps,
