@@ -31,6 +31,7 @@ export function formSetter<TValue extends BindingValue>(
 
 type BindingContextValue = {
   getValue<T>(path: Mapper<T> | keyof T): T;
+  getSchemaForPath: (path: string) => any;
   updateBindingValue<T>(path: MapToValue<T>, args: any[]): void;
   updateFormValue: (nextFormValue: any) => void;
   formValue: any;
@@ -198,6 +199,7 @@ function useFormBindingContext<TValue extends BindingValue>({
     () => ({
       getValue,
       updateBindingValue,
+      getSchemaForPath: getSchemaForPath as (path: string) => any,
       updateFormValue: (nextFormValue: TValue) => {
         setPendingChange(() => {
           pendingChangeRef.current = true;
@@ -206,7 +208,13 @@ function useFormBindingContext<TValue extends BindingValue>({
       },
       formValue,
     }),
-    [getValue, updateBindingValue, setPendingChange, formValue],
+    [
+      getValue,
+      updateBindingValue,
+      setPendingChange,
+      getSchemaForPath,
+      formValue,
+    ],
   );
 }
 

@@ -9,6 +9,7 @@ import { toArray } from './utils/paths';
 import notify from './utils/notify';
 import useErrors from './useErrors';
 import { ValidationPathSpec } from './errorManager';
+import useFieldSchema from './useFieldSchema';
 
 export function splitFieldProps<
   TProps extends UseFieldOptions = UseFieldOptions,
@@ -171,10 +172,7 @@ export function useFieldMeta(opts: UseFieldMetaOptions) {
   let handleFieldError = (errors: Errors) =>
     actions!.onFieldError(name, errors);
 
-  let schema: AnySchema | undefined;
-  try {
-    if (name) schema = actions!.getSchemaForPath(name)
-  } catch (err) { /* ignore */ } // prettier-ignore
+  const schema = useFieldSchema(name);
 
   if (process.env.NODE_ENV !== 'production') {
     const shouldWarn =

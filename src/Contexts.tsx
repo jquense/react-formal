@@ -1,11 +1,9 @@
 import React from 'react';
-import type { AnySchema } from 'yup';
 import { Errors } from './types';
 import { EMPTY_ERRORS } from './Errors';
 import { ValidationPathSpec } from './errorManager';
 
 export interface FormActions {
-  getSchemaForPath: (name?: string) => AnySchema | undefined;
   yupContext: any;
   onSubmit: () => void;
   onReset: () => void;
@@ -75,5 +73,5 @@ export const useFormContext = (observedBits: number) => {
       'Hooks can only be called inside the body of a function component. (https://fb.me/react-invalid-hook-call)',
     );
   }
-  return dispatcher.useContext(FormContext, observedBits);
+  return dispatcher.useContext(FormContext, observedBits) as FormContextValue;
 };

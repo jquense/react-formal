@@ -7,6 +7,7 @@ import React, {
   useRef,
   Fragment,
   useState,
+  useCallback,
 } from 'react';
 import shallowequal from 'shallowequal';
 import useFormBindingContext, {
@@ -208,9 +209,10 @@ const _Form: Form = React.forwardRef(
       if (nextTouched !== touched) onTouch(nextTouched!, paths);
     });
 
-    const getSchemaForPath = useEventCallback(
+    const getSchemaForPath = useCallback(
       (path, currentValue = value) =>
         schema && path && reach(schema, path, currentValue, context),
+      [value, schema, context],
     );
 
     const formValueContext = useFormBindingContext({
@@ -411,7 +413,6 @@ const _Form: Form = React.forwardRef(
     }));
 
     const actions = Object.assign(useRef({}).current, {
-      getSchemaForPath,
       yupContext: context,
       onSubmit: handleSubmit,
       onReset: handleReset,
