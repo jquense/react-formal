@@ -1,3 +1,15 @@
+## [2.7.1](https://github.com/jquense/react-formal/compare/v2.7.0...v2.7.1) (2023-07-11)
+
+
+### Bug Fixes
+
+* export useForm ([#184](https://github.com/jquense/react-formal/issues/184)) ([e3c1f53](https://github.com/jquense/react-formal/commit/e3c1f539bab1485d8d53e25cb247074945fc8c5e))
+* react 18 array helpers complaining about missing schema ([95518ba](https://github.com/jquense/react-formal/commit/95518ba51559a11010997b6c927d4f647852309f))
+
+
+
+
+
 # [2.7.0](https://github.com/jquense/react-formal/compare/v2.6.0...v2.7.0) (2022-05-05)
 
 
