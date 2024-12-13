@@ -1,4 +1,5 @@
-import uniq from 'lodash/uniq';
+/* eslint-disable @typescript-eslint/no-shadow */
+
 import prop from 'property-expr';
 
 export const toArray = <T>(arr?: T | T[] | null): T[] => {
@@ -26,14 +27,14 @@ export function inPath(basePath: string, childPath: string) {
 }
 
 export function reduce(paths: string[]) {
-  paths = uniq(toArray(paths));
+  paths = Array.from(new Set(toArray(paths)));
 
   if (paths.length <= 1) return paths;
 
   return paths.reduce<string[]>((paths, current) => {
-    paths = paths.filter(p => !inPath(current, p));
+    paths = paths.filter((p) => !inPath(current, p));
 
-    if (!paths.some(p => inPath(p, current))) paths.push(current);
+    if (!paths.some((p) => inPath(p, current))) paths.push(current);
 
     return paths;
   }, []);
@@ -45,13 +46,13 @@ export function trim(
   exact = false,
 ) {
   let workDone = false;
-  let result = {};
+  let result: Record<string, any> = {};
 
   let matches = exact
     ? (p: string) => p === rootPath
     : (p: string) => inPath(rootPath, p);
 
-  Object.keys(pathHash).forEach(path => {
+  Object.keys(pathHash).forEach((path) => {
     if (matches(path)) {
       return (workDone = true);
     }

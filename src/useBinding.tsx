@@ -1,5 +1,5 @@
 import { SyntheticEvent, useCallback } from 'react';
-import { Mapper, useBindingContext } from './BindingContext';
+import { Mapper, useBindingContext } from './BindingContext.js';
 
 export type MapToValue<TValue, TIn = any> =
   | Mapper<TValue, TIn>
@@ -34,7 +34,7 @@ function useBinding<TValue, TIn = any>(
   const value = getValue(bindTo);
 
   const handleEvent = useCallback(
-    (...args) => {
+    (...args: any[]) => {
       let mapper = mapValue;
       if (typeof bindTo === 'string' && typeof mapValue !== 'object') {
         mapper = { [bindTo]: mapValue } as any;
@@ -47,7 +47,7 @@ function useBinding<TValue, TIn = any>(
     [bindTo, mapValue, updateBindingValue],
   );
 
-  return [value, handleEvent];
+  return [value, handleEvent] as const;
 }
 
 export default useBinding;

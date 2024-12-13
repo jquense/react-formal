@@ -1,17 +1,17 @@
 A utility hook for reading (and subscribing) to a piece of form data.
 
 ```jsx
-import Form, { useFormValues } from "react-formal";
+import { Form, useFormValues } from 'react-formal';
 
 const FirstName = () => {
-  const name = useFormValues("name.first");
+  const name = useFormValues('name.first');
 
   return <strong>{name}</strong>;
 };
 
 <Form
   defaultValue={{
-    name: { first: "Sally" }
+    name: { first: 'Sally' },
   }}
 >
   <label>
@@ -25,10 +25,10 @@ const FirstName = () => {
 You can also subscribe to multiple paths at once by providing an array of paths.
 
 ```jsx
-import Form, { useFormValues } from "react-formal";
+import { Form, useFormValues } from 'react-formal';
 
 const Names = () => {
-  const [first, last] = useFormValues(["firstName", "lastName"]);
+  const [first, last] = useFormValues(['firstName', 'lastName']);
 
   return (
     <strong>
@@ -39,8 +39,8 @@ const Names = () => {
 
 <Form
   defaultValue={{
-    firstName: "Sally",
-    lastName: "Smith"
+    firstName: 'Sally',
+    lastName: 'Smith',
   }}
 >
   <label>

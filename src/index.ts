@@ -1,43 +1,41 @@
 import { AnyObjectSchema, InferType, ValidationError } from 'yup';
-import Field, { useMergedEventHandlers } from './Field';
-import FieldArray from './FieldArray';
-import FormComponent, { getter, setter } from './Form';
-import Submit from './Submit';
-import Message from './Message';
-import NestedForm from './NestedForm';
-import Summary from './Summary';
-import config from './config';
-import useField, { ValidateStrategies, splitFieldProps } from './useField';
-import useFormValues from './useFormValues';
-import useForm from './useForm';
-import useFieldArray from './useFieldArray';
-import errToJSON from './utils/errToJSON';
-import useFormSubmit from './useFormSubmit';
-import useErrors from './useErrors';
-import useTouched from './useTouched';
-import Reset from './Reset';
-import useFormReset from './useFormReset';
+import Field, { useMergedEventHandlers } from './Field.js';
+import FieldArray from './FieldArray.js';
+import FormComponent, { getter, setter } from './Form.js';
+import Submit from './Submit.js';
+import Message from './Message.js';
+import NestedForm from './NestedForm.js';
+import Summary from './Summary.js';
+import config from './config.js';
+import useField, { ValidateStrategies, splitFieldProps } from './useField.js';
+import useFormValues from './useFormValues.js';
+import useForm from './useForm.js';
+import useFieldArray from './useFieldArray.js';
+import errToJSON from './utils/errToJSON.js';
+import useFormSubmit from './useFormSubmit.js';
+import useErrors from './useErrors.js';
+import useTouched from './useTouched.js';
+import Reset from './Reset.js';
+import useFormReset from './useFormReset.js';
 
-export type Form = typeof FormComponent;
-
-export type FieldArrayHelpers = import('./useFieldArray').FieldArrayHelpers;
-export type FieldArrayMeta = import('./useFieldArray').FieldArrayMeta;
+export type FieldArrayHelpers = import('./useFieldArray.js').FieldArrayHelpers;
+export type FieldArrayMeta = import('./useFieldArray.js').FieldArrayMeta;
 export type UseFieldArrayOptions =
-  import('./useFieldArray').UseFieldArrayOptions;
+  import('./useFieldArray.js').UseFieldArrayOptions;
 
-export type FieldMeta = import('./useField').FieldMeta;
-export type UseFieldProps = import('./useField').UseFieldProps;
-export type UseFieldOptions = import('./useField').UseFieldOptions;
+export type FieldMeta = import('./useField.js').FieldMeta;
+export type UseFieldProps = import('./useField.js').UseFieldProps;
+export type UseFieldOptions = import('./useField.js').UseFieldOptions;
 
-export type JsonError = import('./utils/errToJSON').JsonError;
-export type FieldProps = import('./Field').FieldProps;
-export type FieldRenderProps = import('./Field').FieldRenderProps;
-export type FieldInjectedProps = import('./Field').FieldInjectedProps;
-export type MessageProps = import('./Message').MessageProps;
+export type JsonError = import('./utils/errToJSON.js').JsonError;
+export type FieldProps = import('./Field.js').FieldProps;
+export type FieldRenderProps = import('./Field.js').FieldRenderProps;
+export type FieldInjectedProps = import('./Field.js').FieldInjectedProps;
+export type MessageProps = import('./Message.js').MessageProps;
 export type FormProps<
   TSchema extends AnyObjectSchema,
   TValue = InferType<TSchema>,
-> = import('./Form').FormProps<TSchema, TValue>;
+> = import('./Form.js').FormProps<TSchema, TValue>;
 
 export interface FormStatics {
   Field: typeof Field;
@@ -59,17 +57,23 @@ const toFormErrors = (err: ValidationError) => {
   return errToJSON(err);
 };
 
-const formStatics: FormStatics = {
+const Form = Object.assign(FormComponent, {
   Field,
   FieldArray,
   Message,
   Submit,
   Reset,
   Summary,
-};
+});
 
 export {
-  formStatics,
+  Form,
+  Field,
+  FieldArray,
+  Message,
+  Submit,
+  Reset,
+  Summary,
   NestedForm,
   useField,
   useMergedEventHandlers,
@@ -87,7 +91,3 @@ export {
   getter,
   setter,
 };
-
-export type ReactFormal = typeof FormComponent & FormStatics;
-
-export default Object.assign(FormComponent, formStatics) as ReactFormal;

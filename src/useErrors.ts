@@ -1,13 +1,14 @@
 import { useMemo } from 'react';
-import { BITS, useFormContext } from './Contexts';
-import memoize from 'memoize-one';
+import { useFormErrors } from './Contexts.js';
+import memoize from './utils/memoize-one.js';
+// @ts-expect-error
 import shallowequal from 'shallowequal';
-import { filterAndMapErrors, inclusiveMapErrors } from './Errors';
-import { Errors } from './types';
+import { filterAndMapErrors, inclusiveMapErrors } from './Errors.js';
+import { Errors } from './types.js';
 
 type UseErrorOptions = { inclusive?: boolean };
 
-function isFilterErrorsEqual([a], [b]) {
+function isFilterErrorsEqual([a]: any[], [b]: any[]) {
   let isEqual =
     (a.errors === b.errors || shallowequal(a.errors, b.errors)) &&
     a.names === b.names &&
@@ -30,7 +31,7 @@ function useErrors(
   paths?: string | string[],
   { inclusive }: UseErrorOptions = {},
 ): Errors {
-  const errors = useFormContext(BITS.errors).errors;
+  const errors = useFormErrors();
   const memoFilterAndMapErrors = useMemo(
     () => memoize(filterAndMapErrors, isFilterErrorsEqual),
     [],

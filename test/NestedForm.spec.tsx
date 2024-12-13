@@ -1,8 +1,9 @@
-import { mount } from 'enzyme';
 import React from 'react';
 import * as yup from 'yup';
-import Form from '../src';
+import { Form } from '../src';
 import NestedForm from '../src/NestedForm';
+import { describe, it, vi, expect } from 'vitest';
+import { fireEvent, render } from '@testing-library/react';
 
 describe('NestedForm', () => {
   let schema = yup.object({
@@ -14,10 +15,14 @@ describe('NestedForm', () => {
 
   it('should work', () => {
     let value, last;
-    let change = jest.fn(v => (value = v));
+    let change = vi.fn((v) => (value = v));
 
-    let wrapper = mount(
-      <Form schema={schema} defaultValue={schema.default()} onChange={change}>
+    let { getAllByRole } = render(
+      <Form
+        schema={schema}
+        defaultValue={schema.getDefault()}
+        onChange={change}
+      >
         <div>
           <NestedForm as="div" name="name">
             <Form.Field name="first" className="field" />
@@ -27,10 +32,9 @@ describe('NestedForm', () => {
       </Form>,
     );
 
-    wrapper
-      .find('.field')
-      .first()
-      .simulate('change', { target: { value: 'Jill' } });
+    const [firstInput, lastInput] = getAllByRole('textbox');
+
+    fireEvent.change(firstInput, { target: { value: 'Jill' } });
 
     expect(change).toHaveBeenCalledTimes(1);
 
@@ -42,11 +46,7 @@ describe('NestedForm', () => {
     });
 
     last = value;
-
-    wrapper
-      .find('.field')
-      .last()
-      .simulate('change', { target: { value: 'Smith' } });
+    fireEvent.change(lastInput, { target: { value: 'Smith' } });
 
     expect(value).toEqual({
       name: {

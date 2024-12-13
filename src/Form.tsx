@@ -6,30 +6,31 @@ import React, {
   useMemo,
   useRef,
   Fragment,
-  useState,
   useCallback,
 } from 'react';
+// @ts-expect-error
 import shallowequal from 'shallowequal';
 import useFormBindingContext, {
   BindingContext,
   formGetter,
   formSetter,
-} from './BindingContext';
+} from './BindingContext.js';
 import { useUncontrolledProp } from 'uncontrollable';
 import { reach, isSchema, AnyObjectSchema, InferType } from 'yup';
 import useEventCallback from '@restart/hooks/useEventCallback';
 import useMergeState from '@restart/hooks/useMergeState';
 import useMounted from '@restart/hooks/useMounted';
 import useTimeout from '@restart/hooks/useTimeout';
-import { FormContext } from './Contexts';
+import { FormProvider } from './Contexts.js';
 import createErrorManager, {
+  ValidationPaths,
   isValidationError,
   ValidationPathSpec,
-} from './errorManager';
-import { BeforeSubmitData, Errors, Touched, ValidateData } from './types';
-import * as ErrorUtils from './Errors';
-import errToJSON from './utils/errToJSON';
-import notify from './utils/notify';
+} from './errorManager.js';
+import { BeforeSubmitData, Errors, Touched, ValidateData } from './types.js';
+import * as ErrorUtils from './Errors.js';
+import errToJSON from './utils/errToJSON.js';
+import notify from './utils/notify.js';
 
 export interface FormProps<
   TSchema extends AnyObjectSchema,
@@ -61,8 +62,8 @@ export interface FormProps<
   onReset?: () => void;
 
   submitForm?: (input: TValue) => Promise<any> | any;
-  getter?: (path: string, value: TValue) => any;
-  setter?: (path: string, value: TValue, fieldValue: any) => TValue;
+  getter?: (path: string, value: TValue | undefined) => any;
+  setter?: (path: string, value: TValue | undefined, fieldValue: any) => TValue;
   context?: Record<string, unknown>;
 
   delay?: number;
@@ -100,14 +101,14 @@ function useErrorContext(errors?: Errors) {
 
 function validatePath(
   { path }: ValidationPathSpec,
-  { value, schema, ...rest },
+  { value, schema, ...rest }: any,
 ): Promise<Error | void> {
   const validation =
     path === '' || path === '.'
       ? schema.validate(value, rest)
       : schema.validateAt(path, value, rest);
 
-  return validation.then(() => null).catch((err) => err);
+  return validation.then(() => null).catch((err: any) => err);
 }
 
 const EMPTY_TOUCHED = {};
@@ -121,7 +122,7 @@ export interface FormHandle {
 export declare interface Form {
   <T extends AnyObjectSchema, TValue = Record<string, any>>(
     props: FormProps<T, TValue> & React.RefAttributes<FormHandle>,
-  ): React.ReactElement | null;
+  ): React.ReactNode | null;
 
   displayName?: string;
   propTypes?: any;
@@ -192,11 +193,12 @@ const _Form: Form = React.forwardRef(
     const resetTimeout = useTimeout();
     const isMounted = useMounted();
 
-    const queueRef = useRef<string[]>([]);
+    const queueRef = useRef<ValidationPaths>([]);
+    const flushIsPendingRef = useRef(false);
 
     const errorManager = useMemo(() => createErrorManager(validatePath), []);
 
-    const handleChange = useEventCallback((model, paths) => {
+    const handleChange = useEventCallback((model, paths: string[]) => {
       let nextTouched = touched;
 
       onChange(model, paths);
@@ -210,7 +212,7 @@ const _Form: Form = React.forwardRef(
     });
 
     const getSchemaForPath = useCallback(
-      (path, currentValue = value) =>
+      (path: string, currentValue = value) =>
         schema && path && reach(schema, path, currentValue, context),
       [value, schema, context],
     );
@@ -235,10 +237,10 @@ const _Form: Form = React.forwardRef(
       submitCount: 0,
       submitAttempts: 0,
       submitting: false,
+      resets: 0,
     }));
-    const [resets, setResets] = useState(0);
 
-    function setSubmitting(submitting) {
+    function setSubmitting(submitting: boolean) {
       if (!isMounted()) return;
 
       isSubmittingRef.current = submitting;
@@ -262,7 +264,10 @@ const _Form: Form = React.forwardRef(
     }, [schema]);
 
     const flush = () => {
+      flushIsPendingRef.current = true;
+
       flushTimeout.set(() => {
+        flushIsPendingRef.current = false;
         let fields = queueRef.current;
 
         if (!fields.length) return;
@@ -286,21 +291,29 @@ const _Form: Form = React.forwardRef(
     };
 
     useEffect(() => {
-      flush();
+      if (!flushIsPendingRef.current) {
+        flush();
+      }
     });
 
-    function enqueue(fields: string[]) {
+    function enqueue(fields: ValidationPaths) {
       queueRef.current.push(...fields);
     }
 
     const handleValidationRequest = (
-      fields: string[],
+      fields: ValidationPaths,
       type: string,
       args?: any[],
     ) => {
       if (!shouldValidate) return;
 
-      notify(onValidate, [{ type, fields, args }]);
+      notify(onValidate, [
+        {
+          type,
+          fields: fields.map((f) => (typeof f === 'string' ? f : f.path)),
+          args,
+        },
+      ]);
       enqueue(fields);
       if (type !== 'onChange') flush();
     };
@@ -377,7 +390,12 @@ const _Form: Form = React.forwardRef(
 
       onChange(defaultValue || {}, []);
       onError(defaultErrors || ErrorUtils.EMPTY_ERRORS);
-      resetTimeout.set(() => setResets((prevResets) => (prevResets += 1)));
+      resetTimeout.set(() =>
+        setSubmitState((prev) => ({
+          ...prev,
+          resets: prev.resets + 1,
+        })),
+      );
     };
 
     const submit = (): Promise<boolean> => {
@@ -427,9 +445,8 @@ const _Form: Form = React.forwardRef(
         actions,
         errors: errorContext!,
         submits,
-        resets,
       }),
-      [touched, actions, errorContext, submits, resets],
+      [touched, actions, errorContext, submits],
     );
 
     if (Element === 'form') {
@@ -451,7 +468,7 @@ const _Form: Form = React.forwardRef(
 
     return (
       <BindingContext.Provider value={formValueContext}>
-        <FormContext.Provider value={contextValue}>
+        <FormProvider value={contextValue}>
           {Element == null || Element === false ? (
             React.cloneElement(
               React.Children.only(children as React.ReactElement),
@@ -460,13 +477,17 @@ const _Form: Form = React.forwardRef(
           ) : (
             <Element {...elementProps}>{children}</Element>
           )}
-        </FormContext.Provider>
+        </FormProvider>
       </BindingContext.Provider>
     );
   },
 );
 
-function maybeWarn(debug, errors, target) {
+function maybeWarn(
+  debug: boolean | undefined,
+  errors: Errors | undefined,
+  target?: string,
+) {
   if (!debug) return;
 
   if (process.env.NODE_ENV !== 'production') {
@@ -689,7 +710,7 @@ _Form.propTypes = {
    * For more information about the yup api check out: https://github.com/jquense/yup/blob/master/README.md
    * @type {Schema}
    */
-  schema(props, name, componentName) {
+  schema(props: any, name: any, componentName: any) {
     let err: null | Error = null;
 
     if (props[name]) {

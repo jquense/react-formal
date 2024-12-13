@@ -1,10 +1,9 @@
-import { mount } from 'enzyme';
 import React, { useImperativeHandle } from 'react';
-import { act } from 'react-dom/test-utils';
 import { array, object, string } from 'yup';
-import Form, { useFieldArray } from '../src';
+import { describe, it, vi, expect } from 'vitest';
+import { act, fireEvent, render } from '@testing-library/react';
 
-const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+import { Form, useFieldArray } from '../src';
 
 describe('FieldArray', () => {
   let schema = object({
@@ -18,7 +17,7 @@ describe('FieldArray', () => {
       .default(() => [{ name: 'red', hexCode: '#ff0000' }]),
   });
 
-  const ColorList = React.forwardRef(({ name }, ref) => {
+  const ColorList = React.forwardRef(({ name }: any, ref) => {
     const [values, arrayHelpers] = useFieldArray(name);
 
     useImperativeHandle(
@@ -44,10 +43,10 @@ describe('FieldArray', () => {
   });
 
   it('should render forms correctly', () => {
-    mount(
+    const { getAllByRole } = render(
       <Form
         schema={schema}
-        defaultValue={schema.default()}
+        defaultValue={schema.getDefault()}
         defaultErrors={{ 'colors[0].name': 'foo' }}
       >
         <Form.FieldArray name="colors">
@@ -66,17 +65,19 @@ describe('FieldArray', () => {
           )}
         </Form.FieldArray>
       </Form>,
-    ).assertSingle('input.invalid');
+    );
+
+    expect(getAllByRole('textbox')[0].className).toEqual(' invalid');
   });
 
   it('should update the form value correctly', async () => {
     let value, last;
-    let changeSpy = jest.fn((v) => (value = v));
+    let changeSpy = vi.fn((v) => (value = v));
 
-    let wrapper = mount(
+    const { getAllByRole } = render(
       <Form
         schema={schema}
-        defaultValue={schema.default()}
+        defaultValue={schema.getDefault()}
         onChange={changeSpy}
         defaultErrors={{ 'colors[0].name': 'foo' }}
       >
@@ -98,14 +99,9 @@ describe('FieldArray', () => {
       </Form>,
     );
 
-    await act(() => {
-      wrapper
-        .find('.field')
-        .first()
-        .simulate('change', { target: { value: 'beige' } });
+    let inputs = getAllByRole('textbox');
 
-      return wait();
-    });
+    fireEvent.change(inputs[0], { target: { value: 'beige' } });
 
     expect(changeSpy).toHaveBeenCalledTimes(1);
 
@@ -119,13 +115,9 @@ describe('FieldArray', () => {
     });
 
     last = value;
-    await act(() => {
-      wrapper
-        .find('.field2')
-        .last()
-        .simulate('change', { target: { value: 'LULZ' } });
-      return wait();
-    });
+
+    fireEvent.change(inputs[1], { target: { value: 'LULZ' } });
+
     expect(value).toEqual({
       colors: [
         {
@@ -140,15 +132,15 @@ describe('FieldArray', () => {
 
   it('should handle removing array items', async () => {
     let value;
-    let changeSpy = jest.fn((v) => (value = v));
+    let changeSpy = vi.fn((v) => (value = v));
     let defaultValue = {
       colors: [
         { name: 'red', hexCode: '#ff0000' },
         { name: 'other red', hexCode: '#ff0000' },
       ],
     };
-    let ref = React.createRef();
-    let wrapper = mount(
+    let ref = React.createRef<any>();
+    let { getByRole } = render(
       <Form
         schema={schema}
         onChange={changeSpy}
@@ -159,14 +151,12 @@ describe('FieldArray', () => {
       </Form>,
     );
 
-    let list = wrapper.find('ul');
+    let list = getByRole('list');
 
-    expect(list.find('li')).toHaveLength(2);
+    expect(list.children).toHaveLength(2);
 
-    await act(() => {
+    act(() => {
       ref.current.remove(1);
-
-      return wait();
     });
 
     expect(value).toEqual({
@@ -181,17 +171,17 @@ describe('FieldArray', () => {
 
   it('should shift errors for removed fields', async () => {
     let value, errors;
-    let errorSpy = jest.fn((v) => (errors = v));
-    let changeSpy = jest.fn((v) => (value = v));
+    let errorSpy = vi.fn((v) => (errors = v));
+    let changeSpy = vi.fn((v) => (value = v));
     let defaultValue = {
       colors: [
         { name: '', hexCode: '#ff0000' },
         { name: 'other red', hexCode: '#ff0000' },
       ],
     };
-    const ref = React.createRef();
-    const ref2 = React.createRef();
-    let wrapper = mount(
+    const ref = React.createRef<any>();
+    const ref2 = React.createRef<any>();
+    let { getByRole } = render(
       <div>
         <Form
           ref={ref}
@@ -205,17 +195,18 @@ describe('FieldArray', () => {
       </div>,
     );
 
-    expect(wrapper.find('ul > li')).toHaveLength(2);
+    let list = getByRole('list');
+
+    expect(list.children).toHaveLength(2);
 
     await act(() => ref.current.submit());
 
     // First color has an error
     expect(errors['colors[0].name']).toBeDefined();
 
-    await act(() => {
+    act(() => {
       // remove the first color
       ref2.current.remove(0);
-      return wait();
     });
     // The error for the first color should be gone
     expect(errorSpy).toHaveBeenCalledTimes(2);

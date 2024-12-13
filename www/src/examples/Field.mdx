@@ -10,12 +10,12 @@ Providing values and onChange handlers is taken take care of, as well as basic
 value coalescing for multiple selects and checkbox groups.
 
 ```jsx
-import Form from "@docs/components/FormWithResult";
+import Form from '@docs/components/FormWithResult';
 
 <Form
   defaultValue={{
-    name: { first: "Sally" },
-    colors: ["red"]
+    name: { first: 'Sally' },
+    colors: ['red'],
   }}
 >
   <label>
@@ -44,9 +44,9 @@ Create a unified set of checkbox/radio input's that map to a single form field
 by using multiple `<Field>`s with the same `name`.
 
 ```jsx
-import Form from "@docs/components/FormWithResult";
+import Form from '@docs/components/FormWithResult';
 
-<Form defaultValue={{ color: "red" }}>
+<Form defaultValue={{ color: 'red' }}>
   <fieldset>
     <legend>Favorite Color</legend>
     <label>
@@ -70,11 +70,11 @@ insert or remove items if the current field value is an `array` or, absent a
 value, the schema for the field is a `yup.array()`.
 
 ```jsx
-import Form from "@docs/components/FormWithResult";
+import Form from '@docs/components/FormWithResult';
 
 <Form
   defaultValue={{
-    colors: ["red"]
+    colors: ['red'],
   }}
 >
   <fieldset>
@@ -86,11 +86,11 @@ import Form from "@docs/components/FormWithResult";
       <Form.Field type="checkbox" name="colors" value="blue" /> Blue
     </label>
     <label>
-      <Form.Field type="checkbox" name="colors" value="yellow" />{" "}
+      <Form.Field type="checkbox" name="colors" value="yellow" />{' '}
       Yellow
     </label>
     <label>
-      <Form.Field type="checkbox" name="colors" value="orange" />{" "}
+      <Form.Field type="checkbox" name="colors" value="orange" />{' '}
       Orange
     </label>
   </fieldset>
@@ -104,17 +104,17 @@ type to `as`. The only required interface a component needs to respect is the
 `value`/`onChange` pattern for controlled fields.
 
 ```jsx previewClassName=reset
-import Form from "../components/FormWithResult";
+import Form from '../components/FormWithResult';
 
-import DropdownList from "react-widgets/lib/DropdownList";
+import DropdownList from 'react-widgets/lib/DropdownList';
 
-<Form defaultValue={{ color: "red" }}>
+<Form defaultValue={{ color: 'red' }}>
   <label>
     Favorite Colors
     <Form.Field
       name="color"
       as={DropdownList}
-      data={["Red", "Yellow", "Blue", "Other"]}
+      data={['Red', 'Yellow', 'Blue', 'Other']}
     />
   </label>
 </Form>;
@@ -124,17 +124,17 @@ For a better typed experience with TypeScript, consider using the
 [render prop API instead](#children).
 
 ```jsx static
-import Form from "../components/FormWithResult";
+import Form from '../components/FormWithResult';
 
-import DropdownList from "react-widgets/lib/DropdownList";
+import DropdownList from 'react-widgets/lib/DropdownList';
 
-<Form defaultValue={{ color: "red" }}>
+<Form defaultValue={{ color: 'red' }}>
   <label>
     Favorite Colors
     <Form.Field name="color">
-      {props => (
+      {(props) => (
         <DropdownList
-          data={["Red", "Yellow", "Blue", "Other"]}
+          data={['Red', 'Yellow', 'Blue', 'Other']}
           {...props}
         />
       )}
@@ -186,14 +186,11 @@ Events control which handlers `<Field>` passes to the input it renders. Multiple
 can be configured using an object configuration.
 
 ```tsx
-import * as yup from "yup";
-import Form from "react-formal";
+import * as yup from 'yup';
+import { Form } from 'react-formal';
 
 const schema = yup.object({
-  name: yup
-    .string()
-    .required()
-    .min(4)
+  name: yup.string().required().min(4),
 });
 
 <>
@@ -221,20 +218,20 @@ For more complex situations `validateOn` accepts a function that is based the `m
 and can conditionally return events based on context.
 
 ```tsx
-import * as yup from "yup";
-import Form from "react-formal";
+import * as yup from 'yup';
+import { Form } from 'react-formal';
 
 const schema = yup.object({
   email: yup
     .string()
-    .email("Emails must contain an @ and a domain")
-    .required("Required")
+    .email('Emails must contain an @ and a domain')
+    .required('Required'),
 });
 
 // Only run validation onChange when the form is invalid
-const onBlurThenChangeAndBlur = meta => ({
+const onBlurThenChangeAndBlur = (meta) => ({
   change: !meta.valid,
-  blur: true
+  blur: true,
 });
 
 <Form schema={schema}>
@@ -252,14 +249,10 @@ As a convenience React Formal exports a few common trigger configurations
 you can mix and match if that is helpful.
 
 ```jsx static
-import { ValidateStrategies } from "react-formal";
+import { ValidateStrategies } from 'react-formal';
 
-const {
-  Change,
-  Blur,
-  ChangeAndBlur,
-  BlurThenChangeAndBlur
-} = ValidateStrategies;
+const { Change, Blur, ChangeAndBlur, BlurThenChangeAndBlur } =
+  ValidateStrategies;
 
 <Form schema={schema}>
   <label>

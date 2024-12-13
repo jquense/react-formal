@@ -1,4 +1,5 @@
 import * as Utils from '../src/Errors';
+import { describe, it, expect } from 'vitest';
 
 describe('PATH utils', () => {
   describe('shift', () => {

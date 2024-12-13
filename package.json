@@ -2,9 +2,6 @@
   "name": "react-formal",
   "version": "2.7.1",
   "description": "Classy HTML form management for React",
-  "main": "lib/cjs/index.cjs",
-  "types": "lib/cjs/index.d.ts",
-  "module": "lib/esm/index.js",
   "author": {
     "name": "Jason Quense",
     "email": "monastic.panic@gmail.com"
@@ -18,8 +15,23 @@
   "sideEffects": false,
   "files": [
     "lib",
-    "es"
+    "cjs",
+    "CHANGELOG.md"
   ],
+  "type": "module",
+  "exports": {
+    "./package.json": "./package.json",
+    ".": {
+      "require": {
+        "types": "./cjs/index.d.ts",
+        "default": "./cjs/index.js"
+      },
+      "import": {
+        "types": "./lib/index.d.ts",
+        "default": "./lib/index.js"
+      }
+    }
+  },
   "keywords": [
     "react-formal",
     "react",
@@ -32,24 +44,18 @@
     "react-component",
     "yup"
   ],
-  "jest": {
-    "testEnvironment": "jsdom",
-    "roots": [
-      "<rootDir>/test"
-    ],
-    "setupFilesAfterEnv": [
-      "./test/index.js"
-    ]
-  },
   "scripts": {
-    "test": "jest",
-    "tdd": "jest --watch",
+    "test": "vitest run",
+    "tdd": "vitest",
     "lint": "eslint src",
     "docs": "yarn --cwd www start",
     "docs:deploy": "yarn --cwd www deploy",
-    "build:pick": "cherry-pick --cwd=lib --input-dir=../src --cjs-dir=cjs --esm-dir=esm",
-    "build": "rimraf lib && 4c build src && yarn build:pick",
-    "prepublishOnly": "npm run build",
+    "build:esm": "babel src --out-dir lib --delete-dir-on-start --extensions '.ts,.tsx' --ignore='**/*.d.ts'",
+    "build:esm:types": "tsc -p . --emitDeclarationOnly --declaration --outDir lib",
+    "build:cjs": "babel src --out-dir cjs --env-name cjs --delete-dir-on-start --extensions '.ts,.tsx'  --ignore='**/*.d.ts' && echo '{\"type\": \"commonjs\"}' > cjs/package.json",
+    "build:cjs:types": "tsc -p . --emitDeclarationOnly --declaration --outDir cjs",
+    "build": "yarn build:esm && yarn build:esm:types && yarn build:cjs && yarn build:cjs:types",
+    "prepare": "npm run build",
     "deploy-docs": "yarn --cwd www build --prefix-paths && gh-pages -d www/public",
     "release": "rollout"
   },
@@ -62,38 +68,36 @@
     "access": "public"
   },
   "release": {
-    "conventionalCommits": true,
-    "publishDir": "lib"
+    "conventionalCommits": true
   },
   "peerDependencies": {
-    "react": ">=16.4.0"
+    "react": ">=18.0.0"
   },
   "dependencies": {
-    "@restart/hooks": "^0.4.1",
-    "@types/lodash": "^4.14.177",
-    "@types/react": ">=17.0.37",
-    "lodash": "^4.17.21",
-    "memoize-one": "^6.0.0",
+    "@restart/hooks": "^0.6.2",
     "prop-types": "^15.7.2",
     "property-expr": "^2.0.4",
     "shallowequal": "^1.1.0",
-    "uncontrollable": "^7.2.1",
-    "yup": ">=0.32.11"
+    "uncontrollable": "^9.0.0",
+    "yup": ">=1.0.0"
   },
   "devDependencies": {
     "@4c/cli": "^4.0.4",
     "@4c/rollout": "^4.0.2",
     "@4c/tsconfig": "^0.4.0",
-    "@babel/cli": "7.16.0",
-    "@babel/core": "7.16.0",
-    "@babel/preset-typescript": "^7.16.0",
-    "@types/jest": "^27.0.3",
-    "@types/sinon": "^10.0.6",
-    "@typescript-eslint/eslint-plugin": "^5.5.0",
-    "@typescript-eslint/parser": "^5.5.0",
-    "@wojtekmaj/enzyme-adapter-react-17": "^0.6.5",
+    "@babel/cli": "7.26.4",
+    "@babel/core": "7.26.0",
+    "@babel/plugin-transform-modules-commonjs": "^7.26.3",
+    "@babel/preset-react": "^7.26.3",
+    "@babel/preset-typescript": "^7.26.0",
+    "@testing-library/dom": "^10.4.0",
+    "@testing-library/react": "^16.1.0",
+    "@testing-library/user-event": "^14.5.2",
+    "@types/react": "^19.0.2",
+    "@types/react-dom": "^19.0.2",
+    "@typescript-eslint/eslint-plugin": "^8.19.0",
+    "@typescript-eslint/parser": "^8.19.0",
     "babel-eslint": "^10.1.0",
-    "babel-jest": "^27.4.2",
     "babel-preset-jason": "^6.3.0",
     "cherry-pick": "^0.5.0",
     "enzyme": "^3.11.0",
@@ -106,16 +110,18 @@
     "eslint-plugin-react": "^7.27.1",
     "eslint-plugin-react-hooks": "^4.3.0",
     "gh-pages": "^3.2.3",
-    "jest": "^27.4.3",
+    "jsdom": "^25.0.1",
     "prettier": "^2.5.0",
-    "react": "^17.0.2",
-    "react-dom": "^17.0.2",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
     "react-tackle-box": "^2.1.0",
     "react-widgets": "^5.5.1",
     "rimraf": "^3.0.2",
-    "typescript": "^4.5.2"
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8"
   },
   "bugs": {
     "url": "https://github.com/jquense/react-formal/issues"
-  }
+  },
+  "packageManager": "yarn@4.6.0+sha512.5383cc12567a95f1d668fbe762dfe0075c595b4bfff433be478dbbe24e05251a8e8c3eb992a986667c1d53b6c3a9c85b8398c35a960587fbd9fa3a0915406728"
 }

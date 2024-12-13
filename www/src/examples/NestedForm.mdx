@@ -18,23 +18,25 @@ Consider a common case of shipping and billing addresses. The logic and UI is ba
 the same for each, even tho the data points to different place:
 
 ```jsx
-import Form, { NestedForm } from "react-formal";
-import * as yup from "yup";
-import { UsaStates } from "usa-states";
+import * as yup from 'yup';
+import { Form, NestedForm } from 'react-formal';
+import { UsaStates } from 'usa-states';
 
 const { states } = new UsaStates();
 
 const addressSchema = yup.object({
-  address: yup.string().required("Required"),
-  city: yup.string().required("Required"),
-  state: yup.string().oneOf(states.map(s => s.abbreviation)),
-  postalCode: yup.string().matches(/\d{5}/, "Must be a valid zip code")
+  address: yup.string().required('Required'),
+  city: yup.string().required('Required'),
+  state: yup.string().oneOf(states.map((s) => s.abbreviation)),
+  postalCode: yup
+    .string()
+    .matches(/\d{5}/, 'Must be a valid zip code'),
 });
 
 const schema = yup.object({
   title: yup.string(),
   shippingAddress: addressSchema,
-  billingAddress: addressSchema
+  billingAddress: addressSchema,
 });
 
 const AddressField = ({ name }) => (
@@ -59,8 +61,11 @@ const AddressField = ({ name }) => (
       <label>
         State
         <Form.Field name="state" as="select">
-          {states.map(state => (
-            <option value={state.abbreviation} key={state.abbreviation}>
+          {states.map((state) => (
+            <option
+              value={state.abbreviation}
+              key={state.abbreviation}
+            >
               {state.name}
             </option>
           ))}

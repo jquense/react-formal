@@ -1,11 +1,12 @@
+/* eslint-disable @typescript-eslint/no-use-before-define */
 import useUpdateEffect from '@restart/hooks/useUpdateEffect';
-
-import { mount } from 'enzyme';
+import { describe, it, vi, expect } from 'vitest';
+import { fireEvent, render } from '@testing-library/react';
 import useFormBindingContext, {
   BindingContext as Context,
 } from '../src/BindingContext';
 import useBinding from '../src/useBinding';
-/* eslint-disable react/prop-types */
+
 import React, { useState, useMemo } from 'react';
 
 function BindingContext({ value, onChange, children }: any) {
@@ -34,9 +35,9 @@ function Binding({ bindTo, mapValue, children }: any) {
 }
 
 describe('Bindings', () => {
-  class StaticContainer extends React.Component {
+  class StaticContainer extends React.Component<any> {
     shouldComponentUpdate(props) {
-      return !!props.shouldUpdate; // eslint-disable-line
+      return !!props.shouldUpdate;
     }
     render() {
       return this.props.children;
@@ -44,23 +45,20 @@ describe('Bindings', () => {
   }
 
   const BoundInput = ({ name }) => {
-    const [value = '', handleChange] = useBinding(name);
+    const [value = '', handleChange] = useBinding<string>(name);
     return <input type="text" value={value} onChange={handleChange} />;
   };
 
   it('should update the form value: hook', function () {
-    let change = jest.fn();
+    let change = vi.fn();
 
-    let inst = mount(
+    let { getByRole } = render(
       <BindingContext onChange={change}>
         <BoundInput name="name" />
       </BindingContext>,
     );
 
-    inst
-      .find('input')
-      .first()
-      .simulate('change', { target: { value: 'Jill' } });
+    fireEvent.change(getByRole('textbox'), { target: { value: 'Jill' } });
 
     expect(change).toHaveBeenCalledTimes(1);
 
@@ -68,10 +66,10 @@ describe('Bindings', () => {
   });
 
   it('should accept primitive values', function () {
-    let change = jest.fn();
+    let change = vi.fn();
 
     const BoundInput = ({ name }) => {
-      const [value = '', handleChange] = useBinding(name);
+      const [value = '', handleChange] = useBinding<string>(name);
       return (
         <input
           type="text"
@@ -81,28 +79,25 @@ describe('Bindings', () => {
       );
     };
 
-    let inst = mount(
+    let { getByRole } = render(
       <BindingContext onChange={change}>
         <BoundInput name="name" />
       </BindingContext>,
     );
 
-    inst
-      .find('input')
-      .first()
-      .simulate('change', { target: { value: 'Jill' } });
+    fireEvent.change(getByRole('textbox'), { target: { value: 'Jill' } });
 
     expect(change).toHaveBeenCalledTimes(1);
     expect(change).toHaveBeenCalledWith({ name: 'Jill' }, ['name']);
   });
 
   it('should always update if binding value changed', function () {
-    let change = jest.fn();
+    let change = vi.fn();
     let value = { name: 'sally', eyes: 'hazel' };
     let count = 0;
 
     const CountRenders = ({ name }) => {
-      const [value = '', handleChange] = useBinding(name);
+      const [value = '', handleChange] = useBinding<string>(name);
       // @ts-ignore
       useUpdateEffect(() => {
         count++;
@@ -110,30 +105,34 @@ describe('Bindings', () => {
       return <input type="text" value={value} onChange={handleChange} />;
     };
 
-    let wrapper = mount(
-      <BindingContext onChange={change} value={value}>
-        {/* @ts-ignore */}
-        <StaticContainer shouldUpdate={false}>
-          <CountRenders name="name" />
-        </StaticContainer>
-      </BindingContext>,
-    );
+    let { rerender } = render(renderWithValue(value));
 
     expect(count).toBe(0);
 
-    wrapper.setProps({ value: { ...value, eyes: 'brown' } });
+    rerender(renderWithValue({ ...value, eyes: 'brown' }));
 
     expect(count).toBe(1);
 
-    wrapper.setProps({ value: { ...value, name: 'Sallie' } });
+    rerender(renderWithValue({ ...value, name: 'Sallie' }));
 
     expect(count).toBe(2);
+
+    function renderWithValue(value) {
+      return (
+        <BindingContext onChange={change} value={value}>
+          {/* @ts-ignore */}
+          <StaticContainer shouldUpdate={false}>
+            <CountRenders name="name" />
+          </StaticContainer>
+        </BindingContext>
+      );
+    }
   });
 
   it('should update if props change', function () {
     let count = 0;
     const CountRenders = ({ name }) => {
-      const [value = '', handleChange] = useBinding(name);
+      const [value = '', handleChange] = useBinding<string>(name);
       // @ts-ignore
       useUpdateEffect(() => {
         count++;
@@ -141,17 +140,17 @@ describe('Bindings', () => {
       return <input type="text" value={value} onChange={handleChange} />;
     };
 
-    let wrapper = mount(<CountRenders name="name" />);
+    let { rerender } = render(<CountRenders name="name" />);
 
     expect(count).toBe(0);
 
-    wrapper.setProps({ name: 'fooo' });
+    rerender(<CountRenders name="fooo" />);
 
     expect(count).toBe(1);
   });
 
   it('should not prevent input updates', function () {
-    let change = jest.fn();
+    let change = vi.fn();
     let value = { name: 'sally', eyes: 'hazel' };
     let count = 0;
 
@@ -162,7 +161,7 @@ describe('Bindings', () => {
       render = () => <input type="text" {...this.props} />;
     }
 
-    class Parent extends React.Component {
+    class Parent extends React.Component<any> {
       render() {
         return (
           <BindingContext onChange={change} value={value}>
@@ -176,18 +175,18 @@ describe('Bindings', () => {
       }
     }
 
-    let wrapper = mount(<Parent />);
+    let { rerender } = render(<Parent />);
 
     expect(count).toBe(0);
 
-    wrapper.setProps({ foo: 'bar' });
+    rerender(<Parent foo="bar" />);
 
     expect(count).toBe(1);
   });
 
-  it('should batch', function () {
+  it('should batch', async () => {
     let ref = { current: null };
-
+    let count = 0;
     const Input = () => {
       const [, changeA] = useBinding('a');
       const [, changeB] = useBinding('b');
@@ -210,6 +209,7 @@ describe('Bindings', () => {
         <BindingContext
           value={value[0]}
           onChange={(v, paths) => {
+            ++count;
             setValue([v, paths]);
           }}
         >
@@ -218,10 +218,11 @@ describe('Bindings', () => {
       );
     }
 
-    let inst = mount(<Wrapper />);
+    let { getByRole } = render(<Wrapper />);
 
-    inst.find('input').first().simulate('change');
+    fireEvent.change(getByRole('textbox'), { target: { value: 'something' } });
 
+    expect(count).toBe(1);
     expect(ref.current).toEqual([
       {
         a: '1',

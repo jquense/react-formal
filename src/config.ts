@@ -1,4 +1,4 @@
-import { ValidateOnConfig } from './useField';
+import { ValidateOnConfig } from './useField.js';
 
 interface Config {
   validateOn: ValidateOnConfig;

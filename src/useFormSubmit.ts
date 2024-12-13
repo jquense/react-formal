@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react';
-import { BITS, useFormContext } from './Contexts';
-import useErrors from './useErrors';
+import { useFormActions, useFormSubmits } from './Contexts.js';
+import useErrors from './useErrors.js';
 
 export interface UseFormSubmitOptions {
   triggers?: string[];
@@ -12,7 +12,8 @@ export interface UseFormSubmitOptions {
  * @param {string[]} options.trigger A set of paths to trigger validation for
  */
 export default function useFormSubmit({ triggers }: UseFormSubmitOptions = {}) {
-  const { actions, submits } = useFormContext(BITS.actions | BITS.submits);
+  const actions = useFormActions();
+  const submits = useFormSubmits();
 
   const errors = useErrors(triggers);
 

@@ -1,29 +1,29 @@
-import { ValidationError } from 'yup'
+import { ValidationError } from 'yup';
 
-export type JsonError = { values: unknown[]; error: string; message: any }
+export type JsonError = { values: any; type: string; message: any };
 
 export default function errToJSON(
   error: ValidationError,
-  target = {},
+  target: Record<string, JsonError[]> = {},
 ): Record<string, JsonError[]> {
   if (error.inner.length) {
-    error.inner.forEach(inner => {
-      errToJSON(inner, target)
-    })
+    error.inner.forEach((inner) => {
+      errToJSON(inner, target);
+    });
 
-    return target
+    return target;
   }
 
-  let path = error.path || ''
-  let existing = target[path]
+  let path = error.path || '';
+  let existing = target[path];
 
-  let json = {
+  let json: JsonError = {
     message: error.message,
     values: error.params,
-    type: error.type,
-  }
+    type: error.type!,
+  };
 
-  target[path] = existing ? [...existing, json] : [json]
+  target[path] = existing ? [...existing, json] : [json];
 
-  return target
+  return target;
 }

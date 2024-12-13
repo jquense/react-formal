@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/no-shadow */
 
 import { useRef, useMemo } from 'react';
-import { Errors } from './types';
-import { FieldMeta, UseFieldMetaOptions, useFieldMeta } from './useField';
-import { move, remove, shift, unshift } from './Errors';
-import { ValidationPathSpec } from './errorManager';
-import { BITS, useFormContext } from './Contexts';
+import { Errors } from './types.js';
+import { FieldMeta, UseFieldMetaOptions, useFieldMeta } from './useField.js';
+import { move, remove, shift, unshift } from './Errors.js';
+import { ValidationPathSpec } from './errorManager.js';
+import { useFormActions } from './Contexts.js';
 
 export type FieldArrayMeta = FieldMeta;
 
@@ -115,7 +115,7 @@ function useFieldArray<T = any>(
 
   let { name } = options;
 
-  const { actions } = useFormContext(BITS.actions);
+  const actions = useFormActions();
 
   // TODO: doesn't shallow validate validates
   const fieldsToValidate = useMemo<ValidationPathSpec[]>(
@@ -170,7 +170,7 @@ function useFieldArray<T = any>(
       if (value == null) return;
 
       const index = value.indexOf(item);
-      onChange(value.filter((v) => v !== item));
+      onChange(value.filter((v: any) => v !== item));
 
       sendErrors((errors, name) => shift(errors, name, index));
     },

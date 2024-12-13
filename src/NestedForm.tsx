@@ -1,9 +1,8 @@
 import PropTypes from 'prop-types';
-import React from 'react';
 import { AnyObjectSchema } from 'yup';
-import Form, { FormProps } from './Form';
-import useField from './useField';
-import { prefix, unprefix } from './Errors';
+import Form, { FormProps } from './Form.js';
+import useField from './useField.js';
+import { prefix, unprefix } from './Errors.js';
 
 const propTypes = {
   name: PropTypes.string.isRequired,

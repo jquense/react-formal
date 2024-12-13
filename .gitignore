@@ -1,4 +1,5 @@
 /lib
+/cjs
 /www/.cache
 /www/public
 

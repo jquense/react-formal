@@ -122,7 +122,7 @@ save it to a server. You've already seen the `<Form.Submit>` component above, wh
 triggers a form wide validation.
 
 ```jsx live
-import Form from 'react-formal';
+import { Form } from 'react-formal';
 import * as yup from 'yup';
 
 const schema = yup.object({
@@ -154,7 +154,7 @@ In this example we change the button text to "submitting…" while saving
 the form data to a server.
 
 ```jsx live
-import Form, { useFormSubmit } from 'react-formal';
+import { Form, useFormSubmit } from 'react-formal';
 import fakeSaveToServer from '../fakeSaveToServer';
 import * as yup from 'yup';
 

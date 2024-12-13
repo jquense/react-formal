@@ -1,8 +1,8 @@
 import PropTypes from 'prop-types';
 import React, { useCallback, ElementType } from 'react';
 
-import notify from './utils/notify';
-import useFormSubmit from './useFormSubmit';
+import notify from './utils/notify.js';
+import useFormSubmit from './useFormSubmit.js';
 
 export interface FormSubmitProps<TAs extends ElementType = any> {
   as?: TAs;

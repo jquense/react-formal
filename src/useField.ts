@@ -1,15 +1,15 @@
 import { useCallback, useMemo, useRef } from 'react';
-import useBinding from './useBinding';
+import useBinding from './useBinding.js';
 import { AnySchema } from 'yup';
-import { BITS, useFormContext } from './Contexts';
-import config from './config';
-import { Errors } from './types';
-import isNativeType from './utils/isNativeType';
-import { toArray } from './utils/paths';
-import notify from './utils/notify';
-import useErrors from './useErrors';
-import { ValidationPathSpec } from './errorManager';
-import useFieldSchema from './useFieldSchema';
+import { useFormActions, useFormSubmits, useFormTouched } from './Contexts.js';
+import config from './config.js';
+import { Errors } from './types.js';
+import isNativeType from './utils/isNativeType.js';
+import { toArray } from './utils/paths.js';
+import notify from './utils/notify.js';
+import useErrors from './useErrors.js';
+import { ValidationPathSpec } from './errorManager.js';
+import useFieldSchema from './useFieldSchema.js';
 
 export function splitFieldProps<
   TProps extends UseFieldOptions = UseFieldOptions,
@@ -142,9 +142,13 @@ export interface FieldMeta {
   onChange: (nextFieldValue: unknown, ...args: any[]) => void;
 
   validateOn: TriggerEventConfig;
+
+  submitting: boolean;
+  submitAttempts: number;
+  submitCount: number;
 }
 
-const passThrough = (v) => v;
+const passThrough = (v: any) => v;
 
 export function useFieldMeta(opts: UseFieldMetaOptions) {
   let {
@@ -163,9 +167,9 @@ export function useFieldMeta(opts: UseFieldMetaOptions) {
 
   const warned = useRef(false);
 
-  const { actions, touched, submits } = useFormContext(
-    BITS.actions | BITS.touched | BITS.submits,
-  );
+  const actions = useFormActions();
+  const touched = useFormTouched();
+  const submits = useFormSubmits();
 
   const filteredErrors = useErrors(name, { inclusive: !exclusive });
 
@@ -203,7 +207,7 @@ export function useFieldMeta(opts: UseFieldMetaOptions) {
     // Add an onChange handler to `meta` so that custom inputs
     // don't need to infer the events configured for a Field
     onChange: useCallback(
-      (...args) => {
+      (...args: any[]) => {
         onChange(...args);
         if (noValidate || !onValidate) return;
         onValidate(validates, 'onChange', args);
@@ -332,7 +336,7 @@ function useField(
     () => (validates != null ? toArray(validates) : [name]),
     [name, validates],
   );
-  const { actions } = useFormContext(BITS.actions);
+  const actions = useFormActions();
 
   const meta = useFieldMeta({ ...options, validates: fieldsToValidate });
 

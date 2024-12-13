@@ -1,11 +1,11 @@
 import PropTypes from 'prop-types';
 import React from 'react';
-import { UseFieldProps, MapToValue } from './useField';
+import { UseFieldProps, MapToValue } from './useField.js';
 import useFieldArray, {
   FieldArrayHelpers,
   FieldArrayMeta,
   UseFieldArrayOptions,
-} from './useFieldArray';
+} from './useFieldArray.js';
 
 export type RenderFieldArrayProps = UseFieldProps & {
   arrayHelpers: FieldArrayHelpers;

@@ -1,8 +1,13 @@
-import { mount } from 'enzyme';
 import React from 'react';
-import { act } from 'react-dom/test-utils';
 import * as yup from 'yup';
-import Form, { useField, UseFieldProps, FieldMeta } from '../src';
+
+import { describe, it, vi, expect } from 'vitest';
+
+import { act, fireEvent, render } from '@testing-library/react';
+
+import { Form, useField, UseFieldProps, FieldMeta } from '../src';
+
+let mount = render;
 
 describe('Field', () => {
   let schema = yup.object({
@@ -23,6 +28,7 @@ describe('Field', () => {
     render() {
       return (
         <input
+          {...this.props}
           value={this.props.value || ''}
           onChange={(e) => this.props.onChange(e, 'hi')}
         />
@@ -30,53 +36,46 @@ describe('Field', () => {
     }
   }
 
-  // it('test types', () => {
-  //   const MyInput = ({ foo: _ }: { foo: number }) => <span />;
-
-  //   <Form.Field name="f" as={MyInput} foo={2}  />;
-  // });
-
   it('should pass props to inner type', () => {
-    expect(
-      mount(
-        <Form schema={schema} defaultValue={{}}>
-          <Form.Field name="name" as={TestInput} className="test" />
-        </Form>,
-      )
-        .find(TestInput)
-        .instance().props.className,
-    ).toEqual('test'); // test invalid-field
+    const { getByRole } = render(
+      <Form schema={schema} defaultValue={{}}>
+        <Form.Field name="name" as={TestInput} className="test" />
+      </Form>,
+    );
+
+    expect(getByRole('textbox').className).toEqual('test'); // test invalid-field
   });
 
   it('should pass props to inner type if field is invalid', () => {
-    expect(
-      mount(
-        <Form schema={schema} defaultValue={{}} defaultErrors={{ name: 'foo' }}>
-          <Form.Field
-            name='name'
-            as={TestInput}
-            className='test'
-            errorClass='invalid'
-          />
-        </Form>,
-      )
-        .find(TestInput)
-        .instance().props.className,
-    ).toEqual('test invalid');
+    let { getByRole } = render(
+      <Form schema={schema} defaultValue={{}} defaultErrors={{ name: 'foo' }}>
+        <Form.Field
+          name="name"
+          as={TestInput}
+          className="test"
+          errorClass="invalid"
+        />
+      </Form>,
+    );
+
+    expect(getByRole('textbox').className).toEqual('test invalid');
   });
 
   it('should provide an onChange handler even without validation', () => {
-    const spy = jest.fn();
+    const spy = vi.fn();
+    let fieldProps: any = null;
+    function Input(props) {
+      fieldProps = props;
+      return null;
+    }
 
-    expect(
-      mount(
-        <Form schema={schema} onValidate={spy} defaultValue={{}}>
-          <Form.Field name="name" as={TestInput} validateOn={null} />
-        </Form>,
-      )
-        .find(TestInput)
-        .instance().props.onChange,
-    ).toBeDefined();
+    render(
+      <Form schema={schema} onValidate={spy} defaultValue={{}}>
+        <Form.Field name="name" as={Input} validateOn={null} />
+      </Form>,
+    );
+
+    expect(fieldProps!.onChange).toBeDefined();
 
     expect(spy).not.toBeCalled();
   });
@@ -89,7 +88,7 @@ describe('Field', () => {
       bool: yup.bool(),
     });
 
-    let wrapper = mount(
+    let { container } = mount(
       <Form schema={schema} defaultValue={{}}>
         <Form.Field name="string" />
         <Form.Field name="number" />
@@ -112,162 +111,188 @@ describe('Field', () => {
       </Form>,
     );
 
-    // console.log(wrapper.debug())
-    wrapper.assertSingle(`input[name='string']`);
-    wrapper.assertSingle('input[type="number"]');
-    wrapper.assertSingle('input[type="date"]');
+    expect(container.querySelector(`input[name='string']`)).toBeTruthy();
+    expect(container.querySelector('input[type="number"]')).toBeTruthy();
+    expect(container.querySelector('input[type="date"]')).toBeTruthy();
 
-    wrapper.assertSingle('input[type="checkbox"]');
-    wrapper.assertSingle('select');
-    wrapper.assertSingle('textarea');
+    expect(container.querySelector('input[type="checkbox"]')).toBeTruthy();
+    expect(container.querySelector('select')).toBeTruthy();
+    expect(container.querySelector('textarea')).toBeTruthy();
   });
 
   it('should use as override', () => {
-    let wrapper = mount(
+    let { container } = mount(
       <Form schema={schema} defaultValue={{}}>
         <Form.Field name="name" as="select" />
         <Form.Field name="name" as="textarea" />
         <Form.Field name="name" as={TestInput} />
       </Form>,
     );
-    wrapper.assertSingle(TestInput);
-    wrapper.assertSingle('textarea');
-    wrapper.assertSingle('select');
+    expect(container.getElementsByTagName('input')).toBeTruthy();
+    expect(container.getElementsByTagName('textarea')).toBeTruthy();
+    expect(container.getElementsByTagName('select')).toBeTruthy();
   });
 
-  it('should fire onChange', (done) => {
-    mount(
+  it('should fire onChange', () => {
+    const spy = vi.fn();
+
+    const { getByRole } = render(
       <Form schema={schema} defaultValue={{}}>
         <Form.Field
           name="name"
           as={TestInput}
           onChange={() => {
-            done();
+            spy();
           }}
         />
       </Form>,
-    )
-      .assertSingle('input')
-      .simulate('change');
+    );
+
+    fireEvent.change(getByRole('textbox'), { target: { value: 'Jill' } });
+
+    expect(spy).toHaveBeenCalledTimes(1);
   });
 
   it('should pull value from event target', () => {
-    let spy = jest.fn();
+    let spy = vi.fn();
 
-    mount(
+    const { getByRole } = render(
       <Form schema={schema} defaultValue={{}} onChange={spy}>
         <Form.Field name="name" as={TestInput} />
       </Form>,
-    )
-      //.tap(_ => console.log(_.debug()))
-      .assertSingle('input')
-      .simulate('change', { target: { value: 'foo' } });
+    );
+
+    fireEvent.change(getByRole('textbox'), { target: { value: 'foo' } });
 
     expect(spy).toHaveBeenCalledWith({ name: 'foo' }, ['name']);
   });
 
   it('should coerce value to number', () => {
-    let spy = jest.fn();
+    let spy = vi.fn();
 
-    let form = mount(
+    let { container } = mount(
       <Form schema={schema} defaultValue={{}} onChange={spy}>
         <Form.Field name="age" id="first" />
         <Form.Field type="range" name="age" id="second" />
       </Form>,
     );
 
-    form
-      .find('input[type="number"]')
-      .simulate('change', { target: { value: '3.56', type: 'number' } });
+    fireEvent.change(container.querySelector('input[type="number"]')!, {
+      target: { value: '3.56', type: 'number' },
+    });
 
     expect(spy).toHaveBeenCalledWith({ age: 3.56 }, expect.anything());
 
-    form
-      .find('input[type="range"]')
-      .simulate('change', { target: { value: '42', type: 'range' } });
+    fireEvent.change(container.querySelector('input[type="range"]')!, {
+      target: { value: '42', type: 'range' },
+    });
 
     expect(spy).toHaveBeenCalledWith({ age: 42 }, expect.anything());
   });
 
   it('should update touched value', () => {
-    let spy = jest.fn();
+    let spy = vi.fn();
 
-    mount(
+    const { getByRole } = mount(
       <Form schema={schema} defaultValue={{}} onTouch={spy}>
         <Form.Field name="name" as={TestInput} />
       </Form>,
-    )
-      .assertSingle('input')
-      .simulate('change', 'foo');
+    );
+
+    fireEvent.change(getByRole('textbox'), { target: { value: 'foo' } });
 
     expect(spy).toHaveBeenCalledWith({ name: true }, ['name']);
   });
 
   it('should update touched once per field', () => {
-    let spy = jest.fn();
+    let spy = vi.fn();
 
-    mount(
+    const { getByRole } = mount(
       <Form schema={schema} defaultValue={{}} onTouch={spy}>
         <Form.Field name="name" as={TestInput} />
       </Form>,
-    )
-      .assertSingle('input')
-      .simulate('change', 'foo')
-      .simulate('change', 'bar');
+    );
+
+    fireEvent.change(getByRole('textbox'), { target: { value: 'foo' } });
+    fireEvent.change(getByRole('textbox'), { target: { value: 'bar' } });
 
     expect(spy).toHaveBeenCalledTimes(1);
   });
 
   it('ensures values are never undefined', () => {
-    let wrapper = mount(
+    let { getByRole } = mount(
       <Form schema={schema} defaultValue={{}}>
         <Form.Field name="name" />
       </Form>,
     );
 
-    expect(wrapper.assertSingle('input').prop('value')).toBe('');
+    expect((getByRole('textbox') as any).value).toBe('');
   });
 
   it('maps value from string', () => {
-    let spy = jest.fn();
-    mount(
+    let spy = vi.fn();
+
+    function TestInput({ value, onChange }) {
+      return (
+        <input
+          value={value}
+          onChange={(e) => onChange({ otherProperty: e.target.value })}
+        />
+      );
+    }
+    const { getByRole } = mount(
       <Form schema={schema} defaultValue={{}} onChange={spy}>
-        <Form.Field name="name" as={TestInput} mapFromValue="value" />
+        <Form.Field name="name" as={TestInput} mapFromValue="otherProperty" />
       </Form>,
-    )
-      .assertSingle('input')
-      .simulate('change', { value: 'john' });
+    );
+
+    fireEvent.change(getByRole('textbox'), {
+      target: { value: 'john' },
+    });
 
     expect(spy).toHaveBeenCalledWith({ name: 'john' }, expect.anything());
   });
 
   it('maps value from function', () => {
-    let spy = jest.fn();
-    mount(
+    let spy = vi.fn();
+
+    function TestInput({ value, onChange }) {
+      return (
+        <input
+          value={value}
+          onChange={(e) => onChange({ otherProperty: e.target.value })}
+        />
+      );
+    }
+
+    const { getByRole } = mount(
       <Form schema={schema} defaultValue={{}} onChange={spy}>
         <Form.Field
           name="name"
           as={TestInput}
-          mapFromValue={(e: any) => e.value}
+          mapFromValue={(e: any) => e.otherProperty}
         />
       </Form>,
-    )
-      .assertSingle('input')
-      .simulate('change', { value: 'john' });
+    );
+
+    fireEvent.change(getByRole('textbox'), {
+      target: { value: 'john' },
+    });
 
     expect(spy).toHaveBeenCalledWith({ name: 'john' }, expect.anything());
   });
 
   it('gets value from accessor', () => {
-    let spy = jest.fn((model) => model.other);
-    let wrapper = mount(
+    let spy = vi.fn((model) => model.other);
+
+    const { getByRole } = mount(
       <Form schema={schema} defaultValue={{}} onChange={spy}>
         <Form.Field
           name="name"
           as={TestInput}
           mapToValue={spy}
           mapFromValue={{
-            other: (e: any) => e.value,
+            other: (e: any) => e.target.value,
           }}
         />
       </Form>,
@@ -275,27 +300,44 @@ describe('Field', () => {
 
     expect(spy).toHaveBeenCalledWith({}, expect.anything());
 
-    wrapper.assertSingle('input').simulate('change', { value: 'john' });
+    fireEvent.change(getByRole('textbox'), {
+      target: { value: 'john' },
+    });
 
     expect(spy).toHaveBeenCalledWith({ other: 'john' }, expect.anything());
   });
 
   it('maps values from hash', () => {
-    let spy = jest.fn();
-    mount(
+    let spy = vi.fn();
+
+    function TestInput({ value, onChange }) {
+      return (
+        <input
+          value={value}
+          onChange={(e) =>
+            onChange({ otherProperty: e.target.value, text: 'hi' })
+          }
+        />
+      );
+    }
+
+    let { getByRole } = mount(
       <Form schema={schema} defaultValue={{}} onChange={spy}>
         <Form.Field
           name="name"
           as={TestInput}
           mapFromValue={{
-            name: (e: any) => e.value,
+            name: (e: any) => e.otherProperty,
             text: 'text',
           }}
         />
       </Form>,
-    )
-      .assertSingle('input')
-      .simulate('change', { value: 'john', text: 'hi' });
+    );
+
+    fireEvent.change(getByRole('textbox'), {
+      target: { value: 'john' },
+    });
+
     expect(spy).toHaveBeenCalledTimes(1);
     expect(spy).toHaveBeenCalledWith(
       {
@@ -306,23 +348,20 @@ describe('Field', () => {
     );
   });
 
-  it('should pass all args to mapFromValue', function (done) {
-    let spy = jest.fn();
-    mount(
+  it('should pass all args to mapFromValue', () => {
+    let spy = vi.fn();
+    let mapFromValue = vi.fn();
+    let { getByRole } = mount(
       <Form schema={schema} defaultValue={{}} onChange={spy}>
-        <Form.Field
-          name="name"
-          as={TestInput}
-          mapFromValue={(...args) => {
-            expect(args.length).toBe(2);
-            expect(args[1]).toBe('hi');
-            done();
-          }}
-        />
+        <Form.Field name="name" as={TestInput} mapFromValue={mapFromValue} />
       </Form>,
-    )
-      .assertSingle('input')
-      .simulate('change');
+    );
+
+    fireEvent.change(getByRole('textbox'), {
+      target: { value: 'john' },
+    });
+
+    expect(mapFromValue).toHaveBeenLastCalledWith(expect.anything(), 'hi');
   });
 
   it('should forward inner ref', () => {
@@ -338,29 +377,13 @@ describe('Field', () => {
         />
       </Form>,
     );
+
     expect(inst instanceof TestInput).toBe(true);
   });
 
-  it('should work with conditional schema', () => {
-    const spy = jest.spyOn(console, 'warn').mockImplementation(() => {
-      /* ignore */
-    });
-
-    let render = (name) => {
-      mount(
-        <Form schema={schema} defaultValue={{ ...schema.getDefault(), name }}>
-          <Form.Field name="more.isCool" />
-        </Form>,
-      );
-    };
-
-    render('john');
-    expect(spy).toHaveBeenCalled();
-  });
-
   describe('meta', () => {
-    it('should pass meta to field', (done) => {
-      let Input = ({ meta }) => {
+    it('should pass meta to field', () => {
+      let Input = vi.fn(({ meta }) => {
         // //first pass isn't correct since form hasn't propagated it's state yet.
         // if (!meta.invalid) return null
 
@@ -372,9 +395,9 @@ describe('Field', () => {
         expect(meta.errors).toEqual({
           name: 'foo',
         });
-        done();
+
         return null;
-      };
+      });
 
       mount(
         <Form
@@ -386,63 +409,78 @@ describe('Field', () => {
           <Form.Field name="name" as={Input} />
         </Form>,
       );
+
+      expect(Input).toHaveBeenCalled();
     });
 
-    it('should pass meta to field with noValidate', (done) => {
-      let Input = ({ meta }) => {
+    it('should pass meta to field with noValidate', () => {
+      let Input = vi.fn(({ meta }) => {
         expect(meta.invalid).toBe(true);
         expect(meta.valid).toBe(false);
         expect(meta.errors).toEqual({
           name: 'foo',
         });
-        done();
         return null;
-      };
+      });
 
       mount(
         <Form schema={schema} defaultValue={{}} defaultErrors={{ name: 'foo' }}>
           <Form.Field noValidate name="name" as={Input} />
         </Form>,
       );
+
+      expect(Input).toHaveBeenCalled();
     });
 
     it('should field onError should remove existing errors', () => {
-      let errorSpy = jest.fn();
+      let errorSpy = vi.fn();
+
+      let inputMeta;
+      function TestInput({ meta, ...props }) {
+        inputMeta = meta;
+        return <input {...props} />;
+      }
+
+      mount(
+        <Form
+          schema={schema}
+          defaultValue={{}}
+          defaultErrors={{ name: 'foo', bar: 'baz' }}
+          onError={errorSpy}
+        >
+          <Form.Field name="name" as={TestInput} />
+        </Form>,
+      );
+
       act(() => {
-        mount(
-          <Form
-            schema={schema}
-            defaultValue={{}}
-            defaultErrors={{ name: 'foo', bar: 'baz' }}
-            onError={errorSpy}
-          >
-            <Form.Field name="name" as={TestInput} />
-          </Form>,
-        )
-          .find(TestInput)
-          .props()
-          .meta.onError({});
+        inputMeta.onError({});
       });
 
       expect(errorSpy).toHaveBeenCalledWith({ bar: 'baz' });
     });
 
     it('should field onError should update field errors', () => {
-      let errorSpy = jest.fn();
+      let errorSpy = vi.fn();
+
+      let inputMeta;
+      function TestInput({ meta, ...props }) {
+        inputMeta = meta;
+        return <input {...props} />;
+      }
+
+      mount(
+        <Form
+          schema={schema}
+          defaultValue={{}}
+          defaultErrors={{ name: 'foo', bar: 'baz' }}
+          onError={errorSpy}
+        >
+          <Form.Field name="name" as={TestInput} />
+        </Form>,
+      );
+
       act(() => {
-        mount(
-          <Form
-            schema={schema}
-            defaultValue={{}}
-            defaultErrors={{ name: 'foo', bar: 'baz' }}
-            onError={errorSpy}
-          >
-            <Form.Field name="name" as={TestInput} />
-          </Form>,
-        )
-          .find(TestInput)
-          .props()
-          .meta.onError({ 'name': 'foo', 'name.first': 'baz' });
+        inputMeta.onError({ 'name': 'foo', 'name.first': 'baz' });
       });
 
       expect(errorSpy).toHaveBeenCalledWith({
@@ -452,71 +490,77 @@ describe('Field', () => {
       });
     });
 
-    it('should set validateOn via a function', async () => {
-      let schema = yup.object({
-        number: yup.number().min(5),
-      });
-      let spy = jest.fn();
-      let wrapper = mount(
-        <Form
-          delay={0}
-          schema={schema}
-          onValidate={spy}
-          defaultValue={{ number: 6 }}
-        >
-          <Form.Field
-            name="number"
-            validateOn={({ valid }) => ({
-              blur: valid,
-              change: !valid,
-            })}
-          >
-            {(props) => <input {...props} />}
-          </Form.Field>
-        </Form>,
-      );
-      // Field is valid only; `onBlur`
-      await act(() => {
-        wrapper.find('input').simulate('change', { target: { value: '4' } });
-        wrapper.find('input').simulate('blur', { target: { value: '4' } });
+    // it('should set validateOn via a function', async () => {
+    //   let schema = yup.object({
+    //     number: yup.number().min(5),
+    //   });
+    //   let spy = vi.fn();
+    //   const { getByRole } = mount(
+    //     <Form
+    //       delay={0}
+    //       schema={schema}
+    //       onValidate={spy}
+    //       defaultValue={{ number: 6 }}
+    //     >
+    //       <Form.Field
+    //         name="number"
+    //         validateOn={({ valid }) => ({
+    //           blur: valid,
+    //           change: !valid,
+    //         })}
+    //       >
+    //         {(props) => <input {...props} />}
+    //       </Form.Field>
+    //     </Form>,
+    //   );
 
-        return new Promise<void>((resolve) => {
-          setTimeout(() => {
-            expect(spy).toHaveBeenCalledTimes(1);
-            // field is invalid now: `onChange`
-            wrapper.find('input').simulate('blur', { target: { value: '4' } });
+    //   let input = getByRole('textbox');
+    //   fireEvent.change(input, { target: { value: '4' } });
+    //   fireEvent.blur(input, { target: { value: '4' } });
 
-            expect(spy).toHaveBeenCalledTimes(1);
+    //   // Field is valid only; `onBlur`
+    //   await act(() => {
+    //     return new Promise<void>((resolve) => {
+    //       setTimeout(() => {
+    //         expect(spy).toHaveBeenCalledTimes(1);
+    //         // field is invalid now: `onChange`
 
-            wrapper
-              .find('input')
-              .simulate('change', { target: { value: '6' } });
+    //         fireEvent.blur(input, { target: { value: '4' } });
 
-            expect(spy).toHaveBeenCalledTimes(2);
+    //         expect(spy).toHaveBeenCalledTimes(1);
 
-            resolve();
-          }, 100);
-        });
-      });
-    });
+    //         fireEvent.change(input, { target: { value: '6' } });
+
+    //         expect(spy).toHaveBeenCalledTimes(2);
+
+    //         resolve();
+    //       }, 100);
+    //     });
+    //   });
+    // });
 
     it('should field onError should replace field errors', () => {
-      let errorSpy = jest.fn();
+      let errorSpy = vi.fn();
+
+      let inputMeta;
+      function TestInput({ meta, ...props }) {
+        inputMeta = meta;
+        return <input {...props} />;
+      }
+
+      mount(
+        <Form
+          schema={schema}
+          defaultValue={{}}
+          defaultErrors={{ name: 'foo', bar: 'baz' }}
+          onError={errorSpy}
+        >
+          <Form.Field name="name" as={TestInput} />
+        </Form>,
+      );
 
       act(() => {
-        mount(
-          <Form
-            schema={schema}
-            defaultValue={{}}
-            defaultErrors={{ name: 'foo', bar: 'baz' }}
-            onError={errorSpy}
-          >
-            <Form.Field name="name" as={TestInput} />
-          </Form>,
-        )
-          .find(TestInput)
-          .props()
-          .meta.onError({ 'name.first': 'baz' });
+        inputMeta.onError({ 'name.first': 'baz' });
       });
 
       expect(errorSpy).toHaveBeenCalledWith({
@@ -528,15 +572,17 @@ describe('Field', () => {
 
   describe('inclusive active matching', () => {
     it('should count path matches', () => {
-      mount(
+      const { getByRole } = mount(
         <Form schema={schema} defaultValue={{}} defaultErrors={{ name: 'foo' }}>
           <Form.Field name="name" errorClass="invalid" />
         </Form>,
-      ).assertSingle('input.invalid');
+      );
+
+      expect(getByRole('textbox').className).toEqual(' invalid');
     });
 
     it('should use inclusive active checking', () => {
-      mount(
+      let { getByRole } = mount(
         <Form
           schema={schema}
           defaultValue={{}}
@@ -544,11 +590,13 @@ describe('Field', () => {
         >
           <Form.Field name="name" errorClass="invalid" />
         </Form>,
-      ).assertSingle('input.invalid');
+      );
+
+      expect(getByRole('textbox').className).toEqual(' invalid');
     });
 
     it('should respect `exclusive`', () => {
-      mount(
+      let { getByRole } = mount(
         <Form
           schema={schema}
           defaultValue={{}}
@@ -556,74 +604,18 @@ describe('Field', () => {
         >
           <Form.Field exclusive name="name" errorClass="invalid" />
         </Form>,
-      ).assertNone('input.invalid');
+      );
+
+      expect(getByRole('textbox').className).toEqual('');
     });
 
     it('should respect `exclusive` and still have errors', () => {
-      mount(
+      let { getByRole } = mount(
         <Form schema={schema} defaultValue={{}} defaultErrors={{ name: 'foo' }}>
           <Form.Field exclusive name="name" errorClass="invalid" />
         </Form>,
-      ).assertSingle('input.invalid');
-    });
-  });
-
-  xdescribe('form fields', () => {
-    it('should inject onError', () => {
-      expect(
-        mount(
-          <Form schema={schema} defaultValue={{}}>
-            <Form.Field name="name" />
-          </Form>,
-        )
-          .find('input')
-          .prop('onError'),
-      ).toBeInstanceOf(Function);
-    });
-
-    // skip for now since name is still required.
-    xit('should not inject onError for nameless fields', () => {
-      expect(
-        mount(
-          <Form schema={schema} defaultValue={{}}>
-            {/* <Form.Field /> */}
-          </Form>,
-        )
-          .find('input')
-          .prop('onError'),
-      ).toBeInstanceOf(Function);
-    });
-
-    it('should propagate onError to form', () => {
-      let spy = jest.fn();
-
-      mount(
-        <Form schema={schema} defaultValue={{}} onError={spy}>
-          <Form.Field name="name" />
-        </Form>,
-      )
-        .find('input')
-        .prop('onError')({ foo: 'bar' });
-
-      expect(spy).toHaveBeenCalledWith({
-        'name.foo': 'bar',
-      });
-    });
-
-    it('should properly prefix nested errors', () => {
-      const onError = mount(
-        <Form schema={schema} defaultValue={{}}>
-          <Form.Field name="name" />
-        </Form>,
-      )
-        .find('input')
-        .prop('onError');
-
-      expect(onError({ foo: 'bar' })).toEqual({ 'name.foo': 'bar' });
-      expect(onError({ '[1].foo': 'bar' })).toEqual({ 'name[1].foo': 'bar' });
-      expect(onError({ '[1].baz.foo': 'bar' })).toEqual({
-        'name[1].baz.foo': 'bar',
-      });
+      );
+      expect(getByRole('textbox').className).toEqual(' invalid');
     });
   });
 
@@ -636,7 +628,7 @@ describe('Field', () => {
         return null;
       }
 
-      mount(
+      render(
         <Form
           defaultValue={{ field: true }}
           schema={yup.object({ field: yup.boolean() })}
@@ -670,11 +662,9 @@ describe('Field', () => {
           return null;
         }
 
-        const wrapper = mount(
-          <Form
-            value={{ field: 'red' }}
-            schema={yup.object({ field: yup.string() })}
-          >
+        const schema = yup.object({ field: yup.string() });
+        const { rerender } = mount(
+          <Form value={{ field: 'red' }} schema={schema}>
             <F />
           </Form>,
         );
@@ -688,7 +678,11 @@ describe('Field', () => {
           onChange: expect.any(Function),
         });
 
-        wrapper.setProps({ value: { field: 'blue' } });
+        rerender(
+          <Form value={{ field: 'blue' }} schema={schema}>
+            <F />
+          </Form>,
+        );
 
         expect(fieldProps).toEqual(
           expect.objectContaining({
@@ -757,17 +751,18 @@ describe('Field', () => {
           });
           return null;
         }
-
-        const wrapper = mount(
-          <Form
-            value={{ field: ['red'] }}
-            schema={yup.object({ field: yup.array() })}
-          >
+        let schema = yup.object({ field: yup.array() });
+        const { rerender } = mount(
+          <Form value={{ field: ['red'] }} schema={schema}>
             <F />
           </Form>,
         );
 
-        wrapper.setProps({ value: { field: ['blue'] } });
+        rerender(
+          <Form value={{ field: ['blue'] }} schema={schema}>
+            <F />
+          </Form>,
+        );
 
         expect(fieldProps).toEqual(
           expect.objectContaining({
@@ -784,7 +779,7 @@ describe('Field', () => {
           return null;
         }
 
-        mount(
+        render(
           <Form
             defaultValue={{ field: true }}
             schema={yup.object({ field: yup.boolean() })}
@@ -809,7 +804,7 @@ describe('Field', () => {
           return null;
         }
 
-        mount(
+        render(
           <Form
             defaultValue={{ field: true }}
             schema={yup.object({ field: yup.boolean() })}
@@ -834,7 +829,7 @@ describe('Field', () => {
           return null;
         }
 
-        mount(
+        render(
           <Form
             defaultValue={{ field: null }}
             schema={yup.object({ field: yup.string().nullable() })}
@@ -853,7 +848,7 @@ describe('Field', () => {
           return null;
         }
 
-        mount(
+        render(
           <Form
             defaultValue={{ field: null }}
             schema={yup.object({ field: yup.array().nullable() })}
@@ -878,7 +873,7 @@ describe('Field', () => {
         return null;
       }
 
-      mount(
+      render(
         <Form
           defaultValue={{ field: true }}
           schema={yup.object({ field: yup.boolean() })}

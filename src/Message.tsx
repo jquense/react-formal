@@ -1,20 +1,34 @@
 import PropTypes from 'prop-types';
-import React, { useContext, useMemo } from 'react';
-import { FormContext } from './Contexts';
-import { Errors } from './types';
-import { filterAndMapErrors } from './Errors';
-import uniq from './utils/uniqMessage';
-
-let flatten = (arr, next) => arr.concat(next);
+import React, { useMemo } from 'react';
+import { useFormErrors } from './Contexts.js';
+import { Errors } from './types.js';
+import { filterAndMapErrors } from './Errors.js';
+import uniq from './utils/uniqMessage.js';
 
 export interface MessageProps {
   errors?: Errors;
   for: string | string[];
   className?: string;
-  filter?: (item: any, i?: number, list?: any[]) => boolean;
+  filter?: (item: any, i: number, list: any[]) => boolean;
+
+  /**
+   * Map the passed in message object for the field to a string to display
+   */
   extract?: (errors: any, props: any) => any;
+
+  /**
+   * A function that maps an array of message strings
+   * and returns a renderable string or ReactElement.
+   *
+   * ```jsx static
+   * <Message>
+   *  {errors => errors.join(', ')}
+   * </Message>
+   * ```
+   */
   children?: (errors: any[], props: any) => React.ReactNode;
 }
+
 /**
  * Represents a Form validation error message. Only renders when the
  * value that it is `for` is invalid.
@@ -33,7 +47,7 @@ function Message({
   ),
   ...props
 }: MessageProps) {
-  const { errors: formErrors } = useContext(FormContext);
+  const formErrors = useFormErrors();
   const inputErrors = propsErrors || formErrors;
   const errors = useMemo(
     () =>
@@ -48,13 +62,10 @@ function Message({
 
   return (
     <>
-      {children(
-        Object.values(errors).reduce(flatten, []).filter(filter).map(extract),
-        {
-          ...props,
-          className,
-        },
-      )}
+      {children(Object.values(errors).flat().filter(filter).map(extract), {
+        ...props,
+        className,
+      })}
     </>
   );
 }

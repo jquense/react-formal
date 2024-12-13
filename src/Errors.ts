@@ -1,7 +1,5 @@
-import omitBy from 'lodash/omitBy';
-import pick from 'lodash/pick';
-import { Errors } from './types';
-import { inPath, toArray } from './utils/paths';
+import { Errors } from './types.js';
+import { inPath, toArray } from './utils/paths.js';
 
 export const EMPTY_ERRORS: Errors = Object.freeze({});
 
@@ -15,9 +13,9 @@ function mapKeys(
 ) {
   if (errors === EMPTY_ERRORS) return errors;
 
-  const newErrors = {};
+  const newErrors: Errors = {};
   let workDone = false;
-  Object.keys(errors).forEach(path => {
+  Object.keys(errors).forEach((path) => {
     let newKey: string | null = path;
 
     if (isChildPath(baseName, path)) {
@@ -38,9 +36,9 @@ const prefixName = (name: string, baseName: string) =>
 
 export function prefix(errors: Errors, baseName: string): Errors {
   const paths = Object.keys(errors);
-  const result = {};
+  const result: Errors = {};
 
-  paths.forEach(path => {
+  paths.forEach((path) => {
     result[prefixName(path, baseName)] = errors[path];
   });
 
@@ -49,9 +47,9 @@ export function prefix(errors: Errors, baseName: string): Errors {
 
 export function unprefix(errors: Errors, baseName: string): Errors {
   const paths = Object.keys(errors);
-  const result = {};
+  const result: Errors = {};
 
-  paths.forEach(path => {
+  paths.forEach((path) => {
     const shortened = path.slice(baseName.length).replace(/^\./, '');
     result[shortened] = errors[path];
   });
@@ -60,14 +58,21 @@ export function unprefix(errors: Errors, baseName: string): Errors {
 
 export function pickErrors(errors: Errors, names: string[]) {
   if (!names.length) return errors;
-  return pick(errors, names);
+
+  const result: Errors = {};
+  for (const name of names) {
+    if (name in errors) {
+      result[name] = errors[name];
+    }
+  }
+  return result;
 }
 
 export function filter(errors: Errors, baseName: string): Errors {
   const paths = Object.keys(errors);
-  const result = {};
+  const result: Errors = {};
 
-  paths.forEach(path => {
+  paths.forEach((path) => {
     if (isChildPath(baseName, path)) {
       result[path] = errors[path];
     }
@@ -93,7 +98,14 @@ export function filterAndMapErrors({
 }
 
 export function remove(errors: Errors, ...basePaths: string[]) {
-  return omitBy(errors, (_, path) => basePaths.some(b => inPath(b, path)));
+  const result: Errors = {};
+  for (const path of Object.keys(errors)) {
+    if (!basePaths.some((b) => inPath(b, path))) {
+      result[path] = errors[path];
+    }
+  }
+
+  return result;
 }
 
 export function shift(errors: Errors, baseName: string, atIndex = 0) {
@@ -156,11 +168,11 @@ export function swap(
 
 export function inclusiveMapErrors(errors: Errors, names: string[]) {
   if (!names.length || errors === EMPTY_ERRORS) return EMPTY_ERRORS;
-  let activeErrors = {};
+  let activeErrors: Errors = {};
   let paths = Object.keys(errors);
 
-  names.forEach(name => {
-    paths.forEach(path => {
+  names.forEach((name) => {
+    paths.forEach((path) => {
       if (errors[path] && inPath(name, path)) {
         activeErrors[path] = errors[path];
       }

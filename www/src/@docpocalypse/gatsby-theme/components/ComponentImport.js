@@ -15,7 +15,7 @@ function StyledComponentImport(props) {
   let subtitle;
 
   if (staticProps.includes(docNode.name)) {
-    importName = `import Form from 'react-formal';`;
+    importName = `import { Form } from 'react-formal';`;
     subtitle = (
       <ComponentImport
         {...props}

@@ -11,8 +11,8 @@ import React, {
   useLayoutEffect,
   SyntheticEvent,
 } from 'react';
-import updateIn from './utils/updateIn';
-import { MapToValue } from './useBinding';
+import updateIn from './utils/updateIn.js';
+import { MapToValue } from './useBinding.js';
 
 export type Mapper<TOut, TIn = any> = (input: TIn) => TOut;
 
@@ -58,7 +58,7 @@ type Props<TValue extends BindingValue> = {
   formValue?: TValue;
   onChange(value: TValue, paths: string[]): void;
   getSchemaForPath: (path: string, value: TValue) => any;
-  getter?: (path: string, value?: TValue) => any;
+  getter?: (path: string, value?: TValue | undefined) => any;
   setter?: (
     path: string,
     value: TValue | undefined,
@@ -67,11 +67,11 @@ type Props<TValue extends BindingValue> = {
   ) => TValue;
 };
 
-const isEvent = (e): e is SyntheticEvent =>
+const isEvent = (e: any): e is SyntheticEvent =>
   typeof e == 'object' && e != null && 'target' in e;
 
 function parseValueFromEvent(
-  target: HTMLInputElement & HTMLSelectElement,
+  target: HTMLInputElement & Omit<HTMLSelectElement, 'type'>,
   fieldValue: any,
   fieldSchema?: any,
 ) {
@@ -146,7 +146,7 @@ function useFormBindingContext<TValue extends BindingValue>({
   });
 
   const updateBindingValue = useCallback(
-    (mapValue, args) => {
+    (mapValue: any, args: any) => {
       setPendingChange((pendingState) => {
         let [nextModel, paths] = pendingState;
 
@@ -188,7 +188,7 @@ function useFormBindingContext<TValue extends BindingValue>({
   );
 
   const getValue = useCallback(
-    (pathOrAccessor) =>
+    (pathOrAccessor: any) =>
       typeof pathOrAccessor === 'function'
         ? pathOrAccessor(formValue, getter)
         : getter(pathOrAccessor, formValue),

@@ -1,4 +1,4 @@
-import { useBindingContext } from './BindingContext';
+import { useBindingContext } from './BindingContext.js';
 
 /**
  * Returns the current form value and onChange handler for the Form

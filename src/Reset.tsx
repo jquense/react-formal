@@ -1,6 +1,6 @@
 import React, { ElementType, useCallback } from 'react';
-import useFormReset from './useFormReset';
-import notify from './utils/notify';
+import useFormReset from './useFormReset.js';
+import notify from './utils/notify.js';
 
 export interface FormResetProps<TAs extends ElementType = any> {
   as?: TAs;

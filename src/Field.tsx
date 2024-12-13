@@ -6,8 +6,8 @@ import useField, {
   MapToValue,
   UseFieldProps,
   ValidateOnConfig,
-} from './useField';
-import notify from './utils/notify';
+} from './useField.js';
+import notify from './utils/notify.js';
 
 export type FieldEventHandlers = {
   onBlur?: (...args: any[]) => any;
@@ -54,7 +54,7 @@ export type FieldProps<TAs extends React.ElementType = any> = {
    * will render a `type='number'` etc.
    *
    * ```jsx
-   * import Form from 'react-formal';
+   * import { Form } from 'react-formal';
    *
    * function MyDateInput({ meta: _, ...props }) {
    *   return <input {...props} type='datetime-local' />
@@ -286,11 +286,11 @@ export type FieldPropsWithAs<TAs extends React.ElementType> = FieldProps<TAs> &
   >;
 
 export declare interface Field<
-  TDefaultControl extends React.ElementType = 'input'
+  TDefaultControl extends React.ElementType = 'input',
 > {
   <TAs extends React.ElementType = TDefaultControl>(
     props: FieldPropsWithAs<TAs>,
-  ): React.ReactElement | null;
+  ): React.ReactNode | null;
 
   displayName?: string;
 

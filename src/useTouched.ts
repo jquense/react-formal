@@ -1,8 +1,8 @@
 import { useMemo } from 'react';
-import { BITS, useFormContext } from './Contexts';
-import memoize from 'memoize-one';
-import { filterAndMapErrors } from './Errors';
-import { Errors, Touched } from './types';
+import memoize from './utils/memoize-one.js';
+import { useFormTouched } from './Contexts.js';
+import { filterAndMapErrors } from './Errors.js';
+import { Errors, Touched } from './types.js';
 
 /**
  * Returns all errors for the form.
@@ -25,7 +25,8 @@ function useTouched(path: string): Touched;
  */
 function useTouched(paths: string[] | undefined): Touched;
 function useTouched(paths?: string | string[]): Touched {
-  const { touched } = useFormContext(BITS.touched);
+  const touched = useFormTouched();
+
   const memoFilterAndMapErrors = useMemo(
     () =>
       memoize(
@@ -37,6 +38,7 @@ function useTouched(paths?: string | string[]): Touched {
       ),
     [],
   );
+
   return paths
     ? memoFilterAndMapErrors({ errors: touched, names: paths })
     : touched;

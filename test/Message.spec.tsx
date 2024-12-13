@@ -1,17 +1,20 @@
 import React from 'react';
-import { mount } from 'enzyme';
 
-import Form from '../src';
+import { describe, it, vi, expect } from 'vitest';
+import { render } from '@testing-library/react';
+
+import { Form } from '../src';
 
 describe('Message', () => {
   it('should allow empty for', () => {
-    let renderSpy = jest.fn(msgs => {
+    let renderSpy = vi.fn((msgs) => {
       expect(msgs).toEqual(['hi', 'good day']);
       return null;
     });
-    mount(
+    render(
       <Form noValidate defaultErrors={{ fieldA: 'hi', fieldB: 'good day' }}>
         <div>
+          {/* @ts-expect-error */}
           <Form.Message className="msg">{renderSpy}</Form.Message>
         </div>
       </Form>,
@@ -20,13 +23,13 @@ describe('Message', () => {
     expect(renderSpy).toHaveBeenCalled();
   });
 
-  it('should allow group summaries', done => {
-    let renderSpy = jest.fn(msgs => {
+  it('should allow group summaries', () => {
+    let renderSpy = vi.fn((msgs) => {
       expect(msgs).toEqual(['foo', 'hi', 'good day']);
       return null;
     });
 
-    mount(
+    render(
       <Form
         noValidate
         defaultErrors={{
@@ -43,9 +46,6 @@ describe('Message', () => {
       </Form>,
     );
 
-    setTimeout(() => {
-      expect(renderSpy).toHaveBeenCalled();
-      done();
-    }, 10);
+    expect(renderSpy).toHaveBeenCalled();
   });
 });

@@ -1,8 +1,9 @@
 import { useCallback, useMemo } from 'react';
-import { BITS, useFormContext } from './Contexts';
+import { useFormActions, useFormSubmits } from './Contexts.js';
 
 export default function useFormReset() {
-  const { actions, resets } = useFormContext(BITS.actions | BITS.resets);
+  const actions = useFormActions();
+  const { resets } = useFormSubmits();
   const handleReset = useCallback(() => {
     if (!actions) {
       if (process.env.NODE_ENV !== 'production')

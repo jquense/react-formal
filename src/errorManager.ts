@@ -1,17 +1,19 @@
-import { EMPTY_ERRORS } from './Errors';
-import errToJSON from './utils/errToJSON';
-import { trim, inPath } from './utils/paths';
+import { EMPTY_ERRORS } from './Errors.js';
+import errToJSON from './utils/errToJSON.js';
+import { trim, inPath } from './utils/paths.js';
 import { ValidationError } from 'yup';
-import { Errors } from './types';
-import uniqBy from 'lodash/uniqBy';
+import { Errors } from './types.js';
+import { uniqBy } from './utils/uniqBy.js';
 
 export interface ValidationPathSpec {
   path: string;
   shallow: boolean;
 }
 
+export type ValidationPaths = Array<ValidationPathSpec | string>;
+
 function trimChildren(rootPath: string, errors: Record<string, any>) {
-  let result = {};
+  let result: Record<string, any> = {};
   Object.keys(errors).forEach((path) => {
     if (rootPath !== path && inPath(rootPath, path)) return;
     result[path] = errors[path];
@@ -46,7 +48,7 @@ export default function errorManager<TOptions>(
 ) {
   return {
     async collect(
-      paths: Array<ValidationPathSpec | string>,
+      paths: ValidationPaths,
       pristineErrors = EMPTY_ERRORS,
       options?: TOptions,
     ): Promise<Errors> {

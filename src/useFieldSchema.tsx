@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
-import { useBindingContext } from './BindingContext';
 import { type AnySchema } from 'yup';
+import { useBindingContext } from './BindingContext.js';
 
 function useFieldSchema(path: string | undefined) {
   const { getSchemaForPath } = useBindingContext();

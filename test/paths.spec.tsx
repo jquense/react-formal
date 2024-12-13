@@ -1,4 +1,5 @@
-var paths = require('../src/utils/paths');
+import * as paths from '../src/utils/paths';
+import { describe, it, expect } from 'vitest';
 
 describe('PATH utils', () => {
   it('should clean part', () => {

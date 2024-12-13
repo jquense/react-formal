@@ -1,25 +1,27 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
-import { mount } from 'enzyme';
+
 import React from 'react';
-import { act } from 'react-dom/test-utils';
+import { describe, it, vi, expect, afterEach, beforeEach } from 'vitest';
+import { fireEvent, render, act, waitFor } from '@testing-library/react';
+
 import createSlot from 'react-tackle-box/Slot';
 import * as yup from 'yup';
-import Form, { toFormErrors, setter, getter } from '../src';
-import { FormContext } from '../src/Contexts';
+import { Form, toFormErrors, setter, getter } from '../src';
+import { useFormActions } from '../src/Contexts';
 import errorManager from '../src/errorManager';
 import { FormHandle } from '../src/Form';
 
 const wait = (ms = 0) => new Promise((resolve) => setTimeout(resolve, ms));
 
-let LeakySubmit = () => (
-  <FormContext.Consumer>
-    {(ctx) => (
-      <button type="submit" onClick={ctx!.actions!.onSubmit}>
-        Submit
-      </button>
-    )}
-  </FormContext.Consumer>
-);
+let LeakySubmit = () => {
+  const actions = useFormActions();
+
+  return (
+    <button type="submit" onClick={actions!.onSubmit}>
+      Submit
+    </button>
+  );
+};
 
 describe('Form', () => {
   let attachTo;
@@ -48,7 +50,7 @@ describe('Form', () => {
   });
 
   it('should pass errors', () => {
-    let wrapper = mount(
+    let { container } = render(
       <Form schema={schema} defaultErrors={{ fieldA: ['hi', 'good day'] }}>
         <div>
           <Form.Message for="fieldA" className="msg" />
@@ -57,14 +59,16 @@ describe('Form', () => {
       </Form>,
     );
 
-    expect(wrapper.find('span.msg').text()).toBe('hi, good day');
+    expect(container.querySelector('span.msg')?.textContent).toBe(
+      'hi, good day',
+    );
   });
 
   it('should update the form value', function () {
     let value, last;
-    let change = jest.fn((v) => (value = v));
+    let change = vi.fn((v) => (value = v));
 
-    let wrapper = mount(
+    let { container } = render(
       <Form
         schema={schema}
         defaultValue={schema.getDefault()}
@@ -75,10 +79,9 @@ describe('Form', () => {
       </Form>,
     );
 
-    wrapper
-      .find('.field')
-      .first()
-      .simulate('change', { target: { value: 'Jill' } });
+    fireEvent.change(container.querySelector('[name="name.first"]')!, {
+      target: { value: 'Jill' },
+    });
 
     expect(change).toHaveBeenCalledTimes(1);
 
@@ -91,10 +94,9 @@ describe('Form', () => {
 
     last = value;
 
-    wrapper
-      .find('.field')
-      .last()
-      .simulate('change', { target: { value: 'Smith' } });
+    fireEvent.change(container.querySelector('[name="name.last"]')!, {
+      target: { value: 'Smith' },
+    });
 
     expect(value).toEqual({
       name: {
@@ -107,101 +109,74 @@ describe('Form', () => {
   });
 
   it('should pass updated paths', function () {
-    let paths,
-      change = jest.fn((_, p) => (paths = p)),
-      wrapper = mount(
-        <Form
-          schema={schema}
-          defaultValue={schema.getDefault()}
-          onChange={change}
-        >
-          <Form.Field
-            name="name.first"
-            className="field"
-            mapFromValue={{
-              'name.first': (v: any) => v.first,
-              'name.last': (v: any) => v.last,
-            }}
-          />
-        </Form>,
-      );
+    let paths;
+    let change = vi.fn((_, p) => (paths = p));
+
+    let { container } = render(
+      <Form
+        schema={schema}
+        defaultValue={schema.getDefault()}
+        onChange={change}
+      >
+        <Form.Field
+          name="name.first"
+          className="field"
+          mapFromValue={{
+            'name.first': (v: any) => v.first,
+            'name.last': (v: any) => v.last,
+          }}
+        />
+      </Form>,
+    );
 
     let value = { first: 'Jill', last: 'smith' };
 
-    wrapper.find('.field').first().simulate('change', { target: { value } });
+    fireEvent.change(container.querySelector('[name="name.first"]')!, {
+      target: { value },
+    });
 
     expect(paths).toEqual(['name.first', 'name.last']);
   });
 
-  xit('should respect noValidate', () => {
-    let change = jest.fn(),
-      wrapper = mount(
-        <Form
-          noValidate
-          schema={schema}
-          defaultValue={schema.getDefault()}
-          onValidate={change}
-        >
-          <Form.Field name="name.first" className="field" />
-          <Form.Field name="name.last" className="field" />
-        </Form>,
-      );
-
-    wrapper.find('.field').first().simulate('change');
-
-    expect(change).not.toHaveBeenCalled();
-
-    wrapper
-      .setProps({ noValidate: false })
-      .find('.field')
-      .first()
-      .simulate('change');
-
-    expect(change).toHaveBeenCalled();
-  });
-
   it('should let native submits simulate onSubmit', async () => {
-    let spy = jest.fn();
+    let spy = vi.fn();
 
-    let wrapper = mount(
+    let { getByRole } = render(
       <Form onSubmit={spy} schema={schema} defaultValue={{}}>
         <Form.Field name="name" type="text" className="test" />
         <button type="submit">Submit</button>
       </Form>,
     );
 
-    await act(() => {
-      wrapper.assertSingle('button').simulate('submit');
-
-      return wait();
+    act(() => {
+      fireEvent.submit(getByRole('button'));
     });
 
-    expect(spy).toHaveBeenCalledTimes(1);
+    await waitFor(() => expect(spy).toHaveBeenCalledTimes(1));
   });
 
   it('should deduplicate form submissions', async () => {
-    let spy = jest.fn();
-    let wrapper = mount(
+    let spy = vi.fn();
+    let { getByRole } = render(
       <Form onSubmit={spy} schema={schema} defaultValue={{}}>
         <Form.Field name="name" type="text" className="test" />
         <Form.Submit type="submit" />
       </Form>,
-      { attachTo },
+      { container: attachTo },
     );
 
-    await act(() => {
-      wrapper.assertSingle('button').getDOMNode().click();
-      return wait();
+    act(() => {
+      getByRole('button').click();
     });
 
-    expect(spy).toHaveBeenCalledTimes(1);
+    await waitFor(() => expect(spy).toHaveBeenCalledTimes(1));
   });
 
   it("doesn't call submitForm on error", async () => {
-    let onInvalidSubmit = jest.fn();
-    let submitForm = jest.fn(() => Promise.resolve());
+    let onInvalidSubmit = vi.fn();
+    let submitForm = vi.fn(() => Promise.resolve());
 
-    let wrapper = mount(
+    let { getByRole } = render(
       <Form
         submitForm={submitForm}
         onInvalidSubmit={onInvalidSubmit}
@@ -215,20 +190,21 @@ describe('Form', () => {
       </Form>,
     );
 
-    await act(() => {
-      wrapper.assertSingle('Submit').simulate('click');
-      return wait(100);
+    act(() => {
+      getByRole('button').click();
     });
+
+    await waitFor(() => expect(onInvalidSubmit).toHaveBeenCalledTimes(1));
 
     expect(onInvalidSubmit).toHaveBeenCalledTimes(1);
     expect(submitForm).not.toHaveBeenCalled();
   });
 
   it('calls submitForm on success', async () => {
-    let onSubmit = jest.fn();
-    let submitForm = jest.fn(() => Promise.resolve());
+    let onSubmit = vi.fn();
+    let submitForm = vi.fn(() => Promise.resolve());
 
-    let wrapper = mount(
+    let { getByRole } = render(
       <Form
         onSubmit={onSubmit}
         submitForm={submitForm}
@@ -240,10 +216,11 @@ describe('Form', () => {
       </Form>,
     );
 
-    await act(() => {
-      wrapper.assertSingle('Submit').simulate('click');
-      return wait();
+    act(() => {
+      getByRole('button').click();
     });
+
+    await waitFor(() => expect(onSubmit).toHaveBeenCalledTimes(1));
 
     expect(onSubmit).toHaveBeenCalledTimes(1);
     expect(submitForm).toHaveBeenCalledTimes(1);
@@ -251,12 +228,12 @@ describe('Form', () => {
   });
 
   it('submits through a Slot', async () => {
-    let onSubmit = jest.fn();
-    let submitForm = jest.fn(() => Promise.resolve());
+    let onSubmit = vi.fn();
+    let submitForm = vi.fn(() => Promise.resolve());
 
     let Slot = createSlot();
 
-    let wrapper = mount(
+    let { getByRole } = render(
       <div>
         <Form
           onSubmit={onSubmit}
@@ -274,22 +251,22 @@ describe('Form', () => {
       </div>,
     );
 
-    await act(() => {
-      wrapper.assertSingle('Submit').simulate('click');
-      return wait();
+    act(() => {
+      getByRole('button').click();
     });
+
+    await waitFor(() => expect(onSubmit).toHaveBeenCalledTimes(1));
 
     expect(onSubmit).toHaveBeenCalledTimes(1);
     expect(submitForm).toHaveBeenCalledTimes(1);
-    // expect(submitForm).toHaveBeenCalledAfter(onSubmit);
   });
 
   it('does not submit while already submitting', async () => {
     let ref = React.createRef<FormHandle>();
-    let onSubmit = jest.fn();
-    let submitForm = jest.fn(() => new Promise((r) => setTimeout(r, 5)));
+    let onSubmit = vi.fn();
+    let submitForm = vi.fn(() => new Promise((r) => setTimeout(r, 5)));
 
-    let wrapper = mount(
+    let { getByRole } = render(
       <div>
         <Form
           ref={ref}
@@ -305,7 +282,8 @@ describe('Form', () => {
     );
 
     await act(async () => {
-      wrapper.assertSingle('Submit').simulate('click').simulate('click');
+      getByRole('button').click();
+      getByRole('button').click();
 
       await ref.current!.submit();
     });
@@ -317,8 +295,9 @@ describe('Form', () => {
   it('should only report ValidationErrors', () => {
     let ref = React.createRef<FormHandle>();
 
-    let spy = jest.fn();
-    mount(
+    let spy = vi.fn();
+
+    render(
       <div>
         <Form
           ref={ref}
@@ -387,25 +366,26 @@ describe('Form', () => {
     });
 
     it('remove errors for branches', async () => {
-      const spy = jest.fn((errors) => {
+      const spy = vi.fn((errors) => {
         expect(errors).not.toHaveProperty('name.first');
       });
 
+      let { container } = render(
+        <Form
+          delay={0}
+          onError={spy}
+          schema={schema}
+          errors={{ 'name.first': ['invalid'] }}
+          defaultValue={{}}
+        >
+          <Form.Field name="name" />
+          <Form.Field name="name.first" />
+        </Form>,
+      );
       await act(() => {
-        mount(
-          <Form
-            delay={0}
-            onError={spy}
-            schema={schema}
-            errors={{ 'name.first': ['invalid'] }}
-            defaultValue={{}}
-          >
-            <Form.Field name="name" />
-            <Form.Field name="name.first" />
-          </Form>,
-        )
-          .find('input[name="name"]')
-          .simulate('change');
+        fireEvent.change(container.querySelector('[name="name"]')!, {
+          target: { value: 'Smith' },
+        });
 
         return wait(10);
       });
@@ -458,9 +438,9 @@ describe('Form', () => {
     });
 
     it('should clear errors on submit', async () => {
-      const spy = jest.fn();
+      const spy = vi.fn();
 
-      const wrapper = mount(
+      const { getByRole } = render(
         <Form
           submitForm={() => {}}
           schema={yup.object({
@@ -476,7 +456,7 @@ describe('Form', () => {
       );
 
       await act(() => {
-        wrapper.assertSingle('Submit').simulate('click');
+        getByRole('button').click();
         return wait(10);
       });
 

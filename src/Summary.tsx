@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types';
 
 import React from 'react';
-import Message, { MessageProps } from './Message';
+import Message, { MessageProps } from './Message.js';
 
 /**
  * Display all Form validation `errors` in a single summary list.
@@ -60,7 +60,7 @@ class Summary extends React.PureComponent<
 
   static defaultProps = {
     as: 'ul',
-    formatMessage: (message, idx) => <li key={idx}>{message}</li>,
+    formatMessage: (message: any, idx: any) => <li key={idx}>{message}</li>,
   };
 
   render() {
